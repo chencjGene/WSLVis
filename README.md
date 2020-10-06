@@ -1,9 +1,19 @@
-# WSLVis
+# nlpvis
 
-## Install
-
-This project uses [python 3.7](https://www.python.org/). Go check them out if you don't have them locally installed.
-
-```sh
-$ pip install -r requirements.txt
+## Project setup
 ```
+npm install
+```
+
+### Compiles and hot-reloads for development
+```
+npm run serve
+```
+
+### Compiles and minifies for production
+```
+npm run build
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
