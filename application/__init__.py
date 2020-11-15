@@ -12,7 +12,7 @@ def create_app():
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
     Session(app)
 
-    app.config.from_object("config.DevelopmentConfig")
+    # app.config.from_object("config.DevelopmentConfig")
 
     app.register_blueprint(admin)
     app.register_blueprint(history)
