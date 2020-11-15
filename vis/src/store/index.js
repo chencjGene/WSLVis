@@ -8,7 +8,7 @@ Vue.use(Vuex)
 //create VueX
 const store = new Vuex.Store({
     state:{
-        server_url: 'http://0.0.0.0:20211',
+        server_url: 'http://localhost:20211',
         // action trail
         history: null,
         current_id: 0
@@ -22,6 +22,7 @@ const store = new Vuex.Store({
         },
         set_history_data(state, history_data) {
             state.history = history_data;
+            console.log("set history data");
         }
     },
     actions:{
