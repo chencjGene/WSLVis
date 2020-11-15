@@ -3,9 +3,6 @@ from flask import Flask, jsonify, send_file, session, \
 from flask_session import Session
 from datetime import timedelta
 from .views.admin import admin
-from .views.graph import graph
-from .views.info import info
-from .views.dist import dist
 from .views.history import history
 
 def create_app():
@@ -18,11 +15,9 @@ def create_app():
     app.config.from_object("config.DevelopmentConfig")
 
     app.register_blueprint(admin)
-    app.register_blueprint(graph)
-    app.register_blueprint(info)
-    app.register_blueprint(dist)
     app.register_blueprint(history)
-    # # this manner is somewhere wrong
+
+    # # this kind of manner is somewhere wrong
     # app.config.update(
     #     DEBUG=True,
     #     SERVER_NAME = "0.0.0.0:8000"
