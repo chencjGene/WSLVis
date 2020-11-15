@@ -117,7 +117,7 @@ export default {
 .main-content {
     border: 1px solid #c1c1c1;
     border-radius: 5px;
-    height: calc(100% - 0px);
+    height: calc(100% - 22px);
 }
 
 .action-trail-view {
