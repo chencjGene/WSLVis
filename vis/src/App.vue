@@ -32,13 +32,7 @@
             </v-col>
           </v-col>
           <v-col cols="3" class="other-view fill-height">
-            <v-row class="action-trail-view fill-width mr-0">
-              <v-col cols="12" class="topname fill-width">
-                Action Trail
-              </v-col>
-              <v-col cols="12" class="action-trail-content pa-0">
-              </v-col>
-            </v-row>
+            <app-action-trail></app-action-trail>
             <v-row class="text-view fill-width mr-0">
               <v-col cols="12" class="topname fill-width">
                 Text
@@ -60,8 +54,12 @@
 </template>
 
 <script>
+import ActionTrail from './components/ActionTrail.vue'
 export default {
   name: 'App', 
+  components:{
+    "app-action-trail": ActionTrail
+  },
   data: () => ({
     loader: null,
     loading: false
@@ -125,12 +123,6 @@ export default {
   height: 33%;
 }
 
-.action-trail-content {
-    border: 1px solid #c1c1c1;
-    border-radius: 5px;
-    height: calc(100% - 32px);
-    margin-bottom: 10px;
-}
 
 .text-view {
   height: 33%;

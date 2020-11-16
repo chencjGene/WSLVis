@@ -17,7 +17,7 @@ const store = new Vuex.Store({
         
     },
     mutations:{
-        edit(state){
+        edit(state){ // for DEBUG
             state.name = "hello 2";
         },
         set_history_data(state, history_data) {
