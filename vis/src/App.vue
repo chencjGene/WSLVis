@@ -68,7 +68,7 @@ export default {
     add(){
       // this.$store.commit('edit');
       console.log("add data");
-      this.$store.dispatch("fetch_history", 1);
+      // this.$store.dispatch("fetch_history", 1);
     }
   },
   watch:{

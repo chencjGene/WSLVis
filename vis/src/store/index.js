@@ -10,7 +10,7 @@ const store = new Vuex.Store({
     state:{
         server_url: 'http://localhost:20211',
         // action trail
-        history: null,
+        history: [],
         current_id: 0
     },
     getters: {
@@ -29,7 +29,7 @@ const store = new Vuex.Store({
         async fetch_history({ commit, state }, key){
             const resp = await axios.post(`${state.server_url}/history/GetHistory`, {word: key});
             console.log(resp);
-            commit("set_history_data", resp)
+            commit("set_history_data", JSON.parse(JSON.stringify(resp.data)))
         }
     },
     modules:{

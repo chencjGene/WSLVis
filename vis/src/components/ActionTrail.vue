@@ -10,11 +10,13 @@
 </template>
 
 <script>
+  import Vue from 'vue'
   import {mapActions} from "vuex"
   import * as d3 from 'd3'
   export default {
     name: 'ActionTrail',
     data: () => ({
+      key_data: {history: []},
       bbox_width: null,
       bbox_height: null,
       layout_width: null,
@@ -23,15 +25,32 @@
       max_height: null,
     }),
     computed:{
+      get_history(){
+        return this.$store.state.history;
+      }
+    },
+    watch:{
+      get_history(curval, oldval){
+        // this.history = curval;
+        Vue.set(this.key_data, "history", curval);
+        console.log("history", this.key_data.history, oldval);
+      }
     },
     methods:{
       ...mapActions([
         "fetch_history"
-      ])
+      ]),
+      update_view(){
+        let data = this.$store.state.history;
+        console.log("mounted data in updated", data);
+        self.svg.selectAll("svg")
+        .data([1,1,2])
+        .enter()
+        .append("svg");
+      }
     },
-    beforeMount(){
-    },
-    mounted() {
+    async mounted() {
+      window.action_trail = this;
       let container = d3.select(".action-trail-content");
       console.log("container", container);
       let bbox = container.node().getBoundingClientRect();
@@ -43,12 +62,13 @@
         .attr("id", "action-trail-svg")
         .attr("width", self.bbox_width)
         .attr("height", self.layout_height);
-      let data = this.$store.state.history;
-      console.log("mounted data", data);
+      
+      await this.$store.dispatch("fetch_history", 1);
+      // this.update_view();
     },
-    updated() {
-      let data = this.$store.state.history;
-      console.log("mounted data in updated", data);
+    async updated() {
+      // let data = this.$store.state.history;
+      console.log("mounted data in updated");
     }
   }
 </script>
