@@ -6,8 +6,9 @@ print("SERVER_ROOT", SERVER_ROOT)
 
 class Config(object):
     def __init__(self):
+        self.root = SERVER_ROOT
         #raw data root
-        self.raw_data_root = os.path.normpath("~/WeaklySupervisedLearning2021/RawData")
+        self.raw_data_root = os.path.normpath("/home/changjian/WeaklySupervisedLearning2021/RawData")
 
         # first-level directory
         self.data_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../data/"))
@@ -23,14 +24,8 @@ class Config(object):
         self.pkl_ext = ".pkl"
 
         # second-level directory
-        self.yelp = "Yelp"
-        self.imdb = "IMDB"
-        self.cifar10 = "cifar10"
-        self.oct = "OCT"
-        self.stl = "STL"
-        self.svhn = "svhn"
-        self.coil = "COIL"
-        self.cancer = "Cancer"
+        self.voc07 = "VOC07_test"
+        self.coco17 = "COCO17"
 
         # third-level directory
         self.train_path_name = "train"
@@ -50,13 +45,14 @@ class Config(object):
         # variable
         self.class_name = "class_name"
         self.class_name_encoding = "class_name_encoding"
-        self.X_name ="X_name"
+        self.X_name ="X"
         self.embed_X_name = "embed_X"
         self.all_embed_X_name = "all_embed_X"
-        self.y_name = "y_name"
+        self.anns_name = "annos"
         self.train_idx_name = "train_idx"
         self.valid_idx_name = "valid_idx"
         self.test_idx_name = "test_idx"
+        self.redundant_idx_name = "redundant_idx"
         self.labeled_idx_name = "labeled_idx"
         self.unlabeled_idx_name = "unlabeled_idx"
         self.add_info_name = "add_info"

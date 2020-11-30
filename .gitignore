@@ -9,7 +9,7 @@ flask_session/
 data/
 logs/
 images/
-
+test/
 
 
 # Byte-compiled / optimized / DLL files
