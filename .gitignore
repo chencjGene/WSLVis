@@ -5,6 +5,13 @@
 # session
 flask_session/
 
+# dir
+data/
+logs/
+images/
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc

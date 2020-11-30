@@ -2,17 +2,18 @@ import sys
 import os
 SERVER_ROOT = os.path.dirname(sys.modules[__name__].__file__)
 SERVER_ROOT = os.path.join(SERVER_ROOT, "..")
+print("SERVER_ROOT", SERVER_ROOT)
 
 class Config(object):
     def __init__(self):
         #raw data root
-        self.raw_data_root = os.path.normpath("F:/WSL2019-Raw-data")
+        self.raw_data_root = os.path.normpath("~/WeaklySupervisedLearning2021/RawData")
 
         # first-level directory
         self.data_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../data/"))
         self.image_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../images/"))
         self.lib_root = os.path.normpath(os.path.join(SERVER_ROOT, "../../application/views/lib/"))
-        self.log_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../../logs/"))
+        self.log_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../logs/"))
         self.case_util_root = os.path.normpath(os.path.join(SERVER_ROOT, "../../application/views/case_utils/"))
         # self.model_root = os.path.join(SERVER_ROOT, "../model/")
 
