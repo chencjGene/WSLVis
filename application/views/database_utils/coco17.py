@@ -152,4 +152,4 @@ class DataCOCO17(DataBase):
                     bbox = bbox.tolist() + [category]
                     self.detection[idx + train_num]["bbox"].append(bbox)
 
-        import IPython; IPython.embed(); exit()
+        import IPython; IPython.embed(); exit()  
