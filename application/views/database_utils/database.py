@@ -17,8 +17,10 @@ class DataBase(object):
 
         self.class_name = []
         self.class_name_encoding = {}
-        self.X = [] # contains image level features and 
+        self.X = [] # contains image level features and patch level features
         self.annos  = [] # contains text, image level labels, boundingboxes and their categories
+        self.detection = [] # contains detection results
+        self.ids = []
 
         self.train_idx = []
         self.valid_idx = []
@@ -66,6 +68,8 @@ class DataBase(object):
         mat[config.class_name] = self.class_name
         mat[config.X_name] = self.X
         mat[config.anns_name] = self.annos
+        mat[config.ids_name] = self.detection
+        mat[config.detection_name] = self.detection
         mat[config.train_idx_name] = self.train_idx
         mat[config.valid_idx_name] = self.valid_idx
         mat[config.test_idx_name] = self.test_idx

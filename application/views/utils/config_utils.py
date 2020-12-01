@@ -49,6 +49,8 @@ class Config(object):
         self.embed_X_name = "embed_X"
         self.all_embed_X_name = "all_embed_X"
         self.anns_name = "annos"
+        self.ids_name = "ids"
+        self.detection_name = "detection"
         self.train_idx_name = "train_idx"
         self.valid_idx_name = "valid_idx"
         self.test_idx_name = "test_idx"
