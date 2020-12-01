@@ -8,7 +8,7 @@ from ..utils.helper_utils import pickle_load_data, pickle_save_data, check_dir
 from ..utils.log_utils import logger 
 
 class DataBase(object):
-    def __init__(self, dataname):
+    def __init__(self, dataname, suffix=""):
         self.dataname = dataname
         self.data_dir = os.path.join(config.data_root, dataname)
         check_dir(self.data_dir)
@@ -67,7 +67,7 @@ class DataBase(object):
         # TODO: class_name
         mat[config.class_name] = self.class_name
         mat[config.X_name] = self.X
-        mat[config.anns_name] = self.annos
+        mat[config.annos_name] = self.annos
         mat[config.ids_name] = self.detection
         mat[config.detection_name] = self.detection
         mat[config.train_idx_name] = self.train_idx
