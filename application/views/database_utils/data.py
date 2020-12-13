@@ -43,6 +43,10 @@ class Data(object):
         self.test_idx = processed_data[config.test_idx_name]
         self.redundant_idx = processed_data[config.redundant_idx_name]
         self.add_info = processed_data[config.add_info_name]
+
+        # load hierarchy
+        self.tree = pickle_load_data(os.path.join(self.data_root, "hierarchy.json"))
+
         logger.info("end loading data from processed data!")
     
     

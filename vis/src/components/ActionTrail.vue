@@ -63,13 +63,13 @@
         .attr("width", self.bbox_width)
         .attr("height", self.layout_height);
       
-      await this.$store.dispatch("fetch_history", 1);
+      // await this.$store.dispatch("fetch_history", 1);
       // this.update_view();
     },
-    async updated() {
-      // let data = this.$store.state.history;
-      console.log("mounted data in updated");
-    }
+    // async updated() {
+    //   // let data = this.$store.state.history;
+    //   console.log("mounted data in updated");
+    // }
   }
 </script>
 

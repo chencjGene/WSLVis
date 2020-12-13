@@ -2,35 +2,7 @@
   <v-app style="position: relative;">
     <v-main>
         <v-container fluid class="main-background fill-height pa-0">
-          <v-col cols="9" class="main-view fill-height">
-            <!-- <v-col cols="12" class="topname fill-width">
-            </v-col> -->
-            <v-col cols="12" class="topname fill-width" id="main-topname">
-              <span>
-                Hybrid
-              </span>
-              <v-btn x-small
-                class="ma-2"
-                :depressed="true"
-                :loading="loading"
-                :disabled="loading"
-                color="#D1D1D1"
-                @click="loader = 'loading'"
-              >
-                Load
-                <template v-slot:loader>
-                  <v-progress-circular
-                    :size="18"
-                    :width="2"
-                    color="gray"
-                    indeterminate
-                  ></v-progress-circular>
-                </template>
-              </v-btn>
-            </v-col>
-            <v-col cols="12" class="main-content pa-0">
-            </v-col>
-          </v-col>
+          <app-hybrid></app-hybrid>
           <v-col cols="3" class="other-view fill-height">
             <app-action-trail></app-action-trail>
             <v-row class="text-view fill-width mr-0">
@@ -54,17 +26,24 @@
 </template>
 
 <script>
+import {mapActions} from "vuex"
 import ActionTrail from './components/ActionTrail.vue'
+import Hybrid from "./components/Hybrid.vue"
 export default {
   name: 'App', 
   components:{
-    "app-action-trail": ActionTrail
+    "app-action-trail": ActionTrail,
+    "app-hybrid": Hybrid
   },
   data: () => ({
-    loader: null,
-    loading: false
   }),
   methods:{
+    ...mapActions([
+      "fetch_manifest"
+    ]),
+    resize(){
+
+    },
     add(){
       // this.$store.commit('edit');
       console.log("add data");
@@ -81,8 +60,11 @@ export default {
       this.loader = null
     },
   },
-  mounted(){
-    this.add();
+  async mounted(){
+    this.resize();
+    await this.$store.dispatch("fetch_manifest", "COCO17");
+    this.$store.dispatch("fetch_hypergraph", 1);
+    this.$store.dispatch("fetch_history", 1);
   }
 };
 </script>

@@ -4,6 +4,9 @@ from flask_session import Session
 from datetime import timedelta
 from .views.admin import admin
 from .views.history import history
+from .views.hybird import hybrid
+from .views.image import image
+from .views.text import text
 
 def create_app():
     app = Flask(__name__)
@@ -16,6 +19,9 @@ def create_app():
 
     app.register_blueprint(admin)
     app.register_blueprint(history)
+    app.register_blueprint(hybrid)
+    app.register_blueprint(image)
+    app.register_blueprint(text)
 
     # # this kind of manner is somewhere wrong
     # app.config.update(
