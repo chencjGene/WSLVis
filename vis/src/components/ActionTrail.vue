@@ -52,7 +52,7 @@
     async mounted() {
       window.action_trail = this;
       let container = d3.select(".action-trail-content");
-      console.log("container", container);
+      // console.log("container", container);
       let bbox = container.node().getBoundingClientRect();
       self.bbox_width = bbox.width;
       self.bbox_height = bbox.height;

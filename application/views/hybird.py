@@ -14,7 +14,7 @@ hybrid = Blueprint("hybrid", __name__)
 def app_get_manifest():
     # extract info from request
     dataname = json.loads(request.data)["dataset"]
-    # init_model(dataname)
+    init_model(dataname)
     return get_manifest()
     
 @hybrid.route("/hybrid/HyperGraph", methods=["GET", "POST"])
