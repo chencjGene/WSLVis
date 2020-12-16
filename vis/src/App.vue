@@ -77,29 +77,8 @@ export default {
   padding: 0px 0px 0px 0px;
 }
 
-.topname {
-  display: flex;
-  align-items: center;
-  font-size: 20px;
-  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-  font-weight: 600;
-  background: rgb(238, 238, 238);
-  border-radius: 5px;
-  padding-left: 10px;
-  color: rgb(120, 120, 120);
-  height: 22px;
-}
 
-#main-topname {
-  display: flex;
-  justify-content: space-between;
-}
 
-.main-content {
-    border: 1px solid #c1c1c1;
-    border-radius: 5px;
-    height: calc(100% - 22px);
-}
 
 .action-trail-view {
   height: 33%;
@@ -124,7 +103,7 @@ export default {
 .image-content {
     border: 1px solid #c1c1c1;
     border-radius: 5px;
-    height: calc(100% - 22px);
+    height: calc(100% - 24px);
 }
 
 .custom-loader {

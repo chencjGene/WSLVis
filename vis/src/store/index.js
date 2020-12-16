@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
+import * as d3 from "d3"
 
 //mount Vuex
 Vue.use(Vuex)
@@ -14,6 +15,7 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
+        focus_node: null,
         set_list: []
     },
     getters: {
@@ -29,12 +31,34 @@ const store = new Vuex.Store({
         },
         set_hypergraph_data(state, hypergraph_data){
             console.log("set hypergraph data");
-            state.tree = hypergraph_data.tree;
+            state.tree = d3.hierarchy(hypergraph_data.tree,
+                function(d){
+                    let children = d.children;
+                    // return children ? children : undefined;
+                    return children
+                });
+            state.tree.descendants().forEach(element => {
+                element.id = element.data.id;
+                element.name = element.data.name;
+                // all_children: all children
+                // children: children that are visible
+                // _children: children that are invisible
+                element.all_children = element.children;
+                element._children = [];
+                element._total_width = 2;
+            });
+            console.log("state.tree", state.tree)
+            this.commit("set_focus_node", state.tree);
+            console.log("state.focus_node", state.focus_node);
             state.set_list = hypergraph_data.set_list;
         },
         set_history_data(state, history_data) {
             console.log("set history data");
             state.history = history_data;
+        },
+        set_focus_node(state, node) {
+            console.log("set focus node");
+            state.focus_node = [node];
         }
     },
     actions:{

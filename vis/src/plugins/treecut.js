@@ -1,4 +1,91 @@
-var TreeCut = function (bbox_width, bbox_height) {
+import * as d3 from "d3"
+// import {deepCopy} from "../plugins/global"
+
+function assert(flag, string){
+    if (!flag){
+      throw Error(string);
+    }
+}
+
+function expand_tree(tree, original_tree){
+    let node_num = tree.descendants().length;
+    for (let i = 0; i < node_num; i++){
+        original_tree.descendants()[i].shadow = tree.descendants()[i];
+    }
+    let max_depth = Math.max.apply(null, tree.descendants().map(d => d.depth));
+    console.log("max_depth", max_depth);
+    tree.descendants().forEach(d =>{
+        if (!d.children) d.children = [];
+        if (d.children && d.children.length === 0){
+            // d.children = undefined;
+            let current_node = d;
+            for (let i = d.depth; i < max_depth; i++){
+                current_node.children = [];
+                let new_node = current_node.copy();
+                new_node.packing = true;
+                new_node.depth = current_node.depth + 1;
+                new_node.parent = current_node;
+                new_node.id = current_node.id;
+                new_node.name = current_node.name;
+                current_node.children.push(new_node);
+                // console.log("current_node", current_node, new_node);
+                current_node = new_node;
+            }
+            current_node.children = undefined;
+        }
+    });
+}
+
+function shrink_tree(tree, original_tree){
+    console.log("shrink tree");
+    original_tree.descendants().forEach(_d => {
+        let d = _d.shadow;
+        if (!d.packing && d.children && d.children.length == 1 && d.children[0].packing){
+            console.log("shrink tree", _d.id, _d.name, d.x, d.y, d.depth);
+            let last_node = d.children[0];
+            while(last_node.children && last_node.children.length === 1){
+                last_node = last_node.children[0];
+            }  
+            console.log("last_node", last_node.x, last_node.y, last_node.depth);
+            assert((!last_node.children || last_node.children.length === 0), "last node error");
+            _d.turn_x = d.x;
+            _d.turn_y = d.y;
+            _d.x = last_node.x;
+            _d.y = last_node.y;
+        }
+        else{
+            _d.turn_x = d.x;
+            _d.turn_y = d.y;
+            _d.x = d.x;
+            _d.y = d.y
+        }
+    });
+}
+
+const tree_layout = function (nodeSize, separation){
+    // d3.tree cannot accept a tree with leaves whose children is []
+        // wrapping d3.tree into a function that can accept such trees
+    let _this = this;
+    _this._layout = d3.tree()
+    .nodeSize(nodeSize)
+    .separation(separation);
+
+    this.layout = function(data){
+        let fake_tree = data.copy();
+        // TODO: stress each leaf node to max depth
+        expand_tree(fake_tree, data);
+        console.log("expand_tree", fake_tree);
+        
+        fake_tree = _this._layout(fake_tree);
+        
+        // TODO: recover original tree
+        shrink_tree(fake_tree, data);
+
+        return data;
+    }
+}
+
+const TreeCut = function (bbox_width, bbox_height) {
     let _this = this;
     let _tree = null;
     let _tree_layout = null;
@@ -7,7 +94,6 @@ var TreeCut = function (bbox_width, bbox_height) {
     let pinArray = [];
     let clickQueue = [];
     let tmp_children = {};
-    let focus_node = null;
     clickQueue.insertAt = function (index, obj) {
         this.splice(index, 0, obj);
     };
@@ -26,8 +112,7 @@ var TreeCut = function (bbox_width, bbox_height) {
     };
 
     this.candraw = function(root){
-        let nodes = _tree_layout.nodes(root);
-        let max_depth = Math.max(...nodes.map(d=>d.depth));
+        let nodes = _tree_layout(root).descendants();
         _this.recover_children(root);
         let x1 = Number.MAX_VALUE, x2 = Number.MIN_VALUE, y1 = Number.MAX_VALUE, y2 = Number.MIN_VALUE;
         for (let i = 0; i < nodes.length; i++) {
@@ -74,9 +159,9 @@ var TreeCut = function (bbox_width, bbox_height) {
     };
 
     this._initial = function (d) {
-        if (!d._children) {
-            d._children = [];
-        }
+        // if (!d._children) {
+        //     d._children = [];
+        // }
         if (!d.children) {
             d.children = [];
         }
@@ -98,9 +183,9 @@ var TreeCut = function (bbox_width, bbox_height) {
         if (!d.afterList) {
             d.afterList = [];
         }
-        let ratio = d.value_new.reduce((acc,x) => acc + x) / d.value.reduce((acc,x) => acc + x);
+        // let ratio = d.value_new.reduce((acc,x) => acc + x) / d.value.reduce((acc,x) => acc + x);
         //d.api = d._total_width * (1 + 10 * ratio) - 5 * Uncertainty(d);
-        d.api = Math.sqrt(d._total_width) * (1 + 10 * ratio) / Math.sqrt(Uncertainty(d));
+        d.api = 1 //Math.sqrt(d._total_width) * (1 + 10 * ratio) ;
         assert(!isNaN(d.api), "api NaN error");
         d.doi = d.api;
         d.all_children.forEach(_this._initial);
@@ -146,7 +231,7 @@ var TreeCut = function (bbox_width, bbox_height) {
     this.check_order = function(arr){
         if (arr.length < 2) return;
         for(let i = 0; i < arr.length-1; i++){
-            assert(arr[i].order_in_siblings <= arr[i+1].order_in_siblings, "check order error");
+            // assert(arr[i].order_in_siblings <= arr[i+1].order_in_siblings, "check order error");
         }
     };
 
@@ -212,7 +297,7 @@ var TreeCut = function (bbox_width, bbox_height) {
                 break;
             }
         }
-        if (_this.candraw(_tree.root)) {
+        if (_this.candraw(_tree)) {
             return true;
         } else {
             for (let i = 0; i < drawArr.length; i++) {
@@ -228,7 +313,7 @@ var TreeCut = function (bbox_width, bbox_height) {
             if (source.children.indexOf(source.all_children[y]) < 0) {
                 let node = source.all_children[y];
                 _this.from_rest_to_children(node);
-                if (!_this.candraw(_tree.root)) {
+                if (!_this.candraw(_tree)) {
                     _this.from_children_to_rest(node);
                     break;
                 }
@@ -264,7 +349,7 @@ var TreeCut = function (bbox_width, bbox_height) {
         }
         // if all nodes in click queue cannot be drawn
         if (nodes_in_click_queue_drawn.length === 0){
-            _this.draw_my_children(_tree.root);
+            _this.draw_my_children(_tree);
         }
         // try to draw the children of nodes that have been drawn
         else{
@@ -301,26 +386,27 @@ var TreeCut = function (bbox_width, bbox_height) {
     
     
     this.treeCut = function (sources, tree, tree_layout) {
+        console.log("bbox width and height", bbox_width, bbox_height);
         _this._update_tree(tree);
         _this._update_tree_layout(tree_layout);
         if(!sources){
-            sources = [_tree.root];
+            sources = [_tree];
         }
         let source = sources[0];
-        reorderRecursive(_tree.root);
-        _this.initial(_tree.root);
-        let nodes = _tree_layout.nodes(_tree.root); // update depth
+        _this.initial(_tree);
+        let nodes = _tree_layout(_tree).descendants(); // update depth
         nodes.forEach(d=>d.debug_visited=false);
-        traverse_for_doi(_tree.root, source);
-        clickQueue = get_selection_array(_tree.root, sources);
+        traverse_for_doi(_tree, source);
+        clickQueue = get_selection_array(_tree, sources);
+        console.log("clickqueue", clickQueue);
         pinArray = nodes.filter(d=>d.pinned);
         console.log("pinArray: ", pinArray);
-        collapse(_tree.root);
+        collapse(_tree);
         _this.drawPin();
         _this.draw_nodes_according_to_click_queue();
           
-        // update__children(_tree.root);
-        let offset = _this.candraw(_tree.root);
+        // update__children(_tree);
+        let offset = _this.candraw(_tree);
         assert(offset, "offset error");
         return offset;
     };
@@ -400,8 +486,8 @@ var TreeCut = function (bbox_width, bbox_height) {
         for (let i = 0; i < all_node.length; i++){
             if (!all_node[i].in_selection_array){
                 selection_array.push({
-                    node: all_node[i],
-                    drawChildren: true
+                    "node": all_node[i],
+                    "drawChildren": true
                 })
             }
         }
@@ -428,31 +514,33 @@ var TreeCut = function (bbox_width, bbox_height) {
         }
     }
 
-    function update__children(node) {
-        // update node._children according to node.children
-        node._children = [];
-        for (let i = 0; i < node.all_children.length; i++ ){
-            if (node.children.indexOf(node.all_children[i]) < 0){
-                node._children.push(node.all_children[i]);
-            }
-        }
-        node.all_children.forEach(update__children);
-    }
+    // function update__children(node) {
+    //     // update node._children according to node.children
+    //     node._children = [];
+    //     for (let i = 0; i < node.all_children.length; i++ ){
+    //         if (node.children.indexOf(node.all_children[i]) < 0){
+    //             node._children.push(node.all_children[i]);
+    //         }
+    //     }
+    //     node.all_children.forEach(update__children);
+    // }
 
-    // 判断两个节点是否是祖先和后代的关系（无先后）
-    function inPath(source, item) {
-        let node = item;
-        while (node != null) {
-            if (node === source)
-                return true;
-            node = node.parent;
-        }
-        node = source;
-        while (node != null) {
-            if (node === item)
-                return true;
-            node = node.parent;
-        }
-        return false;
-    }
+    // // 判断两个节点是否是祖先和后代的关系（无先后）
+    // function inPath(source, item) {
+    //     let node = item;
+    //     while (node != null) {
+    //         if (node === source)
+    //             return true;
+    //         node = node.parent;
+    //     }
+    //     node = source;
+    //     while (node != null) {
+    //         if (node === item)
+    //             return true;
+    //         node = node.parent;
+    //     }
+    //     return false;
+    // }
 };
+
+export {TreeCut, tree_layout}

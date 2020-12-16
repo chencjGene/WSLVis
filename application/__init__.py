@@ -4,7 +4,7 @@ from flask_session import Session
 from datetime import timedelta
 from .views.admin import admin
 from .views.history import history
-from .views.hybird import hybrid
+from .views.hybrid import hybrid
 from .views.image import image
 from .views.text import text
 
