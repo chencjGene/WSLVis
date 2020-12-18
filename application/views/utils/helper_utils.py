@@ -1,6 +1,7 @@
 import pickle
 import numpy as np
 import os
+import cv2
 import threading
 import sys
 import json
@@ -80,62 +81,49 @@ def accuracy(y_true, y_pred, weights=None):
     return np.average(score, weights=weights)
 
 
-def TPR95(x, y):
-    return 0
-    # x = x / x.max()
-    # gap = (x.max() - x.min()) / 10000000
-    # total = 0.0
-    # flag = 1
-    # for delta in np.arange(x.min(), x.max(), gap):
-    #     # tpr = np.sum(np.sum(x > delta)) / len(x
-    #     y_pred = (x > delta).astype(int)
-    #     tn, fp, fn, tp = confusion_matrix(y,y_pred).ravel()
-    #     tpr = tp / (tp+fn)
-    #     if tpr < 0.9505:
-    #         return fp / (fp + tn)
-
-
-def DetectionError(x, y):
-    return 0
-    # x = x / x.max()
-    # gap = (x.max() - x.min()) / 10000000
-    # total = 0.0
-    # for delta in np.arange(x.min(), x.max(), gap):
-    #     # tpr = np.sum(np.sum(x > delta)) / len(x
-    #     y_pred = (x > delta).astype(int)
-    #     tn, fp, fn, tp = confusion_matrix(y,y_pred).ravel()
-    #     tpr = tp / (tp+fn)
-    #     if tpr < 0.9505:
-    #         return (sum(y_pred!=y) / len(y))
-
-
-def AUROC(x, y):
-    x = x / x.max()
-    return roc_auc_score(y, x)
-
-
-def AUPR(x, y):
-    x = x / x.max()
-    precision, recall, thresholds = precision_recall_curve(y, x)
-    area = auc(recall, precision)
+# detection helpers
+def area(box):
+    xmin, ymin, xmax, ymax = box
+    x_len = np.maximum(xmax - xmin, 0.0)
+    y_len = np.maximum(ymax - ymin, 0.0)
+    area = x_len * y_len
     return area
 
+def intersect(box1, box2):
+    xmin1, ymin1, xmax1, ymax1 = box1
+    xmin2, ymin2, xmax2, ymax2 = box2
+    ymin = np.maximum(ymin1, ymin2)
+    xmin = np.maximum(xmin1, xmin2)
+    ymax = np.minimum(ymax1, ymax2)
+    xmax = np.minimum(xmax1, xmax2)
+    box = np.stack([ymin, xmin, ymax, xmax], axis=-1)
+    return box
 
-def TOP_K(x, y, k=200):
-    x = x / x.max()
-    idx = x.argsort()[::-1][:k]
-    return sum(y[idx] == 1) / k
+def cal_iou(box1, box2):
+    inter = area(intersect(box1, box2))
+    union = area(box1) + area(box2) - inter
+    iou_v = inter / union
+    return iou_v
 
-
-def OoD_metrics(x, y):
-    tpr95 = TPR95(x, y)
-    detection_error = DetectionError(x, y)
-    auroc = AUROC(x, y)
-    aupr = AUPR(x, y)
-    top_10 = TOP_K(x, y, k=10)
-    top_50 = TOP_K(x, y, k=50)
-    top_100 = TOP_K(x, y, k=100)
-    top_200 = TOP_K(x, y, k=200)
-    print("FPR at 95%TPR\tDetection Error\tAUROC\tAUPR\ttop_10_prec\ttop_50_prec\ttop_100_prec\ttop_200_prec")
-    print("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}"
-          .format(tpr95, detection_error, auroc, aupr, top_10, top_50, top_100, top_200))
+def draw_box_cv(input_path, output_path, boxes):
+    # boxes in shape [num_box, 6]
+    boxes = np.array(boxes)
+    if len(boxes.shape) < 2:
+        boxes = boxes.reshape(1, -1)
+    boxes_value = boxes[:, :4].astype(float)
+    confs = boxes[:, 4]
+    cat_names = boxes[:, 5]
+    img = cv2.imread(input_path)
+    boxes_value = boxes_value.astype(np.int64)
+    img = np.array(img, np.float32)
+    img = np.array(img*255/np.max(img), np.uint8)
+    for i, box in enumerate(boxes_value):
+        xmin, ymin, xmax, ymax = box
+        conf = confs[i]
+        category_name = cat_names[i]
+        cv2.rectangle(img,(xmin, ymin),(xmax, ymax), (0, 0, 255), 2)
+        cv2.putText(img,
+                    category_name+": "+str(conf),
+                    (xmin, max(ymin-5, 0)),
+                    cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), thickness=1)
+    cv2.imwrite(output_path, img)

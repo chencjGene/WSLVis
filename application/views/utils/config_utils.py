@@ -12,6 +12,7 @@ class Config(object):
 
         # first-level directory
         self.data_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../data/"))
+        self.test_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../test/"))
         self.image_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../images/"))
         self.lib_root = os.path.normpath(os.path.join(SERVER_ROOT, "../../application/views/lib/"))
         self.log_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../logs/"))

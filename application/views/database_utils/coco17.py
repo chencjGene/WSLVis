@@ -14,27 +14,40 @@ from ..utils.config_utils import config
 from ..utils.log_utils import logger
 from ..utils.helper_utils import pickle_load_data, pickle_save_data
 from ..utils.helper_utils import json_load_data, json_save_data
+from ..utils.helper_utils import area
 
-COCO_CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
-                'train', 'truck', 'boat', 'traffic light', 'fire', 'hydrant',
-                'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog',
-                'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',
-                'giraffe', 'backpack', 'umbrella', 'handbag', 'tie',
-                'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
-                'kite', 'baseball bat', 'baseball glove', 'skateboard',
-                'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup',
-                'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
-                'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
-                'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
-                'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote',
-                'keyboard', 'cell phone', 'microwave oven', 'toaster', 'sink',
-                'refrigerator', 'book', 'clock', 'vase', 'scissors',
-                'teddy bear', 'hair drier', 'toothbrush')
+# COCO_CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+#                 'train', 'truck', 'boat', 'traffic light', 'fire hydrant',
+#                 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog',
+#                 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',
+#                 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie',
+#                 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+#                 'kite', 'baseball bat', 'baseball glove', 'skateboard',
+#                 'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup',
+#                 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
+#                 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
+#                 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
+#                 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote',
+#                 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
+#                 'refrigerator', 'book', 'clock', 'vase', 'scissors',
+#                 'teddy bear', 'hair drier', 'toothbrush')
+
+def get_label_map(label_file):
+    label_map = {}
+    labels = open(label_file, 'r')
+    class_names = []
+    for idx, line in enumerate(labels):
+        ids = line.split(',')
+        label_map[int(ids[0])] = int(idx)
+        class_names.append(ids[2])
+    return label_map, class_names
 
 class DataCOCO17(DataBase):
     def __init__(self):
         dataname = config.coco17
         super(DataCOCO17, self).__init__(dataname)
+        self.label_map, self.class_name = get_label_map(os.path.join(self.data_dir, "label_map.txt"))
+        
 
     def preprocessing_data(self):
         logger.info("begin preprocessing_data")
@@ -98,7 +111,6 @@ class DataCOCO17(DataBase):
         train_captions = self.all_data["train_captions"]
         val_captions = self.all_data["val_captions"]
 
-        self.class_name = COCO_CLASSES
         train_ids = train_detection["img_id"]
         val_ids = val_detection["img_id"]
         train_detection = train_detection["all_boxes"]
@@ -121,9 +133,13 @@ class DataCOCO17(DataBase):
         for anno in tqdm(train_annos + val_annos):
             img_id = anno["image_id"]
             idx = img_id_2_idx[img_id]
-            category_id = anno["category_id"]
+            category_id = self.label_map[anno["category_id"]]
             bbox = anno["bbox"]
-            self.annos[idx]["bbox"].append(bbox + [1, category_id])
+            bbox[2] += bbox[0]
+            bbox[3] += bbox[1]
+            a = area(bbox)
+            if a > 2000:
+                self.annos[idx]["bbox"].append(bbox + [1, category_id])
 
         # processing caption
         logger.info("processing caption")
@@ -136,20 +152,20 @@ class DataCOCO17(DataBase):
             except Exception as e:
                 logger.info(e)
 
-        # processing detection
-        logger.info('processing detection')
-        for category in tqdm(range(1, len(self.class_name) + 1)):
-            for idx in range(train_num):
-                bboxes = train_detection[category][idx]
-                for bbox in bboxes:
-                    bbox = bbox.tolist() + [category]
-                    self.detection[idx]["bbox"].append(bbox)
+        # # processing detection
+        # logger.info('processing detection')
+        # for category in tqdm(range(1, len(self.class_name) + 1)):
+        #     for idx in range(train_num):
+        #         bboxes = train_detection[category][idx]
+        #         for bbox in bboxes:
+        #             bbox = bbox.tolist() + [category]
+        #             self.detection[idx]["bbox"].append(bbox)
 
-        for category in tqdm(range(1, len(self.class_name) + 1)):
-            for idx in range(val_num):
-                bboxes = train_detection[category][idx]
-                for bbox in bboxes:
-                    bbox = bbox.tolist() + [category]
-                    self.detection[idx + train_num]["bbox"].append(bbox)
+        # for category in tqdm(range(1, len(self.class_name) + 1)):
+        #     for idx in range(val_num):
+        #         bboxes = train_detection[category][idx]
+        #         for bbox in bboxes:
+        #             bbox = bbox.tolist() + [category]
+        #             self.detection[idx + train_num]["bbox"].append(bbox)
 
-        import IPython; IPython.embed(); exit()  
+        # import IPython; IPython.embed(); exit()  

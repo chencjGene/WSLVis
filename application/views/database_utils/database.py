@@ -68,7 +68,7 @@ class DataBase(object):
         mat[config.class_name] = self.class_name
         mat[config.X_name] = self.X
         mat[config.annos_name] = self.annos
-        mat[config.ids_name] = self.detection
+        mat[config.ids_name] = self.ids
         mat[config.detection_name] = self.detection
         mat[config.train_idx_name] = self.train_idx
         mat[config.valid_idx_name] = self.valid_idx
