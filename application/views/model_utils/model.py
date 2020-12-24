@@ -25,5 +25,6 @@ class MMModel(object):
     def get_tree(self):
         return self.data.tree
 
-
+    def get_type(self):
+        return self.data.get_type()
     

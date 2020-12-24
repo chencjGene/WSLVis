@@ -5,6 +5,7 @@ from abc import abstractmethod
 
 from ..utils.config_utils import config
 from ..utils.helper_utils import pickle_load_data, pickle_save_data, check_dir
+from ..utils.helper_utils import json_load_data, json_save_data
 from ..utils.log_utils import logger 
 
 class DataBase(object):
@@ -23,7 +24,7 @@ class DataBase(object):
         self.ids = []
 
         self.train_idx = []
-        self.valid_idx = []
+        self.val_idx = []
         self.test_idx = []
         self.redundant_idx = []
         # additional information can be store here
@@ -71,9 +72,28 @@ class DataBase(object):
         mat[config.ids_name] = self.ids
         mat[config.detection_name] = self.detection
         mat[config.train_idx_name] = self.train_idx
-        mat[config.valid_idx_name] = self.valid_idx
+        mat[config.valid_idx_name] = self.val_idx
         mat[config.test_idx_name] = self.test_idx
         mat[config.redundant_idx_name] = self.redundant_idx
+        mat["image_by_type"] = self.image_by_type
+        mat["categories"] = self.categories
         mat[config.add_info_name] = self.add_info
         pickle_save_data(filename, mat)
         logger.info("saved processed data.")
+
+    def load_processed_data(self):
+        logger.info("begin loading data from processed data!")
+        processed_data_filename = os.path.join(self.data_dir, \
+            config.processed_dataname)
+        processed_data = pickle_load_data(processed_data_filename)
+        self.class_name = processed_data[config.class_name]
+        self.X = processed_data[config.X_name]
+        self.annos = processed_data[config.annos_name]
+        self.detections = processed_data[config.detection_name]
+        self.ids = processed_data[config.ids_name]
+        self.train_idx = processed_data[config.train_idx_name]
+        self.val_idx = processed_data[config.valid_idx_name]
+        self.test_idx = processed_data[config.test_idx_name]
+        self.redundant_idx = processed_data[config.redundant_idx_name]
+        self.add_info = processed_data[config.add_info_name]
+

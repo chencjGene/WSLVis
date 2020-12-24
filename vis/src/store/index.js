@@ -31,6 +31,8 @@ const store = new Vuex.Store({
         },
         set_hypergraph_data(state, hypergraph_data){
             console.log("set hypergraph data");
+
+            // process tree 
             state.tree = d3.hierarchy(hypergraph_data.tree,
                 function(d){
                     let children = d.children;
@@ -47,6 +49,10 @@ const store = new Vuex.Store({
                 element._children = [];
                 element._total_width = 2;
             });
+
+            // process set
+            state.set_list = hypergraph_data.set_list
+
             console.log("state.tree", state.tree)
             this.commit("set_focus_node", state.tree);
             console.log("state.focus_node", state.focus_node);

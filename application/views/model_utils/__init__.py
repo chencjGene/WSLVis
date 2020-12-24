@@ -12,10 +12,12 @@ def init_model(dataname):
     model.init(dataname)
 
 def get_current_hypergraph():
-    tree = model.get_tree()
-    set_list = []
+    # tree = model.get_tree()
+    # set_list = model.get_type()
+    tree, set_list = model.data.get_hypergraph()
     mat = {
         "tree": tree,
         "set_list": set_list
     }
+    # import IPython; IPython.embed(); exit()
     return jsonify(mat)

@@ -50,8 +50,14 @@ function shrink_tree(tree, original_tree){
             assert((!last_node.children || last_node.children.length === 0), "last node error");
             _d.turn_x = d.x;
             _d.turn_y = d.y;
-            _d.x = last_node.x;
-            _d.y = last_node.y;
+
+            // trees with turning points
+            // _d.x = last_node.x;
+            // _d.y = last_node.y;
+            
+            // trees without turning points
+            _d.x = d.x;
+            _d.y = d.y;
         }
         else{
             _d.turn_x = d.x;

@@ -34,6 +34,7 @@ import {mapActions, mapState, mapMutations} from "vuex"
 import * as d3 from "d3"
 import * as Global from '../plugins/global'
 import {TreeCut, tree_layout} from "../plugins/treecut"
+import {SetManager} from "../plugins/set_manager"
 export default {
     name: "Hybrid",
     data: () =>({
@@ -70,14 +71,20 @@ export default {
             const root = this.tree_layout.layout(this.tree);
             this.nodes = root.descendants();
             this.links = root.links();
+            this.leaf_nodes = this.nodes.filter(d => d.children.length == 0);
+            console.log("leaf_nodes", this.leaf_nodes);
+            this.set_manager.update_leaf_nodes(this.leaf_nodes);
+            this.sets = this.set_manager.get_sets();
         },
         update_view() {
             console.log("hybrid update view");
 
             this.e_nodes = this.tree_node_group.selectAll(".tree-node")
-            .data(this.nodes);
+            .data(this.nodes); //TODO: id map
             this.e_links = this.tree_link_group.selectAll(".tree-link")
-            .data(this.links);
+            .data(this.links); //TODO: id map
+            this.e_sets = this.set_group.selectAll(".set")
+            .data(this.sets); //TODO: id map
 
             // TODO: set remove ani when exit is none
 
@@ -126,11 +133,32 @@ export default {
             .attr("d", Global.tree_line)
             .style("opacity", 0)
             .style("stroke", Global.GrayColor)
-            .style("stroke-width", 1.5)
+            .style("stroke-width", 0.5)
             .transition()
             .duration(this.create_ani)
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
+
+            // set
+            let set_groups = this.e_sets.enter()
+            .append("g")
+            .attr("class", "set")
+            .attr("transform", (_, i) => "translate(" + this.set_left + 
+                ", " + (i * this.set_height + this.set_margin / 2) + ")");
+
+            set_groups.append("rect")
+            .attr("class", "background")
+            .style("fill", "white")
+            .style("stroke", "#f0f0f0")
+            .style("stroke-width", 1)
+            .style("opacity", 0)
+            .attr("width", this.set_width - this.set_margin)
+            .attr("height", this.set_height - this.set_margin / 2)
+            .transition()
+            .duration(this.create_ani)
+            .delay(this.update_ani + this.remove_ani)
+            .style("opacity", 1);
+
         },
         update(){
             this.tree_node_group
@@ -171,7 +199,11 @@ export default {
         this.layout_width = this.bbox_width;
         this.layout_height = this.bbox_height;
         this.node_width = 50; // TODO
-        this.layer_height = 20; // TODO
+        this.layer_height = 30; // TODO
+        this.set_height = 120;
+        this.set_left = this.layer_height * 3 + 150;
+        this.set_width = this.layout_width - this.set_left;
+        this.set_margin = 6;
         this.create_ani = Global.Animation;
         this.update_ani = Global.Animation;
         this.remove_ani = 0;
@@ -186,14 +218,19 @@ export default {
         this.tree_link_group = this.svg.append("g")
             .attr("id", "tree-link-group")
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");
+        this.set_group = this.svg.append("g")
+            .attr("id", "set-group")
+            .attr("transform", "translate(" + 2 + ", " + (2) + ")");
         // this.tree_layout = d3.tree()
         //     .nodeSize([self.node_width, self.layer_height]);
-        this.tree_layout =new  tree_layout([this.node_width, this.layer_height], 
+        this.tree_layout = new tree_layout([this.node_width, this.layer_height], 
             function(a, b){
                 return a.parent == b.parent ? 1 : 1;
             });
 
         this.treecut_class = new TreeCut(this.layout_height, this.layer_height * 3);
+
+        this.set_manager = new SetManager();
     }
 }
 </script>

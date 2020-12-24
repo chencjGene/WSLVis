@@ -15,6 +15,7 @@ from ..utils.log_utils import logger
 from ..utils.helper_utils import pickle_load_data, pickle_save_data
 from ..utils.helper_utils import json_load_data, json_save_data
 from ..utils.helper_utils import area
+from .utils import encoding_categories, decoding_categories 
 
 # COCO_CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
 #                 'train', 'truck', 'boat', 'traffic light', 'fire hydrant',
@@ -133,14 +134,44 @@ class DataCOCO17(DataBase):
         for anno in tqdm(train_annos + val_annos):
             img_id = anno["image_id"]
             idx = img_id_2_idx[img_id]
+            if not anno["category_id"] in self.label_map:
+                continue
             category_id = self.label_map[anno["category_id"]]
             bbox = anno["bbox"]
             bbox[2] += bbox[0]
             bbox[3] += bbox[1]
             a = area(bbox)
-            if a > 2000:
-                self.annos[idx]["bbox"].append(bbox + [1, category_id])
+            # if a > 2000: # exclude bounding boxes whose areas are less than 2000 
+            self.annos[idx]["bbox"].append(bbox + [1, category_id])
+        
 
+        for _idx in tqdm(range(train_num + val_num)):
+            anno = self.annos[_idx]
+            areas = np.array([area(b[:4]) for b in anno["bbox"]])
+            all_cat = np.array([b[-1] for b in anno["bbox"]])
+            unique_cat = np.unique(all_cat)
+            removed_idx = []
+            for cat in unique_cat:
+                idx_in_cat = np.array(range(len(all_cat)))[all_cat==cat]
+                areas_in_cat = areas[idx_in_cat]
+                sorted_idx = areas_in_cat.argsort()
+                for i, cat_idx in enumerate(sorted_idx):
+                    idx = idx_in_cat[cat_idx]
+                    if i == (len(sorted_idx) - 1):
+                        break
+                    if areas[idx] < 2000:
+                        removed_idx.append(idx)
+            new_annos = []
+            for i in range(len(all_cat)):
+                if i not in removed_idx:
+                    new_annos.append(anno["bbox"][i])
+            self.annos[_idx]["bbox"] = new_annos
+
+            new_all_cat = np.array([b[-1] for b in self.annos[_idx]["bbox"]])
+            new_unique_cat = np.unique(new_all_cat)
+            assert(len(unique_cat) == len(new_unique_cat))
+            # if idx == 51:
+            #     import IPython; IPython.embed(); exit()
         # processing caption
         logger.info("processing caption")
         for caption in tqdm(train_captions+val_captions):
@@ -163,9 +194,105 @@ class DataCOCO17(DataBase):
 
         # for category in tqdm(range(1, len(self.class_name) + 1)):
         #     for idx in range(val_num):
-        #         bboxes = train_detection[category][idx]
+        #         bboxes = val_detection[category][idx]
         #         for bbox in bboxes:
         #             bbox = bbox.tolist() + [category]
         #             self.detection[idx + train_num]["bbox"].append(bbox)
 
+        
+        # TODO: for debug
+        self.detections = self.annos
+        
+        self.image_by_type = {}
+        self.categories = [[] for i in range(len(self.train_idx) + len(self.val_idx))]
+        for idx in self.train_idx:
+            det = self.detections[idx]
+            category = [d[-1] for d in det["bbox"]]
+            self.categories[idx] = category
+            cat_str = encoding_categories(category)
+            if cat_str not in self.image_by_type:
+                self.image_by_type[cat_str] = []
+            self.image_by_type[cat_str].append(idx)
+        
+
+
         # import IPython; IPython.embed(); exit()  
+
+    def export_training_data(self):
+        # all files: {info, licenses, images, annotations, categories}
+        # BBOX = {segmentation: [[1,2.1,3.1]], area, iscrowd, image_id, bbox, category_id, id}
+        # image: {license, file_name, coco_url, height, width, date_captured, flickr_url, id}
+        self.load_processed_data()
+
+        self.id_to_category = {}
+        for i in self.label_map:
+            self.id_to_category[self.label_map[i]] = i
+
+        self.ann_ids = 0
+
+        def _export_images_annos(idxs):
+            images = []
+            annos = []
+            for idx in idxs:
+                img_id = self.ids[idx]
+                bboxes = self.annos[idx]["bbox"]
+                if len(bboxes) == 0:
+                    continue
+                image = {
+                    "license": 1,
+                    "file_name": "%012d.jpg" % img_id,
+                    "coco_url": "",
+                    "height": 1,
+                    "width": 1,
+                    "date_captured": "2013-11-14 17:02:52",
+                    "flickr_url": "http:",
+                    "id": img_id 
+                }
+                images.append(image)
+                for box in bboxes:
+                    annos.append({
+                        "segmentations": [[]],
+                        "area": 1,
+                        "iscrowd": 0,
+                        "bbox":[
+                            box[0],
+                            box[1],
+                            box[2] - box[0],
+                            box[3] - box[1]
+                        ],
+                        "image_id": img_id,
+                        "category_id": self.id_to_category[box[5]],
+                        "id": self.ann_ids
+                    })
+                    self.ann_ids += 1
+            return images, annos
+
+        # process training
+        training_instances = json_load_data(os.path.join(config.raw_data_root,
+            "coco17_raw_data", "annotations", "instances_train2017.json"))
+        images, annos = _export_images_annos(self.train_idx)
+        print("train images:", len(images))
+        print("train annos:", len(annos))
+        training_instances["images"] = images 
+        training_instances["annotations"] = annos
+        
+        # process val
+        val_instances = json_load_data(os.path.join(config.raw_data_root,
+            "coco17_raw_data", "annotations", "instances_val2017.json"))
+        images, annos = _export_images_annos(self.val_idx)
+        print("val images:", len(images))
+        print("val annos:", len(annos))
+        val_instances["images"] = images
+        val_instances["annotations"] = annos
+        
+        json_save_data(os.path.join(config.raw_data_root, "coco17_raw_data",
+            "shrink_instances_train2017.json"), training_instances)
+        json_save_data(os.path.join(config.raw_data_root, "coco17_raw_data",
+            "shrink_instances_val2017.json"), val_instances)
+
+    def postprocess_data(self):
+        '''
+        statistic, clustering, etc.
+        '''
+        self.load_processed_data()
+
