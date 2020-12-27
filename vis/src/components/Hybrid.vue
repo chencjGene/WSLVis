@@ -74,7 +74,10 @@ export default {
             this.leaf_nodes = this.nodes.filter(d => d.children.length == 0);
             console.log("leaf_nodes", this.leaf_nodes);
             this.set_manager.update_leaf_nodes(this.leaf_nodes);
-            this.sets = this.set_manager.get_sets();
+            this.set_manager.update_tree_root(2, this.layout_height / 2 - this.offset);
+            let result = this.set_manager.get_sets();
+            this.sets = result.sets;
+            this.set_links = result.set_links;
         },
         update_view() {
             console.log("hybrid update view");
@@ -85,6 +88,8 @@ export default {
             .data(this.links); //TODO: id map
             this.e_sets = this.set_group.selectAll(".set")
             .data(this.sets); //TODO: id map
+            this.e_set_links = this.set_link_group.selectAll(".set-link")
+            .data(this.set_links); // TODO: id map
 
             // TODO: set remove ani when exit is none
 
@@ -139,12 +144,16 @@ export default {
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
 
+            this.set_create();
+
+        },
+        set_create(){
             // set
             let set_groups = this.e_sets.enter()
             .append("g")
             .attr("class", "set")
-            .attr("transform", (_, i) => "translate(" + this.set_left + 
-                ", " + (i * this.set_height + this.set_margin / 2) + ")");
+            .attr("transform", d => "translate(" + d.x + 
+                ", " + d.y + ")");
 
             set_groups.append("rect")
             .attr("class", "background")
@@ -152,13 +161,26 @@ export default {
             .style("stroke", "#f0f0f0")
             .style("stroke-width", 1)
             .style("opacity", 0)
-            .attr("width", this.set_width - this.set_margin)
-            .attr("height", this.set_height - this.set_margin / 2)
+            .attr("width", d => d.width)
+            .attr("height", d => d.height)
             .transition()
             .duration(this.create_ani)
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
 
+            // set links
+            this.e_set_links.enter()
+            .append("path")
+            .attr("class", "set-link")
+            .attr("d", Global.set_line)
+            .style("opacity", 0)
+            .style("stroke", Global.GrayColor)
+            .style("stroke-width", 0.5)
+            .style("stroke-dasharray", "5, 5")
+            .transition()
+            .duration(this.create_ani)
+            .delay(this.update_ani + this.remove_ani)
+            .style("opacity", 1);
         },
         update(){
             this.tree_node_group
@@ -200,8 +222,8 @@ export default {
         this.layout_height = this.bbox_height;
         this.node_width = 50; // TODO
         this.layer_height = 30; // TODO
-        this.set_height = 120;
-        this.set_left = this.layer_height * 3 + 150;
+        this.set_height = 112;
+        this.set_left = this.layer_height * 3 + 200;
         this.set_width = this.layout_width - this.set_left;
         this.set_margin = 6;
         this.create_ani = Global.Animation;
@@ -220,7 +242,10 @@ export default {
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");
         this.set_group = this.svg.append("g")
             .attr("id", "set-group")
-            .attr("transform", "translate(" + 2 + ", " + (2) + ")");
+            .attr("transform", "translate(" + 0 + ", " + (0) + ")");
+        this.set_link_group = this.svg.append("g")
+            .attr("id", "set-link-group")
+            .attr("transform", "translate(" + 0 + ", " + (0) + ")");
         // this.tree_layout = d3.tree()
         //     .nodeSize([self.node_width, self.layer_height]);
         this.tree_layout = new tree_layout([this.node_width, this.layer_height], 
@@ -231,6 +256,14 @@ export default {
         this.treecut_class = new TreeCut(this.layout_height, this.layer_height * 3);
 
         this.set_manager = new SetManager();
+        this.set_manager.update_layout({
+            "layout_width": this.layout_width,
+            "layout_height": this.layout_height,
+            "set_left": this.set_left,
+            "set_width": this.set_width,
+            "set_margin": this.set_margin,
+            "set_height": this.set_height
+        })
     }
 }
 </script>
@@ -240,7 +273,12 @@ export default {
     fill: none;
 }
 
+.set-link{
+    fill: none;
+}
+
 .main-content {
+  background: rgb(242, 246, 255);
     border: 1px solid #c1c1c1;
     border-radius: 5px;
     height: calc(100% - 24px);

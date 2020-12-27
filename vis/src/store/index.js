@@ -6,6 +6,7 @@ import * as d3 from "d3"
 //mount Vuex
 Vue.use(Vuex)
 
+
 //create VueX
 const store = new Vuex.Store({
     state:{
@@ -39,7 +40,10 @@ const store = new Vuex.Store({
                     // return children ? children : undefined;
                     return children
                 });
-            state.tree.descendants().forEach(element => {
+            function unique(arr){
+                return Array.from(new Set(arr));
+            }
+            state.tree.eachAfter(element => {
                 element.id = element.data.id;
                 element.name = element.data.name;
                 // all_children: all children
@@ -48,6 +52,10 @@ const store = new Vuex.Store({
                 element.all_children = element.children;
                 element._children = [];
                 element._total_width = 2;
+                if (!element.data.sets){
+                    let arr = element.children.map(d => d.data.sets);
+                    element.data.sets = unique(Array.prototype.concat.call(arr));
+                }
             });
 
             // process set
