@@ -63,18 +63,20 @@ export default {
             console.log("before treecut", this.tree);
             this.offset = this.treecut_class
                 .treeCut(this.focus_node, this.tree, this.tree_layout.layout);
+            this.offset = 0;
             console.log("after treecut", this.tree);
         },
         update_data() {
             console.log("hybrid update data");
             console.log(this.tree);
             const root = this.tree_layout.layout(this.tree);
-            this.nodes = root.descendants();
-            this.links = root.links();
+            this.nodes = root.descendants().filter(d => d.name!== "root");
+            // this.links = root.links();
+            this.links = []; // TODO:
             this.leaf_nodes = this.nodes.filter(d => d.children.length == 0);
             console.log("leaf_nodes", this.leaf_nodes);
             this.set_manager.update_leaf_nodes(this.leaf_nodes);
-            this.set_manager.update_tree_root(2, this.layout_height / 2 - this.offset);
+            // this.set_manager.update_tree_root(2, this.layout_height / 2 - this.offset);
             let result = this.set_manager.get_sets();
             this.sets = result.sets;
             this.set_links = result.set_links;
@@ -103,10 +105,24 @@ export default {
             let node_groups = this.e_nodes.enter()
             .append("g")
             .attr("class", "tree-node")
-            .attr("transform", d => "translate(" + d.y + ", " + d.x + ")");
+            .attr("transform", d => "translate(" + d.x + ", " + d.y + ")");
             node_groups
-            .append("circle")
-            .attr("r", 2)
+            .append("path")
+            .attr("d", function(d){
+                let type = -1;
+                if (!d.all_children || d.all_children.length===0){
+                    type = 2;
+                }
+                else{
+                    if (!d.children || d.children.length===0){
+                        type = 0;
+                    }
+                    else{
+                        type = 1;
+                    }
+                }
+                return Global.node_icon(0, 0, type);
+            })
             .attr("fill", Global.GrayColor)
             .style("opacity", 0)
             .transition()
@@ -116,33 +132,46 @@ export default {
             // node name
             node_groups.append("text")
             .text(d => {
-                if (d.children && d.children.length > 0){
-                    return "";
-                }
-                else{
+                // if (d.children && d.children.length > 0){
+                //     return "";
+                // }
+                // else{
                     return d.name;
-                }
+                // }
             })
             .attr("text-anchor", "start")
-            .attr("x", 10)
-            .attr("dy", ".35em")
+            .attr("x", this.layer_height / 2)
+            .attr("dy", ".30em")
             .style("opacity", 0)
             .transition()
             .duration(this.create_ani)
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
-            // link
-            this.e_links.enter()
-            .append("path")
-            .attr("class", "tree-link")
-            .attr("d", Global.tree_line)
-            .style("opacity", 0)
+            // node link
+            node_groups.append("path")
+            .attr("d", d => {
+                return "M" + d.link_x + ", " + d.link_top + " L " 
+                    + d.link_x + ", " + d.link_bottom;
+            })
             .style("stroke", Global.GrayColor)
             .style("stroke-width", 0.5)
+            .style("opacity", 0)
             .transition()
             .duration(this.create_ani)
-            .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
+
+            // // link
+            // this.e_links.enter()
+            // .append("path")
+            // .attr("class", "tree-link")
+            // .attr("d", Global.tree_line)
+            // .style("opacity", 0)
+            // .style("stroke", Global.GrayColor)
+            // .style("stroke-width", 0.5)
+            // .transition()
+            // .duration(this.create_ani)
+            // .delay(this.update_ani + this.remove_ani)
+            // .style("opacity", 1);
 
             this.set_create();
 
@@ -172,7 +201,8 @@ export default {
             this.e_set_links.enter()
             .append("path")
             .attr("class", "set-link")
-            .attr("d", Global.set_line)
+            // .attr("d", Global.set_line)
+            .attr("d",  d3.linkHorizontal().x(d=>d.x).y(d=>d.y))
             .style("opacity", 0)
             .style("stroke", Global.GrayColor)
             .style("stroke-width", 0.5)
@@ -184,8 +214,8 @@ export default {
         },
         update(){
             this.tree_node_group
-            .attr("transform", "translate(" + 2 + ", " 
-                + (this.layout_height / 2 - this.offset) + ")");
+            .attr("transform", "translate(" + this.layer_height / 2 + ", " 
+                + (this.layer_height / 2) + ")");
             this.tree_link_group
             .attr("transform", "translate(" + 2 + ", " 
                 + (this.layout_height / 2 - this.offset) + ")");
@@ -193,7 +223,7 @@ export default {
             .transition()
             .duration(this.update_ani)
             .delay(this.remove_ani)
-            .attr("transform", d => "translate(" + d.y + ", " + d.x + ")");
+            .attr("transform", d => "translate(" + d.x + ", " + d.y + ")");
             this.e_links
         },
         remove(){
@@ -220,7 +250,7 @@ export default {
         this.bbox_height = bbox.height;
         this.layout_width = this.bbox_width;
         this.layout_height = this.bbox_height;
-        this.node_width = 50; // TODO
+        this.node_width = 20; // TODO
         this.layer_height = 30; // TODO
         this.set_height = 112;
         this.set_left = this.layer_height * 3 + 200;
@@ -248,12 +278,13 @@ export default {
             .attr("transform", "translate(" + 0 + ", " + (0) + ")");
         // this.tree_layout = d3.tree()
         //     .nodeSize([self.node_width, self.layer_height]);
-        this.tree_layout = new tree_layout([this.node_width, this.layer_height], 
-            function(a, b){
-                return a.parent == b.parent ? 1 : 1;
-            });
+        // this.tree_layout = new tree_layout([this.node_width, this.layer_height], 
+        //     function(a, b){
+        //         return a.parent == b.parent ? 1 : 1;
+        //     });
+        this.tree_layout = new tree_layout([this.node_width, this.layer_height]);
 
-        this.treecut_class = new TreeCut(this.layout_height, this.layer_height * 3);
+        this.treecut_class = new TreeCut(this.layer_height * 3, this.layout_height);
 
         this.set_manager = new SetManager();
         this.set_manager.update_layout({

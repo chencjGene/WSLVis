@@ -25,11 +25,11 @@ const SetManager = function (){
         that.set_height = mat.set_height;
     }
 
-    this.update_tree_root = function(x, y){
-        that.tree_x = x;
-        that.tree_y = y;
-        console.log("update tree root", that.tree_x, that.tree_y);
-    }
+    // this.update_tree_root = function(x, y){
+    //     that.tree_x = x;
+    //     that.tree_y = y;
+    //     console.log("update tree root", that.tree_x, that.tree_y);
+    // }
 
     this.get_sets = function(){
         let arr = that.leaf_nodes.map(d => d.data.sets);
@@ -69,16 +69,16 @@ const SetManager = function (){
             let text_width = getTextWidth(node.data.name, "16px Roboto, sans-serif");
 
             let source = {
-                "x": node.y + that.tree_x + text_width + 15,
-                "y": node.x + that.tree_y
+                "x": node.x + text_width + 15,
+                "y": node.y 
             };
 
             let turn_point = {
                 "x": that.right_max,
-                "y": node.x + that.tree_y
+                "y": node.y
             }
 
-            console.log("node:", node);
+            // console.log("node:", node);
             for (let j = 0; j < node.data.sets.length; j++){
                 let set_name = node.data.sets[j];
                 let set_node = that.set_map[set_name];
