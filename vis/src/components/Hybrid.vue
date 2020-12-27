@@ -71,23 +71,20 @@ export default {
             console.log(this.tree);
             const root = this.tree_layout.layout(this.tree);
             this.nodes = root.descendants().filter(d => d.name!== "root");
-            // this.links = root.links();
-            this.links = []; // TODO:
             this.leaf_nodes = this.nodes.filter(d => d.children.length == 0);
             console.log("leaf_nodes", this.leaf_nodes);
             this.set_manager.update_leaf_nodes(this.leaf_nodes);
             // this.set_manager.update_tree_root(2, this.layout_height / 2 - this.offset);
             let result = this.set_manager.get_sets();
             this.sets = result.sets;
-            this.set_links = result.set_links;
+            // this.set_links = result.set_links;
+            this.set_links = []; // TODO:
         },
         update_view() {
             console.log("hybrid update view");
 
             this.e_nodes = this.tree_node_group.selectAll(".tree-node")
             .data(this.nodes); //TODO: id map
-            this.e_links = this.tree_link_group.selectAll(".tree-link")
-            .data(this.links); //TODO: id map
             this.e_sets = this.set_group.selectAll(".set")
             .data(this.sets); //TODO: id map
             this.e_set_links = this.set_link_group.selectAll(".set-link")
@@ -160,19 +157,6 @@ export default {
             .duration(this.create_ani)
             .style("opacity", 1);
 
-            // // link
-            // this.e_links.enter()
-            // .append("path")
-            // .attr("class", "tree-link")
-            // .attr("d", Global.tree_line)
-            // .style("opacity", 0)
-            // .style("stroke", Global.GrayColor)
-            // .style("stroke-width", 0.5)
-            // .transition()
-            // .duration(this.create_ani)
-            // .delay(this.update_ani + this.remove_ani)
-            // .style("opacity", 1);
-
             this.set_create();
 
         },
@@ -216,9 +200,6 @@ export default {
             this.tree_node_group
             .attr("transform", "translate(" + this.layer_height / 2 + ", " 
                 + (this.layer_height / 2) + ")");
-            this.tree_link_group
-            .attr("transform", "translate(" + 2 + ", " 
-                + (this.layout_height / 2 - this.offset) + ")");
             this.e_nodes
             .transition()
             .duration(this.update_ani)
@@ -266,9 +247,6 @@ export default {
             .style("padding-top", "5px");
         this.tree_node_group = this.svg.append("g")
             .attr("id", "tree-node-group")
-            .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");
-        this.tree_link_group = this.svg.append("g")
-            .attr("id", "tree-link-group")
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");
         this.set_group = this.svg.append("g")
             .attr("id", "set-group")
