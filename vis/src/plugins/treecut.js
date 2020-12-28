@@ -109,7 +109,7 @@ const tree_layout = function(nodeSize){
             d.link_x = 0;
             d.link_top = that.y_delta / 2;
             if (d.children && d.children.length > 0){
-                d.link_bottom = d.link_top + d.descendants().length * that.y_delta;
+                d.link_bottom = d.link_top + (d.descendants().length - 1) * that.y_delta;
             }
             else{
                 d.link_bottom = d.link_top;
