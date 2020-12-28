@@ -1,4 +1,5 @@
-import pickle
+# import pickle
+import _pickle as pickle
 import numpy as np
 import os
 import cv2
@@ -58,6 +59,9 @@ def unit_norm_for_each_col(X):
     X /= X.max(axis=0)
     return X
 
+
+def sigmoid(x):
+    return 1/(1 + np.exp(-x))
 
 def flow_statistic(flow_in, flow_out, class_list):
     assert len(flow_in) == len(flow_out)
