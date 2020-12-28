@@ -104,15 +104,32 @@ const tree_layout = function(nodeSize){
         data.descendants().forEach(d => {
             if (!d.children) d.children = [];
         })
+        // calculate node link 
         data.descendants().forEach(d => {
-            d.link_x = d.x;
-            d.link_top = d.x + that.y_delta / 2;
+            d.link_x = 0;
+            d.link_top = that.y_delta / 2;
             if (d.children && d.children.length > 0){
-                d.link_bottom = d.link_top + d.children.length * that.y_delta;
+                d.link_bottom = d.link_top + d.descendants().length * that.y_delta;
             }
             else{
                 d.link_bottom = d.link_top;
             }
+        })
+        // calculate node type
+        data.descendants().forEach(d => {
+            let type = -1;
+            if (!d.all_children || d.all_children.length===0){
+                type = 2;
+            }
+            else{
+                if (!d.children || d.children.length===0){
+                    type = 0;
+                }
+                else{
+                    type = 1;
+                }
+            }
+            d.type = type;
         })
         return data;
     }

@@ -64,13 +64,14 @@ export default {
             this.offset = this.treecut_class
                 .treeCut(this.focus_node, this.tree, this.tree_layout.layout);
             this.offset = 0;
+            this.tree.sort(function(a,b) {return a.siblings_id - b.siblings_id});
             console.log("after treecut", this.tree);
         },
         update_data() {
             console.log("hybrid update data");
             console.log(this.tree);
             const root = this.tree_layout.layout(this.tree);
-            this.nodes = root.descendants().filter(d => d.name!== "root");
+            this.nodes = root.descendants().filter(d => d.name !== "root");
             this.leaf_nodes = this.nodes.filter(d => d.children.length == 0);
             console.log("leaf_nodes", this.leaf_nodes);
             this.set_manager.update_leaf_nodes(this.leaf_nodes);
@@ -78,13 +79,13 @@ export default {
             let result = this.set_manager.get_sets();
             this.sets = result.sets;
             // this.set_links = result.set_links;
-            this.set_links = []; // TODO:
+            this.set_links = []; // TODO: disable set links for debug
         },
         update_view() {
             console.log("hybrid update view");
 
             this.e_nodes = this.tree_node_group.selectAll(".tree-node")
-            .data(this.nodes); //TODO: id map
+            .data(this.nodes, d => d.id);
             this.e_sets = this.set_group.selectAll(".set")
             .data(this.sets); //TODO: id map
             this.e_set_links = this.set_link_group.selectAll(".set-link")
@@ -100,25 +101,37 @@ export default {
             console.log("Global", Global.GrayColor, Global.Animation)
             // node circle
             let node_groups = this.e_nodes.enter()
-            .append("g")
-            .attr("class", "tree-node")
-            .attr("transform", d => "translate(" + d.x + ", " + d.y + ")");
+                .append("g")
+                .attr("class", "tree-node")
+                .attr("id", d => "id-" + d.id)
+                .attr("transform", d => "translate(" + d.x + ", " + d.y + ")");
+            node_groups
+                .on("mouseover", this.highlight)
+                .on("mouseout", this.dehighlight)
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.remove_ani + this.update_ani)
+                .style("opacity", 1);
+            node_groups
+                .append("rect")
+                .attr("class", "background")
+                .attr("x", this.layer_height / 4)
+                .attr("y", - this.layer_height / 2)
+                .attr("height", this.layer_height)
+                .attr("width", (d) => {
+                    return Global.getTextWidth(d.data.name, "16px Roboto, sans-serif") + this.layer_height / 2; 
+                })
+                .style("fill", "gray")
+                .style("fill-opacity", 0)
+                .on("click", (ev, d) => {
+                    console.log("click", d.name);
+                    this.set_focus_node(d);
+                });
             node_groups
             .append("path")
+            .attr("class", "icon")
             .attr("d", function(d){
-                let type = -1;
-                if (!d.all_children || d.all_children.length===0){
-                    type = 2;
-                }
-                else{
-                    if (!d.children || d.children.length===0){
-                        type = 0;
-                    }
-                    else{
-                        type = 1;
-                    }
-                }
-                return Global.node_icon(0, 0, type);
+                return Global.node_icon(0, 0, d.type);
             })
             .attr("fill", Global.GrayColor)
             .style("opacity", 0)
@@ -129,12 +142,7 @@ export default {
             // node name
             node_groups.append("text")
             .text(d => {
-                // if (d.children && d.children.length > 0){
-                //     return "";
-                // }
-                // else{
-                    return d.name;
-                // }
+                return d.name;
             })
             .attr("text-anchor", "start")
             .attr("x", this.layer_height / 2)
@@ -146,8 +154,9 @@ export default {
             .style("opacity", 1);
             // node link
             node_groups.append("path")
+            .attr("class", "node-link")
             .attr("d", d => {
-                return "M" + d.link_x + ", " + d.link_top + " L " 
+                return  "M" + d.link_x + ", " + d.link_top + " L " 
                     + d.link_x + ", " + d.link_bottom;
             })
             .style("stroke", Global.GrayColor)
@@ -155,6 +164,7 @@ export default {
             .style("opacity", 0)
             .transition()
             .duration(this.create_ani)
+            .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
 
             this.set_create();
@@ -205,17 +215,61 @@ export default {
             .duration(this.update_ani)
             .delay(this.remove_ani)
             .attr("transform", d => "translate(" + d.x + ", " + d.y + ")");
+            this.e_nodes.select("path.icon")
+                .transition()
+                .duration(this.update_ani)
+                .delay(this.remove_ani)
+                .attr("d", function(d){
+                    return Global.node_icon(0, 0, d.type);
+                });
+            this.e_nodes.select("text")
+                .transition()
+                .duration(this.update_ani)
+                .delay(this.remove_ani)
+                .text(d => d.name)
+                .style("opacity", 1);
+            this.e_nodes.select("path.node-link")
+                .transition()
+                .duration(this.update_ani)
+                .delay(this.remove_ani)
+                .attr("d", d => {
+                    return  "M" + d.link_x + ", " + d.link_top + " L " 
+                        + d.link_x + ", " + d.link_bottom;
+                });
             this.e_links
         },
         remove(){
-            this.e_nodes
-            .exit()
-            .remove();
+            this.e_nodes.exit()
+                .remove();
+            this.e_sets.exit()
+                .remove();
+            this.e_set_links.exit()
+                .remove()
+        },
+        highlight(ev, d){
+            // console.log("highlight in tree");
+            this.tree_node_group.select("#id-" + d.id)
+                .select("rect.background")
+                .style("fill-opacity", 0.1)
+                .style("fill", "gray");
+        },
+        dehighlight(){
+            // console.log("dehighlight in tree");
+            this.svg.selectAll("g.tree-node")
+                .select("rect.background")
+                .style("fill-opacity", 0);
         }
     },
     watch:{
         tree(){
             console.log("tree update");
+            this.treecut();
+            console.log("offset", this.offset);
+            this.update_data();
+            this.update_view();
+        },
+        focus_node(){
+            console.log("focus_node change", this.focus_node);
             this.treecut();
             console.log("offset", this.offset);
             this.update_data();
@@ -278,6 +332,10 @@ export default {
 </script>
 
 <style>
+.tree-node{
+    cursor: pointer;
+}
+
 .tree-link{
     fill: none;
 }

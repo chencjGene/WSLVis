@@ -50,6 +50,7 @@ const store = new Vuex.Store({
                 // children: children that are visible
                 // _children: children that are invisible
                 element.all_children = element.children;
+                if(element.children) element.children.forEach((d,i) => d.siblings_id = i);
                 element._children = [];
                 element._total_width = 2;
                 if (!element.data.sets){
@@ -62,7 +63,7 @@ const store = new Vuex.Store({
             state.set_list = hypergraph_data.set_list
 
             console.log("state.tree", state.tree)
-            this.commit("set_focus_node", state.tree);
+            // this.commit("set_focus_node", state.tree);
             console.log("state.focus_node", state.focus_node);
             state.set_list = hypergraph_data.set_list;
         },

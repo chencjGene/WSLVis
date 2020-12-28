@@ -1,5 +1,5 @@
 const GrayColor = "#7f7f7f";
-const Animation = 100;
+const Animation = 1000;
 
 const deepCopy = function(obj) {
     let _obj = Array.isArray(obj) ? [] : {}
