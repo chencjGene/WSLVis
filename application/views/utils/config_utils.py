@@ -31,10 +31,10 @@ class Config(object):
         # third-level directory
         self.train_path_name = "train"
         self.test_path_name = "exp"
-        self.all_data_cache_name = "all_data_cache" + self.pkl_ext
+        self.all_data_cache_name = "all_data_cache{}" + self.pkl_ext
 
         # filename
-        self.processed_dataname = "processed_data"+ self.pkl_ext
+        self.processed_dataname = "processed_data{}" + self.pkl_ext
         self.grid_dataname = "grid_data" + self.pkl_ext
         self.concept_graph_filename = "concept_graph.json"
         self.signal_filename = "SIGNAL"

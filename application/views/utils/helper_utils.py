@@ -109,7 +109,7 @@ def cal_iou(box1, box2):
     iou_v = inter / union
     return iou_v
 
-def draw_box_cv(input_path, output_path, boxes):
+def draw_box(input_path, boxes):
     # boxes in shape [num_box, 6]
     boxes = np.array(boxes)
     if len(boxes.shape) < 2:
@@ -130,4 +130,9 @@ def draw_box_cv(input_path, output_path, boxes):
                     category_name+": "+str(conf),
                     (xmin, max(ymin-5, 0)),
                     cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), thickness=1)
+    return img
+
+def draw_box_cv(input_path, output_path, boxes):
+    # boxes in shape [num_box, 6]
+    img = draw_box(input_path, boxes)
     cv2.imwrite(output_path, img)

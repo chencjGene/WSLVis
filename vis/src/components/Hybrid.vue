@@ -72,6 +72,10 @@ export default {
             console.log(this.tree);
             const root = this.tree_layout.layout(this.tree);
             this.nodes = root.descendants().filter(d => d.name !== "root");
+            this.max_text_width = this.nodes.map(d => 
+                Global.getTextWidth(d.data.name, "16px Roboto, sans-serif"));
+            console.log("max text width", this.max_text_width);
+            this.max_text_width = Math.max(...this.max_text_width);
             this.leaf_nodes = this.nodes.filter(d => d.children.length == 0);
             console.log("leaf_nodes", this.leaf_nodes);
             this.set_manager.update_leaf_nodes(this.leaf_nodes);
@@ -115,18 +119,51 @@ export default {
             node_groups
                 .append("rect")
                 .attr("class", "background")
+                .attr("rx", this.layer_height / 6)
+                .attr("ry", this.layer_height / 6)
                 .attr("x", this.layer_height / 4)
-                .attr("y", - this.layer_height / 2)
-                .attr("height", this.layer_height)
-                .attr("width", (d) => {
-                    return Global.getTextWidth(d.data.name, "16px Roboto, sans-serif") + this.layer_height / 2; 
+                .attr("y", - this.layer_height * 0.8 / 2)
+                .attr("height", this.layer_height * 0.8)
+                .attr("width", () => {
+                    // return Global.getTextWidth(d.data.name, "16px Roboto, sans-serif") + this.layer_height / 2; 
+                    return this.max_text_width + 50;
                 })
-                .style("fill", "gray")
+                .style("fill", "#EBEBF3")
                 .style("fill-opacity", 0)
                 .on("click", (ev, d) => {
                     console.log("click", d.name);
                     this.set_focus_node(d);
-                });
+                })
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.remove_ani + this.update_ani)
+                .style("fill-opacity", 1);
+
+            node_groups.append("g")
+                .attr("class", "prob-bar")
+                .selectAll("rect")
+                .data(d => {
+                    let lens = [d.data.precision, d.data.recall];
+                    // let color = ["#FF9395", "#AAC6E6"];
+                    let color = ["gray", "gray"];
+                    return [
+                        {"len":lens[0], "color": color[0]},
+                        {"len":lens[1], "color": color[1]}
+                    ]
+                })
+                .enter()
+                .append("rect")
+                .attr("x", this.layer_height / 2)
+                .attr("y", (_, i) => i * 3.5 + 8)
+                .attr("height", 3)
+                .attr("width", d => 80 * Math.pow(d.len, 0.8))
+                .style("fill", d => d.color)
+                .style("fill-opacity", 0)
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.remove_ani + this.update_ani)
+                .style("fill-opacity", 1);
+
             node_groups
             .append("path")
             .attr("class", "icon")
@@ -146,7 +183,7 @@ export default {
             })
             .attr("text-anchor", "start")
             .attr("x", this.layer_height / 2)
-            .attr("dy", ".30em")
+            .attr("dy", ".25em")
             .style("opacity", 0)
             .transition()
             .duration(this.create_ani)
@@ -215,6 +252,17 @@ export default {
             .duration(this.update_ani)
             .delay(this.remove_ani)
             .attr("transform", d => "translate(" + d.x + ", " + d.y + ")");
+            this.e_nodes.select("rect.background")
+                .transition()
+                .duration(this.update_ani)
+                .attr("x", this.layer_height / 4)
+                .attr("y", - this.layer_height * 0.8 / 2)
+                .attr("height", this.layer_height * 0.8)
+                .attr("width", () => {
+                    // return Global.getTextWidth(d.data.name, "16px Roboto, sans-serif") + this.layer_height / 2; 
+                    return this.max_text_width + 50;
+                });
+            
             this.e_nodes.select("path.icon")
                 .transition()
                 .duration(this.update_ani)
@@ -250,14 +298,13 @@ export default {
             // console.log("highlight in tree");
             this.tree_node_group.select("#id-" + d.id)
                 .select("rect.background")
-                .style("fill-opacity", 0.1)
-                .style("fill", "gray");
+                .style("fill", "#E0E0EC");
         },
         dehighlight(){
             // console.log("dehighlight in tree");
             this.svg.selectAll("g.tree-node")
                 .select("rect.background")
-                .style("fill-opacity", 0);
+                .style("fill", "#EBEBF3");
         }
     },
     watch:{
@@ -286,7 +333,7 @@ export default {
         this.layout_width = this.bbox_width;
         this.layout_height = this.bbox_height;
         this.node_width = 20; // TODO
-        this.layer_height = 30; // TODO
+        this.layer_height = 40; // TODO
         this.set_height = 112;
         this.set_left = this.layer_height * 3 + 200;
         this.set_width = this.layout_width - this.set_left;
@@ -345,7 +392,7 @@ export default {
 }
 
 .main-content {
-  background: rgb(242, 246, 255);
+  background: rgb(248, 249, 254);
     border: 1px solid #c1c1c1;
     border-radius: 5px;
     height: calc(100% - 24px);

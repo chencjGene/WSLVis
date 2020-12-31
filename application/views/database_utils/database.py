@@ -15,6 +15,7 @@ class DataBase(object):
         check_dir(self.data_dir)
         self.raw_data_dir = os.path.join(config.raw_data_root, dataname)
         self.all_data = {}
+        self.suffix = suffix
 
         self.class_name = []
         self.class_name_encoding = {}
@@ -42,12 +43,12 @@ class DataBase(object):
         :return:
         """
         logger.warn("begin saving unprocessed cache of {}".format(self.dataname))
-        all_data_name = os.path.join(self.raw_data_dir, config.all_data_cache_name)
+        all_data_name = os.path.join(self.raw_data_dir, config.all_data_cache_name.format(self.suffix))
         save_method(all_data_name, self.all_data)
         logger.info("cache saving done!")
 
     def load_cache(self, loading_from_buffer=False, load_method=pickle_load_data):
-        all_data_name = os.path.join(self.raw_data_dir, config.all_data_cache_name)
+        all_data_name = os.path.join(self.raw_data_dir, config.all_data_cache_name.format(self.suffix))
         if os.path.exists(all_data_name) and loading_from_buffer:
             logger.warn("all data cache exists. load data from cache ... ...".format(all_data_name))
             self.all_data = load_method(all_data_name)
@@ -61,7 +62,7 @@ class DataBase(object):
                     "you should not see this message.")
 
     def save_processed_data(self, save_method=pickle_save_data):
-        filename = os.path.join(self.data_dir, "processed_data" + config.pkl_ext)
+        filename = os.path.join(self.data_dir, "processed_data{}{}".format(self.suffix, config.pkl_ext))
         # TODO: add time information and warn users when loading
         logger.warn("save processed data in {}".format(filename))
         mat = {}
@@ -85,7 +86,7 @@ class DataBase(object):
     def load_processed_data(self):
         logger.info("begin loading data from processed data!")
         processed_data_filename = os.path.join(self.data_dir, \
-            config.processed_dataname)
+            config.processed_dataname.format(self.suffix))
         processed_data = pickle_load_data(processed_data_filename)
         self.class_name = processed_data[config.class_name]
         self.X = processed_data[config.X_name]

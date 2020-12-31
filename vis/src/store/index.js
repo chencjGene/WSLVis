@@ -57,6 +57,15 @@ const store = new Vuex.Store({
                     let arr = element.children.map(d => d.data.sets);
                     element.data.sets = unique(Array.prototype.concat.call(arr));
                 }
+                if (!element.data.precision){
+                    let s = element.all_children.map(d=>d.data.precision);
+                    if (s) element.data.precision = s.reduce((a,c)=>{return a+c}, 0) / s.length;
+                }
+                if (!element.data.recall){
+                    let s = element.all_children.map(d=>d.data.recall);
+                    if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
+
+                }
             });
 
             // process set

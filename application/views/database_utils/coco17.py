@@ -51,28 +51,28 @@ def process_extracted_result(result):
             "logits": logits,
             "label": label,
             "activations": activations,
-            "string": string
+            "string": string,
         }
     # import IPython; IPython.embed(); exit()
     return map
 
 class DataCOCO17(DataBase):
-    def __init__(self):
+    def __init__(self, suffix=""):
         dataname = config.coco17
-        super(DataCOCO17, self).__init__(dataname)
+        super(DataCOCO17, self).__init__(dataname, suffix)
         self.label_map, self.class_name = get_label_map(os.path.join(self.data_dir, "label_map.txt"))
         
     def preprocessing_data(self):
         logger.info("begin preprocessing_data")
         t0 = time()
     
-        # logger.info("loading detection results")
+        logger.info("loading detection results")
         # # val detection result
         # val_detection_path = os.path.join(self.raw_data_dir, \
         #     "detections_val.pkl")
         # val_detection_result = pickle_load_data(val_detection_path)
 
-        # # train detection result
+        # train detection result
         # train_detection_path =  os.path.join(self.raw_data_dir, \
         #     "detections_train.pkl")
         # train_detection_result = pickle_load_data(train_detection_path)
@@ -108,13 +108,18 @@ class DataCOCO17(DataBase):
         logger.info("processing extracted labels")
         # train extracted labels
         train_extracted_labels = pickle_load_data(os.path.join(config.raw_data_root,
-            "COCO17", "train_result.pkl"))
+            "COCO17", "train_result_text{}.pkl".format(self.suffix)))
         train_extracted_labels = process_extracted_result(train_extracted_labels)
 
         # val extracted labels
         val_extracted_labels = pickle_load_data(os.path.join(config.raw_data_root,
-            "COCO17", "val_result.pkl"))
+            "COCO17", "val_result_text{}.pkl".format(self.suffix)))
         val_extracted_labels = process_extracted_result(val_extracted_labels)
+
+        train_image_output = np.load(os.path.join(config.raw_data_root,
+            "COCO17", "train_image_output.npy")).tolist()
+        val_image_output = np.load(os.path.join(config.raw_data_root,
+            "COCO17", "val_image_output.npy")).tolist()
 
         self.all_data = {
             # "train_detections": train_detection_result,
@@ -127,7 +132,9 @@ class DataCOCO17(DataBase):
             "val_captions": val_captions,
             "train_extracted_labels": train_extracted_labels,
             "val_extracted_labels": val_extracted_labels,
-            "train_ids": train_ids
+            "train_ids": train_ids,
+            "train_image_output": train_image_output,
+            "val_image_output": val_image_output,
         }
         # import IPython; IPython.embed(); exit()
         self.save_cache(save_method=json_save_data)
@@ -146,6 +153,8 @@ class DataCOCO17(DataBase):
         train_extracted_labels = self.all_data["train_extracted_labels"]
         val_extracted_labels = self.all_data["val_extracted_labels"]
         train_ids = self.all_data["train_ids"]
+        train_image_output = self.all_data["train_image_output"]
+        val_image_output = self.all_data["val_image_output"]
 
 
         # train_ids = train_detection["img_id"]
@@ -200,9 +209,16 @@ class DataCOCO17(DataBase):
                 # logger.info(e)
                 None
 
-        # import IPython; IPython.embed(); exit()
 
-        # TODO: for debug
+        # # processing detection
+        # logger.info('processing detection')
+        # for category in tqdm(range(1, len(self.class_name) + 1)):
+        #     for idx in range(train_num):
+        #         bboxes = train_detection[category][idx]
+        #         for bbox in bboxes:
+        #             bbox = bbox.tolist() + [category]
+        #             self.detection[idx]["bbox"].append(bbox)
+        # for debug
         self.detections = self.annos
         
         self.image_by_type = {}
@@ -217,12 +233,16 @@ class DataCOCO17(DataBase):
             self.image_by_type[cat_str].append(int(idx))
 
         # processing extracted labels
-        self.extracted_labels_by_cat = {}
-        for i in range(len(self.class_name)):
-            self.extracted_labels_by_cat[i] = {}
-        for idx in tqdm(self.train_idx):
+        for i, idx in tqdm(enumerate(self.train_idx)):
             img_id = self.ids[idx]
             extracted_labels = train_extracted_labels[str(img_id)]
+            extracted_labels["output_v"] = train_image_output[i]
+            self.annos[idx]["extracted_labels"] = extracted_labels
+        
+        for i, idx in tqdm(enumerate(self.val_idx)):
+            img_id = self.ids[idx]
+            extracted_labels = val_extracted_labels[str(img_id)]
+            extracted_labels["output_v"] = val_image_output[i]
             self.annos[idx]["extracted_labels"] = extracted_labels
             # for act in extracted_labels["activations"]:
             #     image_idx = act["idx"]
@@ -238,5 +258,5 @@ class DataCOCO17(DataBase):
             #         })
 
         self.labeled_idx = self.labeled_idx.tolist()
-        self.train_idx = self.val_idx.tolist()
+        self.train_idx = self.train_idx.tolist()
         self.val_idx = self.val_idx.tolist()
