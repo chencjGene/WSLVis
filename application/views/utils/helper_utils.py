@@ -5,7 +5,7 @@ import os
 import cv2
 import threading
 import sys
-import json
+import ujson as json
 from sklearn.metrics import confusion_matrix, roc_auc_score, \
     precision_recall_curve, auc, roc_curve
 from threading import Thread

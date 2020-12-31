@@ -3,6 +3,7 @@ import os
 import sys
 from time import time 
 from tqdm import tqdm
+import sqlite3
 
 if sys.version_info[0] == 2:
     import xml.etree.cElementTree as ET

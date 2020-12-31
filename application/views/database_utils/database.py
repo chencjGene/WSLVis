@@ -99,3 +99,5 @@ class DataBase(object):
         self.redundant_idx = processed_data[config.redundant_idx_name]
         self.add_info = processed_data[config.add_info_name]
 
+    def save_processed_database(self):
+        None
