@@ -48,7 +48,7 @@ export default {
     }),
     computed:{
         ...mapState([
-           "tree", "set_list", "focus_node" 
+           "tree", "set_list", "focus_node", "expand_tree" 
         ])
     },
     methods:{
@@ -56,7 +56,7 @@ export default {
             "fetch_hypergraph"
         ]),
         ...mapMutations([
-            "set_focus_node"
+            "set_focus_node", "set_expand_tree"
         ]),
         treecut() {
             console.log("hybrid treecut");
@@ -139,30 +139,31 @@ export default {
                 .delay(this.remove_ani + this.update_ani)
                 .style("fill-opacity", 1);
 
-            node_groups.append("g")
-                .attr("class", "prob-bar")
-                .selectAll("rect")
-                .data(d => {
-                    let lens = [d.data.precision, d.data.recall];
-                    // let color = ["#FF9395", "#AAC6E6"];
-                    let color = ["gray", "gray"];
-                    return [
-                        {"len":lens[0], "color": color[0]},
-                        {"len":lens[1], "color": color[1]}
-                    ]
-                })
-                .enter()
-                .append("rect")
-                .attr("x", this.layer_height / 2)
-                .attr("y", (_, i) => i * 3.5 + 8)
-                .attr("height", 3)
-                .attr("width", d => 80 * Math.pow(d.len, 0.8))
-                .style("fill", d => d.color)
-                .style("fill-opacity", 0)
-                .transition()
-                .duration(this.create_ani)
-                .delay(this.remove_ani + this.update_ani)
-                .style("fill-opacity", 1);
+            // // precision and recall
+            // node_groups.append("g")
+            //     .attr("class", "prob-bar")
+            //     .selectAll("rect")
+            //     .data(d => {
+            //         let lens = [d.data.precision, d.data.recall];
+            //         // let color = ["#FF9395", "#AAC6E6"];
+            //         let color = ["gray", "gray"];
+            //         return [
+            //             {"len":lens[0], "color": color[0]},
+            //             {"len":lens[1], "color": color[1]}
+            //         ]
+            //     })
+            //     .enter()
+            //     .append("rect")
+            //     .attr("x", this.layer_height / 2)
+            //     .attr("y", (_, i) => i * 3.5 + 8)
+            //     .attr("height", 3)
+            //     .attr("width", d => 80 * Math.pow(d.len, 0.8))
+            //     .style("fill", d => d.color)
+            //     .style("fill-opacity", 0)
+            //     .transition()
+            //     .duration(this.create_ani)
+            //     .delay(this.remove_ani + this.update_ani)
+            //     .style("fill-opacity", 1);
 
             node_groups
             .append("path")
@@ -203,6 +204,19 @@ export default {
             .duration(this.create_ani)
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
+
+            this.expanded_icon_group
+                .selectAll("rect")
+                .data([this.expand_tree])
+                .enter()
+                .append("rect")
+                .attr("width", 10)
+                .attr("height", 10)
+                .style("rx", 3)
+                .style("ry", 3)
+                .style("fill", "none")
+                .style("stroke", "gray")
+                .style("stroke-width", 1);
 
             this.set_create();
 
@@ -321,7 +335,13 @@ export default {
             console.log("offset", this.offset);
             this.update_data();
             this.update_view();
-        }
+        },
+        expand_tree(){
+            console.log("expand tree change", this.expand_tree);
+            // this.treecut(); // TODO:
+            this.update_data();
+            this.update_view();
+        },
     },
     async mounted(){
         console.log("hybrid mounted");
@@ -346,6 +366,9 @@ export default {
             .attr("width", this.layout_width)
             .attr("height", this.layout_height)
             .style("padding-top", "5px");
+        this.expanded_icon_group = this.svg.append("g")
+            .attr("id", "expanded-icon-group")
+            .attr("transform", "translate(" + (0.5) + ", " + (0.5) + ")");
         this.tree_node_group = this.svg.append("g")
             .attr("id", "tree-node-group")
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");

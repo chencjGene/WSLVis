@@ -16,6 +16,7 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
+        expand_tree: true,
         focus_node: null,
         set_list: []
     },
@@ -83,6 +84,10 @@ const store = new Vuex.Store({
         set_focus_node(state, node) {
             console.log("set focus node");
             state.focus_node = [node];
+        },
+        set_expand_tree(state, node){
+            console.log("set expand tree");
+            state.expand_tree = node;
         }
     },
     actions:{

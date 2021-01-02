@@ -71,6 +71,27 @@ const node_icon = function(x, y, type){
     }
 }
 
+function plus_path_d(start_x, start_y, width, height, k) {
+    let sum_k = 2 * k + 1;
+    let x = [start_x, start_x + k / sum_k * width, start_x + (k + 1) / sum_k * width, start_x + width];
+    let y = [start_y, start_y + k / sum_k * height, start_y + (k + 1) / sum_k * height, start_y + height];
+    let d = `M${x[0]},${y[1]}`;
+    d += `L${x[1]},${y[1]}`;
+    d += `L${x[1]},${y[0]}`;
+    d += `L${x[2]},${y[0]}`;
+    d += `L${x[2]},${y[1]}`;
+    d += `L${x[3]},${y[1]}`;
+    d += `L${x[3]},${y[2]}`;
+    d += `L${x[2]},${y[2]}`;
+    d += `L${x[2]},${y[3]}`;
+    d += `L${x[1]},${y[3]}`;
+    d += `L${x[1]},${y[2]}`;
+    d += `L${x[0]},${y[2]}`;
+    d += `L${x[0]},${y[1]}`;
+    return d;
+}
+
+
 export {
     GrayColor,
     Animation,
@@ -78,5 +99,6 @@ export {
     tree_line,
     getTextWidth,
     set_line,
-    node_icon
+    node_icon,
+    plus_path_d,
 }
