@@ -2,23 +2,11 @@
   <v-app style="position: relative;">
     <v-main>
         <v-container fluid class="main-background fill-height pa-0">
-          <app-hybrid></app-hybrid>
+          <app-detection></app-detection>
           <v-col cols="3" class="other-view fill-height">
-            <app-action-trail></app-action-trail>
-            <v-row class="text-view fill-width mr-0">
-              <v-col cols="12" class="topname fill-width">
-                Text
-              </v-col>
-              <v-col cols="12" class="text-content pa-0">
-              </v-col>
-            </v-row>
-            <v-row class="image-view fill-width mr-0">
-              <v-col cols="12" class="topname fill-width">
-                Image
-              </v-col>
-              <v-col cols="12" class="image-content pa-0">
-              </v-col>
-            </v-row>
+            <!-- <app-action-trail></app-action-trail> -->
+            <app-text></app-text>
+            <app-image></app-image>
           </v-col>
       </v-container>
     </v-main>
@@ -27,13 +15,17 @@
 
 <script>
 import {mapActions} from "vuex"
-import ActionTrail from './components/ActionTrail.vue'
-import Hybrid from "./components/Hybrid.vue"
+// import ActionTrail from './components/ActionTrail.vue'
+import Text from './components/Text.vue'
+import Image from './components/Image.vue'
+import Detection from "./components/Detection.vue"
 export default {
   name: 'App', 
   components:{
-    "app-action-trail": ActionTrail,
-    "app-hybrid": Hybrid
+    // "app-action-trail": ActionTrail,
+    "app-detection": Detection,
+    "app-text": Text,
+    "app-image": Image,
   },
   data: () => ({
   }),
@@ -80,31 +72,10 @@ export default {
 
 
 
-.action-trail-view {
+/* .action-trail-view {
   height: 33%;
-}
+} */
 
-
-.text-view {
-  height: 33%;
-}
-
-.text-content {
-    border: 1px solid #c1c1c1;
-    border-radius: 5px;
-    height: calc(100% - 32px);
-    margin-bottom: 10px;
-}
-
-.image-view{
-  height: 34%;
-}
-
-.image-content {
-    border: 1px solid #c1c1c1;
-    border-radius: 5px;
-    height: calc(100% - 24px);
-}
 
 .custom-loader {
   animation: loader 1s infinite;

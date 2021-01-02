@@ -1,28 +1,5 @@
 <template>  
     <v-col cols="9" class="main-view fill-height">
-        <v-col cols="12" class="topname fill-width" id="main-topname">
-            <span>
-            Hybrid
-            </span>
-            <!-- <v-btn x-small
-            class="ma-2"
-            :depressed="true"
-            :loading="loading"
-            :disabled="loading"
-            color="#D1D1D1"
-            @click="loader = 'loading'"
-            >
-            Load
-            <template v-slot:loader>
-                <v-progress-circular
-                :size="18"
-                :width="2"
-                color="gray"
-                indeterminate
-                ></v-progress-circular>
-            </template> -->
-            <!-- </v-btn> -->
-        </v-col>
         <v-col cols="12" class="main-content pa-0">
         </v-col>
     </v-col>
@@ -36,7 +13,7 @@ import * as Global from '../plugins/global'
 import {TreeCut, tree_layout} from "../plugins/treecut"
 import {SetManager} from "../plugins/set_manager"
 export default {
-    name: "Hybrid",
+    name: "Detection",
     data: () =>({
         bbox_width: null,
         bbox_height: null,
@@ -59,7 +36,7 @@ export default {
             "set_focus_node", "set_expand_tree"
         ]),
         treecut() {
-            console.log("hybrid treecut");
+            console.log("detection treecut");
             console.log("before treecut", this.tree);
             this.offset = this.treecut_class
                 .treeCut(this.focus_node, this.tree, this.tree_layout.layout);
@@ -68,7 +45,7 @@ export default {
             console.log("after treecut", this.tree);
         },
         update_data() {
-            console.log("hybrid update data");
+            console.log("detection update data");
             console.log(this.tree);
             const root = this.tree_layout.layout(this.tree);
             this.nodes = root.descendants().filter(d => d.name !== "root");
@@ -86,7 +63,7 @@ export default {
             this.set_links = []; // TODO: disable set links for debug
         },
         update_view() {
-            console.log("hybrid update view");
+            console.log("detection update view");
 
             this.e_nodes = this.tree_node_group.selectAll(".tree-node")
             .data(this.nodes, d => d.id);
@@ -344,8 +321,8 @@ export default {
         },
     },
     async mounted(){
-        console.log("hybrid mounted");
-        window.hybrid = this;
+        console.log("detection mounted");
+        window.detection = this;
         let container = d3.select(".main-content");
         let bbox = container.node().getBoundingClientRect();
         this.bbox_width = bbox.width;
@@ -418,7 +395,7 @@ export default {
   background: rgb(248, 249, 254);
     border: 1px solid #c1c1c1;
     border-radius: 5px;
-    height: calc(100% - 24px);
+    height: 100%;
 }
 
 .topname {

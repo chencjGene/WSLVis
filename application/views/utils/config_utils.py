@@ -35,6 +35,7 @@ class Config(object):
 
         # filename
         self.processed_dataname = "processed_data{}" + self.pkl_ext
+        self.debug_processed_dataname = "debug_processed_data{}" + self.pkl_ext
         self.grid_dataname = "grid_data" + self.pkl_ext
         self.concept_graph_filename = "concept_graph.json"
         self.signal_filename = "SIGNAL"

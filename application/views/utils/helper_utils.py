@@ -34,7 +34,7 @@ def pickle_load_data(filename):
 
 # json loading and saving
 def json_save_data(filename, data):
-    open(filename, "w").write(json.dumps(data, separators=(',', ':')))
+    open(filename, "w").write(json.dumps(data))
     return True
 
 

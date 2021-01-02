@@ -10,7 +10,7 @@ from ..utils.helper_utils import draw_box,check_dir
 from ..database_utils.utils import decoding_categories, encoding_categories
 from ..database_utils.utils import TFIDFTransform, rule_based_processing, get_precision_and_recall
 
-DEBUG = False
+DEBUG = True
 
 class Data(object):
     def __init__(self, dataname, suffix=""):
@@ -36,9 +36,13 @@ class Data(object):
 
     def _load_data(self):
         logger.info("begin loading data from processed data!")
+        filename = config.processed_dataname
+        if DEBUG:
+            filename = config.debug_processed_dataname
         processed_data_filename = os.path.join(self.data_root, \
-            config.processed_dataname.format(self.suffix))
+            filename.format(self.suffix))
         processed_data = json_load_data(processed_data_filename)
+        self.processed_data = processed_data
         self.class_name = processed_data[config.class_name]
         self.X = processed_data[config.X_name]
         self.annos = processed_data[config.annos_name]
@@ -148,11 +152,18 @@ class Data(object):
         # labeled_p = get_counts(self.labeled_idx)
         # unlabeled_p = get_counts(self.unlabeled_idx)
         # import IPython; IPython.embed(); exit()
-        self.get_precision_and_recall()
-        for i in range(len(self.class_name)):
-            leaf = id_to_leaf[i]
-            leaf["precision"] = self.precision[i]
-            leaf["recall"] = self.recall[i]
+
+        if DEBUG:
+            for i in range(len(self.class_name)):
+                leaf = id_to_leaf[i]
+                leaf["precision"] = 1
+                leaf["recall"] = 1
+        else:
+            self.get_precision_and_recall()
+            for i in range(len(self.class_name)):
+                leaf = id_to_leaf[i]
+                leaf["precision"] = self.precision[i]
+                leaf["recall"] = self.recall[i]
 
         return tree, set_list
 
