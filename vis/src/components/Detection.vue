@@ -79,7 +79,12 @@ export default {
             this.create();
         },
         create(){
-            console.log("Global", Global.GrayColor, Global.Animation)
+            console.log("Global", Global.GrayColor, Global.Animation);
+            this.node_create();
+            this.set_create();
+            this.expand_icon_create();
+        },
+        node_create(){
             // node circle
             let node_groups = this.e_nodes.enter()
                 .append("g")
@@ -108,7 +113,7 @@ export default {
                 .style("fill", "#EBEBF3")
                 .style("fill-opacity", 0)
                 .on("click", (ev, d) => {
-                    console.log("click", d.name);
+                    console.log("click tree node", d.name);
                     this.set_focus_node(d);
                 })
                 .transition()
@@ -181,22 +186,6 @@ export default {
             .duration(this.create_ani)
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
-
-            this.expanded_icon_group
-                .selectAll("rect")
-                .data([this.expand_tree])
-                .enter()
-                .append("rect")
-                .attr("width", 10)
-                .attr("height", 10)
-                .style("rx", 3)
-                .style("ry", 3)
-                .style("fill", "none")
-                .style("stroke", "gray")
-                .style("stroke-width", 1);
-
-            this.set_create();
-
         },
         set_create(){
             // set
@@ -234,7 +223,59 @@ export default {
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
         },
+        title_create(){
+            this.svg.append("text")
+                .attr("class", "topname")
+                .attr("x", this.layer_height / 2)
+                .attr("y", this.text_height / 2 + 1)
+                .text("Category");
+            this.svg.append("text")
+                .attr("class", "topname")
+                .attr("x", this.set_left * 1.05)
+                .attr("y", this.text_height / 2 + 1)
+                .text("Detection");
+        },
+        expand_icon_create(){
+            this.expanded_icon_group
+                .on("click", () => {
+                    console.log("click expanded icon", this.expand_tree);
+                    this.set_expand_tree(!this.expand_tree);
+                })
+            this.expanded_icon_group
+                .selectAll("rect")
+                .data([this.expand_tree])
+                .enter()
+                .append("rect")
+                .attr("width", 10)
+                .attr("height", 10)
+                .style("rx", 3)
+                .style("ry", 3)
+                .style("fill", "white")
+                .style("stroke", "gray")
+                .style("stroke-width", 1);
+            this.expanded_icon_group
+                .selectAll("path")
+                .data([this.expand_tree])
+                .enter()
+                .append("path")
+                .style("stroke", "none")
+                .style("fill", "gray")
+                .attr("d", () => {
+                    if (this.expand_tree){
+                        return Global.minus_path_d(0, 0, 10, 10, 2);
+                    }
+                    else{
+                        return Global.plus_path_d(0, 0, 10, 10, 2);
+                    }
+                });
+        },
         update(){
+            this.node_update();
+            this.set_update();
+            this.expand_icon_update();
+        },
+        node_update(){
+
             this.tree_node_group
             .attr("transform", "translate(" + this.layer_height / 2 + ", " 
                 + (this.text_height + this.layer_height / 2) + ")");
@@ -275,7 +316,22 @@ export default {
                     return  "M" + d.link_x + ", " + d.link_top + " L " 
                         + d.link_x + ", " + d.link_bottom;
                 });
-            this.e_links
+        },
+        set_update(){
+
+        },
+        expand_icon_update(){       
+            this.expanded_icon_group
+                .selectAll("path")
+                .data([this.expand_tree])
+                .attr("d", () => {
+                    if (this.expand_tree){
+                        return Global.minus_path_d(0, 0, 10, 10, 2);
+                    }
+                    else{
+                        return Global.plus_path_d(0, 0, 10, 10, 2);
+                    }
+                });
         },
         remove(){
             this.e_nodes.exit()
@@ -284,6 +340,9 @@ export default {
                 .remove();
             this.e_set_links.exit()
                 .remove()
+        },
+        node_remove(){
+
         },
         highlight(ev, d){
             // console.log("highlight in tree");
@@ -348,19 +407,10 @@ export default {
             .attr("width", this.bbox_width)
             .attr("height", this.bbox_height)
             .style("padding-top", "5px");
-        this.svg.append("text")
-            .attr("class", "topname")
-            .attr("x", this.layer_height / 2)
-            .attr("y", this.text_height / 2 + 1)
-            .text("Category");
-        this.svg.append("text")
-            .attr("class", "topname")
-            .attr("x", this.set_left * 1.05)
-            .attr("y", this.text_height / 2 + 1)
-            .text("Detection");
+        this.title_create();
         this.expanded_icon_group = this.svg.append("g")
             .attr("id", "expanded-icon-group")
-            .attr("transform", "translate(" + (0.5) + ", " + (0.5) + ")");
+            .attr("transform", "translate(" + (1) + ", " + (this.text_height) + ")");
         this.tree_node_group = this.svg.append("g")
             .attr("id", "tree-node-group")
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");
@@ -370,12 +420,7 @@ export default {
         this.set_link_group = this.svg.append("g")
             .attr("id", "set-link-group")
             .attr("transform", "translate(" + 0 + ", " + (this.text_height) + ")");
-        // this.tree_layout = d3.tree()
-        //     .nodeSize([self.node_width, self.layer_height]);
-        // this.tree_layout = new tree_layout([this.node_width, this.layer_height], 
-        //     function(a, b){
-        //         return a.parent == b.parent ? 1 : 1;
-        //     });
+
         this.tree_layout = new tree_layout([this.node_width, this.layer_height]);
 
         this.treecut_class = new TreeCut(this.layer_height * 3, this.layout_height);
