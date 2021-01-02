@@ -10,7 +10,7 @@
   import {mapActions} from "vuex"
   import * as d3 from 'd3'
 export default {
-  name: "Image",
+  name: "DetImage",
   data: () => ({}),
   watch: {},
   methods: {
@@ -20,7 +20,7 @@ export default {
   },
   async mounted() {
     window.image = this;
-    let container = d3.select(".action-trail-content");
+    let container = d3.select(".image-content");
     // console.log("container", container);
     let bbox = container.node().getBoundingClientRect();
     self.bbox_width = bbox.width;
@@ -29,7 +29,7 @@ export default {
     self.layout_height = self.bbox_height * 0.98;
     self.svg = container
       .append("svg")
-      .attr("id", "action-trail-svg")
+      .attr("id", "image-svg")
       .attr("width", self.bbox_width)
       .attr("height", self.layout_height);
   },

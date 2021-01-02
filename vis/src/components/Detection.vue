@@ -237,7 +237,7 @@ export default {
         update(){
             this.tree_node_group
             .attr("transform", "translate(" + this.layer_height / 2 + ", " 
-                + (this.layer_height / 2) + ")");
+                + (this.text_height + this.layer_height / 2) + ")");
             this.e_nodes
             .transition()
             .duration(this.update_ani)
@@ -327,8 +327,13 @@ export default {
         let bbox = container.node().getBoundingClientRect();
         this.bbox_width = bbox.width;
         this.bbox_height = bbox.height;
+        
+        // text position
+        this.text_height = this.bbox_height * 0.05; 
+
+        // detection result layout 
         this.layout_width = this.bbox_width;
-        this.layout_height = this.bbox_height;
+        this.layout_height = this.bbox_height - this.text_height;
         this.node_width = 20; // TODO
         this.layer_height = 40; // TODO
         this.set_height = 112;
@@ -340,9 +345,19 @@ export default {
         this.remove_ani = 0;
         this.svg = container.append("svg")
             .attr("id", "main-svg")
-            .attr("width", this.layout_width)
-            .attr("height", this.layout_height)
+            .attr("width", this.bbox_width)
+            .attr("height", this.bbox_height)
             .style("padding-top", "5px");
+        this.svg.append("text")
+            .attr("class", "topname")
+            .attr("x", this.layer_height / 2)
+            .attr("y", this.text_height / 2 + 1)
+            .text("Category");
+        this.svg.append("text")
+            .attr("class", "topname")
+            .attr("x", this.set_left * 1.05)
+            .attr("y", this.text_height / 2 + 1)
+            .text("Detection");
         this.expanded_icon_group = this.svg.append("g")
             .attr("id", "expanded-icon-group")
             .attr("transform", "translate(" + (0.5) + ", " + (0.5) + ")");
@@ -351,10 +366,10 @@ export default {
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");
         this.set_group = this.svg.append("g")
             .attr("id", "set-group")
-            .attr("transform", "translate(" + 0 + ", " + (0) + ")");
+            .attr("transform", "translate(" + 0 + ", " + (this.text_height) + ")");
         this.set_link_group = this.svg.append("g")
             .attr("id", "set-link-group")
-            .attr("transform", "translate(" + 0 + ", " + (0) + ")");
+            .attr("transform", "translate(" + 0 + ", " + (this.text_height) + ")");
         // this.tree_layout = d3.tree()
         //     .nodeSize([self.node_width, self.layer_height]);
         // this.tree_layout = new tree_layout([this.node_width, this.layer_height], 

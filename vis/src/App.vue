@@ -16,16 +16,16 @@
 <script>
 import {mapActions} from "vuex"
 // import ActionTrail from './components/ActionTrail.vue'
-import Text from './components/Text.vue'
-import Image from './components/Image.vue'
+import CapText from './components/Text.vue'
+import DetImage from './components/Image.vue'
 import Detection from "./components/Detection.vue"
 export default {
   name: 'App', 
   components:{
     // "app-action-trail": ActionTrail,
     "app-detection": Detection,
-    "app-text": Text,
-    "app-image": Image,
+    "app-text": CapText,
+    "app-image": DetImage,
   },
   data: () => ({
   }),

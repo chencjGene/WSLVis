@@ -10,7 +10,7 @@
   import {mapActions} from "vuex"
   import * as d3 from 'd3'
   export default {
-    name: 'Text',
+    name: 'CapText',
     data: () => ({
 
     }),
@@ -29,7 +29,7 @@
     },
     async mounted() {
       window.text = this;
-      let container = d3.select(".action-trail-content");
+      let container = d3.select(".text-content");
       // console.log("container", container);
       let bbox = container.node().getBoundingClientRect();
       self.bbox_width = bbox.width;
@@ -37,7 +37,7 @@
       self.layout_width = self.bbox_width - self.margin_horizonal * 2;
       self.layout_height = self.bbox_height * 0.98;
       self.svg = container.append("svg")
-        .attr("id", "action-trail-svg")
+        .attr("id", "text-svg")
         .attr("width", self.bbox_width)
         .attr("height", self.layout_height);
       
