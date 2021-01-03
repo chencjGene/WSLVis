@@ -47,11 +47,13 @@ export default {
         update_data() {
             console.log("detection update data");
             console.log(this.tree);
-            const root = this.tree_layout.layout(this.tree);
-            this.nodes = root.descendants().filter(d => d.name !== "root");
+            // tree layout
+            this.nodes = this.tree_layout.layout_with_nodes(this.tree, this.expand_tree);
+            // minitree layout
             let mat = this.mini_tree_layout.layout(this.tree);
             this.mini_nodes = mat.nodes;
             this.mini_links = mat.links;
+            // set layout
             this.max_text_width = this.nodes.map(d =>
                 Global.getTextWidth(d.data.name, "16px Roboto, sans-serif"));
             console.log("max text width", this.max_text_width);
@@ -451,7 +453,7 @@ export default {
         this.title_create();
         this.expanded_icon_group = this.svg.append("g")
             .attr("id", "expanded-icon-group")
-            .attr("transform", "translate(" + (1) + ", " + (this.text_height) + ")");
+            .attr("transform", "translate(" + (5) + ", " + (this.text_height) + ")");
         this.tree_node_group = this.svg.append("g")
             .attr("id", "tree-node-group")
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");

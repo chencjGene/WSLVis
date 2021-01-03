@@ -66,6 +66,9 @@ const node_icon = function(x, y, type){
             "a" + ratio + ", " + ratio + " 0 1, 0 " + (ratio * 2) + ", 0" +  
             "a" + ratio + ", " + ratio + " 0 1, 0 " + (- ratio * 2) + ", 0"; 
     }
+    else if (type === -1){
+        return "M 0,0 L 0,0";
+    }
     else{
         return 1;
     }

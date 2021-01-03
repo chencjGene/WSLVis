@@ -16,7 +16,8 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
-        expand_tree: true,
+        // expand_tree: true,
+        expand_tree: false,
         focus_node: null,
         set_list: []
     },

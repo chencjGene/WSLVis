@@ -133,7 +133,42 @@ const tree_layout = function(nodeSize){
     that.x_delta = nodeSize[0];
     that.y_delta = nodeSize[1];
 
-    this.layout = function(data){
+    this.layout = function(data, expand_tree){
+        if (expand_tree === false){
+            return that._aligned_layout(data);
+        }
+        else{
+            return that._layout(data);
+        }
+    };
+
+    this.layout_with_nodes = function(data, expand_tree){
+        if (expand_tree === false){
+            return that._aligned_layout(data);
+        }
+        else{
+            const root = that._layout(data);
+            return root.descendants().filter(d => d.name !== "root");
+        }
+    };
+
+    this._aligned_layout = function(data){
+        data.descendants().forEach(d => {
+            if (!d.children) d.children = [];
+        });
+        let nodes = data.descendants().filter(d => d.children.length === 0);
+        nodes.forEach((d, i) => {
+            d.x = 0;
+            d.y = (i - 1) * that.y_delta; // TODO: update y_delta before assignment
+            d.link_x = 0;
+            d.link_top = that.y_delta / 2;
+            d.link_bottom = d.link_top;
+            d.type = -1;
+        });
+        return nodes;
+    }
+
+    this._layout = function(data){
         data.eachBefore((d,i) => {
             d.x = (d.depth - 1) * that.x_delta;
             d.y = (i - 1) * that.y_delta;
@@ -167,7 +202,7 @@ const tree_layout = function(nodeSize){
                 }
             }
             d.type = type;
-        })
+        });
         return data;
     }
 
