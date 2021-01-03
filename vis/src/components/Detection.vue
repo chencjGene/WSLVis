@@ -168,7 +168,7 @@ export default {
             .transition()
             .duration(this.create_ani)
             .delay(this.update_ani + this.remove_ani)
-            .style("opacity", 1);
+            .style("opacity", () => this.expand_tree ? 1 : 0);
             // node name
             node_groups.append("text")
             .text(d => {
@@ -305,10 +305,18 @@ export default {
             this.mini_update();
         },
         node_update(){
-
             this.tree_node_group
-            .attr("transform", "translate(" + this.layer_height / 2 + ", " 
-                + (this.text_height + this.layer_height / 2) + ")");
+            .transition()
+            .duration(this.update_ani)
+            .delay(this.remove_ani)
+            .attr("transform", () => {
+                let x = this.layer_height / 2;
+                if (!this.expand_tree){
+                    x = 0;
+                }
+                return "translate(" + x + ", " 
+                + (this.text_height + this.layer_height / 2) + ")"
+            });
             this.e_nodes
             .transition()
             .duration(this.update_ani)
@@ -331,7 +339,8 @@ export default {
                 .delay(this.remove_ani)
                 .attr("d", function(d){
                     return Global.node_icon(0, 0, d.type);
-                });
+                })
+                .style("opacity", () => this.expand_tree ? 1 : 0);
             this.e_nodes.select("text")
                 .transition()
                 .duration(this.update_ani)
@@ -453,7 +462,7 @@ export default {
         this.title_create();
         this.expanded_icon_group = this.svg.append("g")
             .attr("id", "expanded-icon-group")
-            .attr("transform", "translate(" + (5) + ", " + (this.text_height) + ")");
+            .attr("transform", "translate(" + (5) + ", " + (this.text_height * 0.8) + ")");
         this.tree_node_group = this.svg.append("g")
             .attr("id", "tree-node-group")
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");

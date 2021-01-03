@@ -157,13 +157,19 @@ const tree_layout = function(nodeSize){
             if (!d.children) d.children = [];
         });
         let nodes = data.descendants().filter(d => d.children.length === 0);
-        nodes.forEach((d, i) => {
+        let y_delta = that.y_delta * (data.descendants().length - 1) / nodes.length;
+        let layer = 0;
+        data.eachBefore(d => {
+            if (d.children.length === 0){
+                d.y = layer * y_delta;
+                layer += 1;
+            }
+        })
+        nodes.forEach((d) => {
             d.x = 0;
-            d.y = (i - 1) * that.y_delta; // TODO: update y_delta before assignment
             d.link_x = 0;
             d.link_top = that.y_delta / 2;
             d.link_bottom = d.link_top;
-            d.type = -1;
         });
         return nodes;
     }
