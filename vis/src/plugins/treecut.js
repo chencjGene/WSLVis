@@ -1,4 +1,4 @@
-// import * as d3 from "d3"
+import * as d3 from "d3"
 // import {deepCopy} from "../plugins/global"
 
 function assert(flag, string){
@@ -90,6 +90,43 @@ function assert(flag, string){
 //         return data;
 //     }
 // }
+
+const mini_tree_layout = function(Size){
+    let that = this;
+    that.Size = Size;
+    
+    this.layout = function(data){
+        // backup state
+        data.all_descendants.forEach(d => {
+            d.backup_children = d.children;
+            d.children = d.all_children;
+            if (d.children && d.children.length === 0) d.children = undefined;
+            d.backup_x = d.x;
+            d.backup_y = d.y;
+        });
+
+        // tree layout
+        data = d3.tree()
+        .size(that.Size)(data);
+        let nodes = data.descendants();
+        let links = data.links();
+
+        // restore state 
+        data.descendants().forEach(d => {
+            d.mini_x = d.x;
+            d.mini_y = d.y;
+            d.x = d.backup_x;
+            d.y = d.backup_y;
+            d.children = d.backup_children;
+            d.mini_selected = false;
+        });
+
+        // set selected state
+        data.descendants().forEach(d => d.mini_selected = true);
+
+        return {nodes, links};
+    };
+};
 
 const tree_layout = function(nodeSize){
     let that = this;
@@ -594,4 +631,4 @@ const TreeCut = function (bbox_width, bbox_height) {
     // }
 };
 
-export {TreeCut, tree_layout}
+export {TreeCut, tree_layout, mini_tree_layout}

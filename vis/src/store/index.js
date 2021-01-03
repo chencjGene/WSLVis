@@ -68,6 +68,7 @@ const store = new Vuex.Store({
 
                 }
             });
+            state.tree.all_descendants = state.tree.descendants();
 
             // process set
             state.set_list = hypergraph_data.set_list

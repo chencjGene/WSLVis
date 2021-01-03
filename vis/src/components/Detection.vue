@@ -10,7 +10,7 @@
 import {mapActions, mapState, mapMutations} from "vuex"
 import * as d3 from "d3"
 import * as Global from '../plugins/global'
-import {TreeCut, tree_layout} from "../plugins/treecut"
+import {mini_tree_layout, TreeCut, tree_layout} from "../plugins/treecut"
 import {SetManager} from "../plugins/set_manager"
 export default {
     name: "Detection",
@@ -49,11 +49,14 @@ export default {
             console.log(this.tree);
             const root = this.tree_layout.layout(this.tree);
             this.nodes = root.descendants().filter(d => d.name !== "root");
-            this.max_text_width = this.nodes.map(d => 
+            let mat = this.mini_tree_layout.layout(this.tree);
+            this.mini_nodes = mat.nodes;
+            this.mini_links = mat.links;
+            this.max_text_width = this.nodes.map(d =>
                 Global.getTextWidth(d.data.name, "16px Roboto, sans-serif"));
             console.log("max text width", this.max_text_width);
             this.max_text_width = Math.max(...this.max_text_width);
-            this.leaf_nodes = this.nodes.filter(d => d.children.length == 0);
+            this.leaf_nodes = this.nodes.filter(d => d.children.length === 0);
             console.log("leaf_nodes", this.leaf_nodes);
             this.set_manager.update_leaf_nodes(this.leaf_nodes);
             // this.set_manager.update_tree_root(2, this.layout_height / 2 - this.offset);
@@ -67,6 +70,10 @@ export default {
 
             this.e_nodes = this.tree_node_group.selectAll(".tree-node")
             .data(this.nodes, d => d.id);
+            this.e_mini_nodes = this.mini_tree_node_group.selectAll(".mini-tree-node")
+            .data(this.mini_nodes, d => d.id);
+            this.e_mini_links = this.mini_tree_link_group.selectAll(".mini-tree-link")
+            .data(this.mini_links);
             this.e_sets = this.set_group.selectAll(".set")
             .data(this.sets); //TODO: id map
             this.e_set_links = this.set_link_group.selectAll(".set-link")
@@ -83,6 +90,7 @@ export default {
             this.node_create();
             this.set_create();
             this.expand_icon_create();
+            this.mini_create();
         },
         node_create(){
             // node circle
@@ -187,6 +195,25 @@ export default {
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
         },
+        mini_create(){
+            this.e_mini_nodes.enter()
+                .append("circle")
+                .attr("class", "mini-tree-node")
+                .attr("r", 1)
+                .attr("cx", d => d.mini_y)
+                .attr("cy", d => d.mini_x);
+            this.e_mini_links.enter()
+                .append("path")
+                .attr("class", d => {
+                    if (d.target.mini_selected){
+                        return "mini-tree-link mini-highlight";
+                    }
+                    else{
+                        return "mini-tree-link";
+                    }
+                })
+                .attr("d", d3.linkHorizontal().x(d=>d.mini_y).y(d=>d.mini_x));
+        },
         set_create(){
             // set
             let set_groups = this.e_sets.enter()
@@ -273,6 +300,7 @@ export default {
             this.node_update();
             this.set_update();
             this.expand_icon_update();
+            this.mini_update();
         },
         node_update(){
 
@@ -317,6 +345,9 @@ export default {
                         + d.link_x + ", " + d.link_bottom;
                 });
         },
+        mini_update(){
+
+        },
         set_update(){
 
         },
@@ -339,9 +370,13 @@ export default {
             this.e_sets.exit()
                 .remove();
             this.e_set_links.exit()
-                .remove()
+                .remove();
+            this.mini_remove();
         },
         node_remove(){
+
+        },
+        mini_remove(){
 
         },
         highlight(ev, d){
@@ -390,6 +425,12 @@ export default {
         // text position
         this.text_height = this.bbox_height * 0.05; 
 
+        // mini tree
+        this.mini_tree_width = 30;
+        this.mini_tree_height = 80;
+        this.mini_tree_x = 120;
+        this.mini_tree_y = 5;
+
         // detection result layout 
         this.layout_width = this.bbox_width;
         this.layout_height = this.bbox_height - this.text_height;
@@ -414,6 +455,12 @@ export default {
         this.tree_node_group = this.svg.append("g")
             .attr("id", "tree-node-group")
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");
+        this.mini_tree_node_group = this.svg.append("g")
+            .attr("id", "mini-tree-node-group")
+            .attr("transform", "translate(" + this.mini_tree_x + ", " + this.mini_tree_y + ")");
+        this.mini_tree_link_group = this.svg.append("g")
+            .attr("id", "mini-tree-link-group")
+            .attr("transform", "translate(" + this.mini_tree_x + ", " + this.mini_tree_y + ")");
         this.set_group = this.svg.append("g")
             .attr("id", "set-group")
             .attr("transform", "translate(" + 0 + ", " + (this.text_height) + ")");
@@ -423,9 +470,13 @@ export default {
 
         this.tree_layout = new tree_layout([this.node_width, this.layer_height]);
 
+        this.mini_tree_layout = new mini_tree_layout([this.mini_tree_width, 
+            this.mini_tree_height]);
+
         this.treecut_class = new TreeCut(this.layer_height * 3, this.layout_height);
 
         this.set_manager = new SetManager();
+        
         this.set_manager.update_layout({
             "layout_width": this.layout_width,
             "layout_height": this.layout_height,
@@ -449,6 +500,19 @@ export default {
 
 .set-link{
     fill: none;
+}
+
+.mini-tree-node{
+    fill: #dfdfdf;
+}
+
+.mini-tree-link{
+    stroke: #dfdfdf;
+    fill: none;
+}
+
+.mini-highlight{
+    stroke: #5f5f5f;
 }
 
 .main-content {
