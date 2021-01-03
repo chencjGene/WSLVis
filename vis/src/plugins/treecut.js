@@ -108,6 +108,7 @@ const mini_tree_layout = function(Size){
         // tree layout
         data = d3.tree()
         .size(that.Size)(data);
+        
         let nodes = data.descendants();
         let links = data.links();
 

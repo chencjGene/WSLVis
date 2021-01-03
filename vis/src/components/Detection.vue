@@ -76,6 +76,8 @@ export default {
             .data(this.mini_nodes, d => d.id);
             this.e_mini_links = this.mini_tree_link_group.selectAll(".mini-tree-link")
             .data(this.mini_links);
+            this.e_shadow_links = this.mini_shadow_link_group.selectAll(".mini-highlight")
+            .data(this.mini_links);
             this.e_sets = this.set_group.selectAll(".set")
             .data(this.sets); //TODO: id map
             this.e_set_links = this.set_link_group.selectAll(".set-link")
@@ -201,20 +203,33 @@ export default {
             this.e_mini_nodes.enter()
                 .append("circle")
                 .attr("class", "mini-tree-node")
-                .attr("r", 1)
+                .attr("id", d => "mini-id-" + d.id)
+                .attr("r", 0.5)
                 .attr("cx", d => d.mini_y)
-                .attr("cy", d => d.mini_x);
+                .attr("cy", d => d.mini_x)
+                .style("fill-opacity", 0)
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.remove_ani + this.update_ani)
+                .style("fill-opacity", 1);
             this.e_mini_links.enter()
                 .append("path")
-                .attr("class", d => {
-                    if (d.target.mini_selected){
-                        return "mini-tree-link mini-highlight";
-                    }
-                    else{
-                        return "mini-tree-link";
-                    }
-                })
-                .attr("d", d3.linkHorizontal().x(d=>d.mini_y).y(d=>d.mini_x));
+                .attr("class", "mini-tree-link")
+                .attr("d", d3.linkHorizontal().x(d=>d.mini_y).y(d=>d.mini_x))
+                .style("opacity", 0)
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.remove_ani + this.update_ani)
+                .style("opacity", 1);
+            this.e_shadow_links.enter()
+                .append("path")
+                .attr("class", "mini-highlight")
+                .attr("d", d3.linkHorizontal().x(d=>d.mini_y).y(d=>d.mini_x))
+                .style("opacity", 0)
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.remove_ani + this.update_ani)
+                .style("opacity", d => d.target.mini_selected ? 1: 0);
         },
         set_create(){
             // set
@@ -357,6 +372,23 @@ export default {
                 });
         },
         mini_update(){
+            this.e_mini_nodes
+                .transition()
+                .duration(this.update_ani)
+                .delay(this.remove_ani)
+                .attr("cx", d => d.mini_y)
+                .attr("cy", d => d.mini_x);
+            this.e_mini_links
+                .transition()
+                .duration(this.update_ani)
+                .delay(this.remove_ani)
+                .attr("d", d3.linkHorizontal().x(d=>d.mini_y).y(d=>d.mini_x));
+            this.e_shadow_links
+                .transition()
+                .duration(d => d.target.mini_selected ? this.create_ani : this.update_ani)
+                .delay(d => d.target.mini_selected ? this.update_ani + this.remove_ani : this.remove_ani)
+                .attr("d", d3.linkHorizontal().x(d=>d.mini_y).y(d=>d.mini_x))
+                .style("opacity", d => d.target.mini_selected ? 1: 0);
 
         },
         set_update(){
@@ -437,7 +469,7 @@ export default {
         this.text_height = this.bbox_height * 0.05; 
 
         // mini tree
-        this.mini_tree_width = 30;
+        this.mini_tree_width = 35;
         this.mini_tree_height = 80;
         this.mini_tree_x = 120;
         this.mini_tree_y = 5;
@@ -471,6 +503,9 @@ export default {
             .attr("transform", "translate(" + this.mini_tree_x + ", " + this.mini_tree_y + ")");
         this.mini_tree_link_group = this.svg.append("g")
             .attr("id", "mini-tree-link-group")
+            .attr("transform", "translate(" + this.mini_tree_x + ", " + this.mini_tree_y + ")");
+        this.mini_shadow_link_group = this.svg.append("g")
+            .attr("id", "mini-shadow-link-group")
             .attr("transform", "translate(" + this.mini_tree_x + ", " + this.mini_tree_y + ")");
         this.set_group = this.svg.append("g")
             .attr("id", "set-group")
@@ -522,8 +557,13 @@ export default {
     fill: none;
 }
 
+/* .mini-shadow-link{
+    stroke:
+} */
+
 .mini-highlight{
     stroke: #5f5f5f;
+    fill: none;
 }
 
 .main-content {
