@@ -39,7 +39,7 @@ export default {
             console.log("detection treecut");
             console.log("before treecut", this.tree);
             this.offset = this.treecut_class
-                .treeCut(this.focus_node, this.tree, this.tree_layout.layout);
+                .treeCut(this.focus_node, this.tree, this.tree_layout.layout_with_nodes);
             this.offset = 0;
             this.tree.sort(function(a,b) {return a.siblings_id - b.siblings_id});
             console.log("after treecut", this.tree);
@@ -466,7 +466,7 @@ export default {
         this.bbox_height = bbox.height;
         
         // text position
-        this.text_height = this.bbox_height * 0.05; 
+        this.text_height = this.bbox_height * 0.06; 
 
         // mini tree
         this.mini_tree_width = 35;
@@ -514,12 +514,12 @@ export default {
             .attr("id", "set-link-group")
             .attr("transform", "translate(" + 0 + ", " + (this.text_height) + ")");
 
-        this.tree_layout = new tree_layout([this.node_width, this.layer_height]);
+        this.tree_layout = new tree_layout([this.node_width, this.layer_height], this.layout_height);
 
         this.mini_tree_layout = new mini_tree_layout([this.mini_tree_width, 
             this.mini_tree_height]);
 
-        this.treecut_class = new TreeCut(this.layer_height * 3, this.layout_height);
+        this.treecut_class = new TreeCut(this.layer_height * 5, this.layout_height, this.layer_height);
 
         this.set_manager = new SetManager();
         

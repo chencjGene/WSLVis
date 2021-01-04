@@ -129,10 +129,11 @@ const mini_tree_layout = function(Size){
     };
 };
 
-const tree_layout = function(nodeSize){
+const tree_layout = function(nodeSize, layout_height){
     let that = this;
     that.x_delta = nodeSize[0];
     that.y_delta = nodeSize[1];
+    that.layout_height = layout_height;
 
     this.layout = function(data, expand_tree){
         if (expand_tree === false){
@@ -158,7 +159,9 @@ const tree_layout = function(nodeSize){
             if (!d.children) d.children = [];
         });
         let nodes = data.descendants().filter(d => d.children.length === 0);
-        let y_delta = that.y_delta * (data.descendants().length - 1) / nodes.length;
+        // let y_delta = that.y_delta * (data.descendants().length - 1) / nodes.length;
+        let y_delta = that.layout_height / (nodes.length);
+        console.log("y_delta in aligned_layout", y_delta);
         let layer = 0;
         data.eachBefore(d => {
             if (d.children.length === 0){
@@ -215,12 +218,13 @@ const tree_layout = function(nodeSize){
 
 }
 
-const TreeCut = function (bbox_width, bbox_height) {
+const TreeCut = function (bbox_width, bbox_height, layer_height) {
     let _this = this;
     let _tree = null;
     let _tree_layout = null;
     let _bbox_width = bbox_width;
     let _bbox_height = bbox_height;
+    let _layer_height = layer_height;
     let pinArray = [];
     let clickQueue = [];
     let tmp_children = {};
@@ -242,7 +246,7 @@ const TreeCut = function (bbox_width, bbox_height) {
     };
 
     this.candraw = function(root){
-        let nodes = _tree_layout(root).descendants();
+        let nodes = _tree_layout(root);
         _this.recover_children(root);
         let x1 = Number.MAX_VALUE, x2 = Number.MIN_VALUE, y1 = Number.MAX_VALUE, y2 = Number.MIN_VALUE;
         for (let i = 0; i < nodes.length; i++) {
@@ -263,8 +267,8 @@ const TreeCut = function (bbox_width, bbox_height) {
         //if(max_depth === 5){
         //    console.log("candraw max_depth", max_depth, y2, y1);
         //}
-        // console.log(x1, x2, y1, y2, bbox_width, bbox_height);
-        if (x2 - x1 > _bbox_width - 20 || y2 - y1 > _bbox_height) {
+        console.log(x1, x2, y1, y2, _bbox_width, _bbox_height, _layer_height);
+        if (x2 - x1 > _bbox_width || y2 - y1 > (_bbox_height - _layer_height)) {
             return false;
         }
         //if(max_depth === 5){
@@ -524,9 +528,10 @@ const TreeCut = function (bbox_width, bbox_height) {
         }
         let source = sources[0];
         _this.initial(_tree);
-        let nodes = _tree_layout(_tree).descendants(); // update depth
+        let nodes = _tree_layout(_tree); // update depth
         nodes.forEach(d=>d.debug_visited=false);
         traverse_for_doi(_tree, source);
+        console.log("source in treecut", sources);
         clickQueue = get_selection_array(_tree, sources);
         console.log("clickqueue", clickQueue);
         pinArray = nodes.filter(d=>d.pinned);
@@ -557,7 +562,7 @@ const TreeCut = function (bbox_width, bbox_height) {
         };
         let p = LCA2(r1, r2);
         let d = r1.depth + r2.depth - p.depth * 2;
-        assert(d>=0, "distance error!!!");
+        assert(d >= 0, "distance error!!!");
         if (p == r2) return d / 5;
         return d;
     }
@@ -567,12 +572,13 @@ const TreeCut = function (bbox_width, bbox_height) {
         //calculate present doi
         let alpha = 0.6, beta = 0.4, decay = 0.9;
         let dis = tree_distance(r, source);
-        r.doi = r.doi * (decay * alpha + 1.0 / (dis + 1) / (dis + 1) * beta);
+        // r.doi = r.doi * (decay * alpha + 1.0 / (dis + 1) / (dis + 1) * beta);
+        r.doi = r.api + 1.0 / (dis + 1) / (dis + 1) * beta;
         assert(!isNaN(r.doi), "doi NaN error!");
         r.in_selection_array = false;
         if(!r.children){return;}
-        for(let i = 0; i < r.children.length; i++){
-            traverse_for_doi(r.children[i], source);
+        for(let i = 0; i < r.all_children.length; i++){
+            traverse_for_doi(r.all_children[i], source);
         }
     }
 

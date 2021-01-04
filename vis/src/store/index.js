@@ -16,8 +16,7 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
-        // expand_tree: true,
-        expand_tree: false,
+        expand_tree: true,
         focus_node: null,
         set_list: []
     },
@@ -54,7 +53,7 @@ const store = new Vuex.Store({
                 element.all_children = element.children;
                 if(element.children) element.children.forEach((d,i) => d.siblings_id = i);
                 element._children = [];
-                element._total_width = 2;
+                element._total_width = 0;
                 if (!element.data.sets){
                     let arr = element.children.map(d => d.data.sets);
                     element.data.sets = unique(Array.prototype.concat.call(arr));
