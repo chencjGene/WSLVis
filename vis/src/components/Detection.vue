@@ -133,31 +133,38 @@ export default {
                 .delay(this.remove_ani + this.update_ani)
                 .style("fill-opacity", 1);
 
-            // // precision and recall
-            // node_groups.append("g")
-            //     .attr("class", "prob-bar")
-            //     .selectAll("rect")
-            //     .data(d => {
-            //         let lens = [d.data.precision, d.data.recall];
-            //         // let color = ["#FF9395", "#AAC6E6"];
-            //         let color = ["gray", "gray"];
-            //         return [
-            //             {"len":lens[0], "color": color[0]},
-            //             {"len":lens[1], "color": color[1]}
-            //         ]
-            //     })
-            //     .enter()
-            //     .append("rect")
-            //     .attr("x", this.layer_height / 2)
-            //     .attr("y", (_, i) => i * 3.5 + 8)
-            //     .attr("height", 3)
-            //     .attr("width", d => 80 * Math.pow(d.len, 0.8))
-            //     .style("fill", d => d.color)
-            //     .style("fill-opacity", 0)
-            //     .transition()
-            //     .duration(this.create_ani)
-            //     .delay(this.remove_ani + this.update_ani)
-            //     .style("fill-opacity", 1);
+            
+            // precision and recall
+            let bars = node_groups.append("g")
+                .attr("class", "node-bars")
+                .attr("transform", d => "translate(" + (this.max_text_width - 25) + 
+                    ", " + (- (this.bar_height - this.rounded_r) / 2) + ")");
+            bars.append("rect")
+                .attr("class", "bar-background")
+                .attr("rx", this.rounded_r)
+                .attr("ry", this.rounded_r)
+                .attr("y",  - this.rounded_r)
+                .attr("width", this.bar_width * 2)
+                .attr("height", this.bar_height + this.rounded_r);
+            bars.append("path")
+                .attr("class", "bar-precision")
+                .attr("d", d => Global.half_rounded_rect(0, (1 - d.data.precision) * this.bar_height, 10, 
+                    d.data.precision * this.bar_height, this.rounded_r, 0));
+            bars.append("path")
+                .attr("class", "bar-recall")
+                .attr("d", d => Global.half_rounded_rect(10, (1 - d.data.recall) * this.bar_height, 10, 
+                    d.data.recall * this.bar_height, 0, this.rounded_r));
+            bars.append("rect")
+                .attr("class", "bar-line")
+                .attr("x", 10 - 0.5 / 2)
+                .attr("y", - this.rounded_r)
+                .attr("width", 0.5)
+                .attr("height", this.bar_height + this.rounded_r);
+            bars.style("opacity", 0)
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.remove_ani + this.update_ani)
+                .style("opacity", 1);
 
             node_groups
             .append("path")
@@ -178,7 +185,8 @@ export default {
             })
             .attr("text-anchor", "start")
             .attr("x", this.layer_height / 2)
-            .attr("dy", ".25em")
+            .attr("font-size", "18px")
+            .attr("dy", ".3em")
             .style("opacity", 0)
             .transition()
             .duration(this.create_ani)
@@ -474,11 +482,18 @@ export default {
         this.mini_tree_x = 120;
         this.mini_tree_y = 5;
 
+
         // detection result layout 
         this.layout_width = this.bbox_width;
         this.layout_height = this.bbox_height - this.text_height;
         this.node_width = 20; // TODO
         this.layer_height = 40; // TODO
+
+        // bar size
+        this.bar_width = 10;
+        this.bar_height = this.layer_height * 0.5
+        this.rounded_r = 3;
+
         this.set_height = 112;
         this.set_left = this.layer_height * 3 + 200;
         this.set_width = this.layout_width - this.set_left;
@@ -550,6 +565,23 @@ export default {
 
 .mini-tree-node{
     fill: #dfdfdf;
+}
+
+.bar-background{
+    fill: white;
+    stroke: rgb(127, 127, 127);
+}
+
+.bar-line{
+    fill: rgb(127, 127, 127);
+}
+
+.bar-precision{
+    fill: rgb(201, 130, 206);
+}
+
+.bar-recall{
+    fill: rgb(79, 167, 255);
 }
 
 .mini-tree-link{

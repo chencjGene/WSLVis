@@ -66,7 +66,6 @@ const store = new Vuex.Store({
                 if (!element.data.recall){
                     let s = element.all_children.map(d=>d.data.recall);
                     if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
-
                 }
             });
             state.tree.all_descendants = state.tree.descendants();

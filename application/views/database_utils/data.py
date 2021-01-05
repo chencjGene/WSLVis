@@ -10,7 +10,7 @@ from ..utils.helper_utils import draw_box,check_dir
 from ..database_utils.utils import decoding_categories, encoding_categories
 from ..database_utils.utils import TFIDFTransform, rule_based_processing, get_precision_and_recall
 
-DEBUG = True
+DEBUG = False
 
 class Data(object):
     def __init__(self, dataname, suffix=""):

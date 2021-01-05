@@ -105,6 +105,20 @@ function minus_path_d(start_x, start_y, width, height, k){
     return d;
 }
 
+function half_rounded_rect(x, y, w, h, r_left, r_right){
+    // assert(w > 2 * r, "w > 2 * r")
+    // assert(h > r, "h > r")
+    let p1 = {x: x, y: y};
+    let p2 = {x: x + w, y: y};
+    let p3 = {x: x + w, y: y + h - r_right};
+    let delta4 = {x: -r_right, y: r_right};
+    let p5 = {x: x + r_left, y: y + h};
+    let delta6 = {x: -r_left, y: - r_left};
+    return "M" + pos2str(p1) + "L" + pos2str(p2) + "L" + pos2str(p3) + "a" + r_right + ", " + r_right
+        + " 0,0,1 " + pos2str(delta4) + "L" + pos2str(p5) +  "a" + r_left + ", " + r_left 
+        + " 0,0,1 " + pos2str(delta6) + "z";
+}
+
 export {
     GrayColor,
     Animation,
@@ -115,4 +129,5 @@ export {
     node_icon,
     plus_path_d,
     minus_path_d,
+    half_rounded_rect
 }
