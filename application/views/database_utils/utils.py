@@ -103,7 +103,11 @@ def TFIDFTransform(texts, gram_min=1, gram_max=1):
     tfidf = tfidf_transformer.fit_transform(X)
     return tfidf, vocals
 
-def rule_based_processing(extracted_labels):
+def rule_based_processing(extracted_labels, suffix="step1"):
+    enable_rules = True
+    if suffix == "":
+        enable_rules = False
+    print("enable_rules", enable_rules)
     string = extracted_labels["string"]
     # string = [s + " " for s in string]
     # string = "".join(string)
@@ -113,13 +117,13 @@ def rule_based_processing(extracted_labels):
     for act in extracted_labels["activations"]:
         cats = act["cats"]
         skip_cats = skip_pair.get(act["text"], [])
-        if (act["idx"]+1) < len(string) and string[act["idx"]] + " " + string[act["idx"]+1] in skip_tuples:
+        if enable_rules and (act["idx"]+1) < len(string) and string[act["idx"]] + " " + string[act["idx"]+1] in skip_tuples:
             # import IPython; IPython.embed(); exit()
             continue
-        if (act["idx"]) > 0 and string[act["idx"] - 1] + " " + string[act["idx"]] in skip_tuples:
+        if enable_rules and (act["idx"]) > 0 and string[act["idx"] - 1] + " " + string[act["idx"]] in skip_tuples:
             continue
         for c in cats:
-            if c in skip_cats:
+            if enable_rules and c in skip_cats:
                 continue
             pred[c] = 1
     

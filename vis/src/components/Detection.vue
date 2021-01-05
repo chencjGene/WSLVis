@@ -57,7 +57,7 @@ export default {
             this.max_text_width = this.nodes.map(d =>
                 Global.getTextWidth(d.data.name, "16px Roboto, sans-serif"));
             console.log("max text width", this.max_text_width);
-            this.max_text_width = Math.max(...this.max_text_width) + 20;
+            this.max_text_width = Math.max(...this.max_text_width) + 10;
             this.leaf_nodes = this.nodes.filter(d => d.children.length === 0);
             console.log("leaf_nodes", this.leaf_nodes);
             this.set_manager.update_leaf_nodes(this.leaf_nodes);
@@ -137,7 +137,7 @@ export default {
             // precision and recall
             let bars = node_groups.append("g")
                 .attr("class", "node-bars")
-                .attr("transform", d => "translate(" + (this.max_text_width - 25) + 
+                .attr("transform", d => "translate(" + (this.max_text_width - 15) + 
                     ", " + (- (this.bar_height - this.rounded_r) / 2) + ")");
             bars.append("rect")
                 .attr("class", "bar-background")
@@ -148,15 +148,15 @@ export default {
                 .attr("height", this.bar_height + this.rounded_r);
             bars.append("path")
                 .attr("class", "bar-precision")
-                .attr("d", d => Global.half_rounded_rect(0, (1 - d.data.precision) * this.bar_height, 10, 
-                    d.data.precision * this.bar_height, this.rounded_r, 0));
+                .attr("d", d => Global.half_rounded_rect(0, (1 - d.data.precision) * this.bar_height,
+                    this.bar_width, d.data.precision * this.bar_height, this.rounded_r, 0));
             bars.append("path")
                 .attr("class", "bar-recall")
-                .attr("d", d => Global.half_rounded_rect(10, (1 - d.data.recall) * this.bar_height, 10, 
-                    d.data.recall * this.bar_height, 0, this.rounded_r));
+                .attr("d", d => Global.half_rounded_rect(this.bar_width, (1 - d.data.recall) * this.bar_height, 
+                    this.bar_width, d.data.recall * this.bar_height, 0, this.rounded_r));
             bars.append("rect")
                 .attr("class", "bar-line")
-                .attr("x", 10 - 0.5 / 2)
+                .attr("x", this.bar_width - 0.5 / 2)
                 .attr("y", - this.rounded_r)
                 .attr("width", 0.5)
                 .attr("height", this.bar_height + this.rounded_r);
@@ -348,6 +348,7 @@ export default {
             this.e_nodes.select("rect.background")
                 .transition()
                 .duration(this.update_ani)
+                .delay(this.remove_ani)
                 .attr("x", this.layer_height / 4)
                 .attr("y", - this.layer_height * 0.8 / 2)
                 .attr("height", this.layer_height * 0.8)
@@ -378,6 +379,21 @@ export default {
                     return  "M" + d.link_x + ", " + d.link_top + " L " 
                         + d.link_x + ", " + d.link_bottom;
                 });
+
+            let bars = this.e_nodes.select("g.node-bars")
+                .transition()
+                .duration(this.update_ani)
+                .delay(this.remove_ani)
+                .attr("transform", d => "translate(" + (this.max_text_width - 15) + 
+                    ", " + (- (this.bar_height - this.rounded_r) / 2) + ")");
+            bars.select("path.bar-precision")
+                .attr("d", d => Global.half_rounded_rect(0, (1 - d.data.precision) * this.bar_height,
+                    this.bar_width, d.data.precision * this.bar_height, this.rounded_r, 0));
+            bars.select("path.bar-recall")
+                .attr("d", d => Global.half_rounded_rect(this.bar_width, (1 - d.data.recall) * this.bar_height, 
+                    this.bar_width, d.data.recall * this.bar_height, 0, this.rounded_r));
+
+                
         },
         mini_update(){
             this.e_mini_nodes
@@ -490,8 +506,8 @@ export default {
         this.layer_height = 40; // TODO
 
         // bar size
-        this.bar_width = 10;
-        this.bar_height = this.layer_height * 0.5
+        this.bar_width = 8;
+        this.bar_height = this.layer_height * 0.45
         this.rounded_r = 3;
 
         this.set_height = 112;

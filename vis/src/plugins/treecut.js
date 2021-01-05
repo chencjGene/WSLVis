@@ -319,7 +319,7 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
         }
         // let ratio = d.value_new.reduce((acc,x) => acc + x) / d.value.reduce((acc,x) => acc + x);
         //d.api = d._total_width * (1 + 10 * ratio) - 5 * Uncertainty(d);
-        d.api = 1 //Math.sqrt(d._total_width) * (1 + 10 * ratio) ;
+        d.api = 1 - (d.data.precision + d.data.recall) / 2; //Math.sqrt(d._total_width) * (1 + 10 * ratio) ;
         assert(!isNaN(d.api), "api NaN error");
         d.doi = d.api;
         d.all_children.forEach(_this._initial);

@@ -67,7 +67,7 @@ class Data(object):
         labels = []
         for i in self.labeled_idx:
             el = self.annos[i]["extracted_labels"]
-            el["rule_logit"] = rule_based_processing(el)
+            el["rule_logit"] = rule_based_processing(el, self.suffix)
             labels.append(el)
         self.labeled_p, self.precision, self.recall = get_precision_and_recall(labels)
 
