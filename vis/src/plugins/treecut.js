@@ -570,7 +570,8 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
     function traverse_for_doi(r, source) {
         assert(source, "source is empty");
         //calculate present doi
-        let alpha = 0.6, beta = 0.4, decay = 0.9;
+        // let alpha = 0.6, beta = 0.4, decay = 0.9;
+        let beta = 1;
         let dis = tree_distance(r, source);
         // r.doi = r.doi * (decay * alpha + 1.0 / (dis + 1) / (dis + 1) * beta);
         r.doi = r.api + 1.0 / (dis + 1) / (dis + 1) * beta;

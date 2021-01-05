@@ -16,7 +16,7 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
-        expand_tree: true,
+        expand_tree: false,
         focus_node: null,
         set_list: []
     },
@@ -46,7 +46,8 @@ const store = new Vuex.Store({
             }
             state.tree.eachAfter(element => {
                 element.id = element.data.id;
-                element.name = element.data.name;
+                element.full_name = element.data.name;
+                element.name = element.data.abbr_name;
                 // all_children: all children
                 // children: children that are visible
                 // _children: children that are invisible

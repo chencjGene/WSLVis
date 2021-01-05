@@ -57,7 +57,7 @@ export default {
             this.max_text_width = this.nodes.map(d =>
                 Global.getTextWidth(d.data.name, "16px Roboto, sans-serif"));
             console.log("max text width", this.max_text_width);
-            this.max_text_width = Math.max(...this.max_text_width);
+            this.max_text_width = Math.max(...this.max_text_width) + 20;
             this.leaf_nodes = this.nodes.filter(d => d.children.length === 0);
             console.log("leaf_nodes", this.leaf_nodes);
             this.set_manager.update_leaf_nodes(this.leaf_nodes);
@@ -120,7 +120,7 @@ export default {
                 .attr("height", this.layer_height * 0.8)
                 .attr("width", () => {
                     // return Global.getTextWidth(d.data.name, "16px Roboto, sans-serif") + this.layer_height / 2; 
-                    return this.max_text_width + 50;
+                    return this.max_text_width;
                 })
                 .style("fill", "#EBEBF3")
                 .style("fill-opacity", 0)
@@ -345,7 +345,7 @@ export default {
                 .attr("height", this.layer_height * 0.8)
                 .attr("width", () => {
                     // return Global.getTextWidth(d.data.name, "16px Roboto, sans-serif") + this.layer_height / 2; 
-                    return this.max_text_width + 50;
+                    return this.max_text_width;
                 });
             
             this.e_nodes.select("path.icon")

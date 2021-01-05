@@ -59,7 +59,7 @@ class Data(object):
         self.add_info = processed_data[config.add_info_name]
 
         # load hierarchy
-        self.tree = json_load_data(os.path.join(self.data_root, "hierarchy.json"))
+        self.tree = json_load_data(os.path.join(self.data_root, "hierarchy-abbr.json"))
 
         logger.info("end loading data from processed data!")
 
