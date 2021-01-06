@@ -1,5 +1,13 @@
-<template>  
+<template> 
     <v-col cols="9" class="main-view fill-height">
+        <info-tooltip
+        :left="tooltip.left"
+        :top="tooltip.top"
+        :width="tooltip.width"
+        :show="tooltip.show"
+        :content="tooltip.content"
+        >
+        </info-tooltip>
         <v-col cols="12" class="main-content pa-0">
         </v-col>
     </v-col>
@@ -12,8 +20,12 @@ import * as d3 from "d3"
 import * as Global from '../plugins/global'
 import {mini_tree_layout, TreeCut, tree_layout} from "../plugins/treecut"
 import {SetManager} from "../plugins/set_manager"
+import InfoTooltip from "../components/infotooltip";
 export default {
     name: "Detection",
+    components:{
+        InfoTooltip: InfoTooltip
+    },
     data: () =>({
         bbox_width: null,
         bbox_height: null,
@@ -25,7 +37,7 @@ export default {
     }),
     computed:{
         ...mapState([
-           "tree", "set_list", "focus_node", "expand_tree" 
+           "tree", "set_list", "focus_node", "expand_tree", "tooltip"
         ])
     },
     methods:{
@@ -33,7 +45,7 @@ export default {
             "fetch_hypergraph"
         ]),
         ...mapMutations([
-            "set_focus_node", "set_expand_tree"
+            "set_focus_node", "set_expand_tree", "showTooltip", "hideTooltip"
         ]),
         treecut() {
             console.log("detection treecut");
@@ -48,16 +60,19 @@ export default {
             console.log("detection update data");
             console.log(this.tree);
             // tree layout
-            this.nodes = this.tree_layout.layout_with_nodes(this.tree, this.expand_tree);
+            this.nodes = this.tree_layout.layout_with_rest_node(this.tree, this.expand_tree);
+            this.rest_nodes = this.nodes.filter(d => d.is_rest_node);
+            this.nodes = this.nodes.filter(d => !d.is_rest_node);
             // minitree layout
             let mat = this.mini_tree_layout.layout(this.tree);
             this.mini_nodes = mat.nodes;
             this.mini_links = mat.links;
             // set layout
-            this.max_text_width = this.nodes.map(d =>
-                Global.getTextWidth(d.data.name, "16px Roboto, sans-serif"));
-            console.log("max text width", this.max_text_width);
-            this.max_text_width = Math.max(...this.max_text_width) + 10;
+            // this.max_text_width = this.nodes.map(d =>
+            //     Global.getTextWidth(d.data.name, "16px Roboto, sans-serif"));
+            // console.log("max text width", this.max_text_width);
+            // this.max_text_width = Math.max(...this.max_text_width) + 10;
+            this.max_text_width = 120;
             this.leaf_nodes = this.nodes.filter(d => d.children.length === 0);
             console.log("leaf_nodes", this.leaf_nodes);
             this.set_manager.update_leaf_nodes(this.leaf_nodes);
@@ -71,17 +86,19 @@ export default {
             console.log("detection update view");
 
             this.e_nodes = this.tree_node_group.selectAll(".tree-node")
-            .data(this.nodes, d => d.id);
+                .data(this.nodes, d => d.id);
+            this.e_rest_nodes = this.rest_node_group.selectAll(".rest-tree-node")
+                .data(this.rest_nodes, d => d.id);
             this.e_mini_nodes = this.mini_tree_node_group.selectAll(".mini-tree-node")
-            .data(this.mini_nodes, d => d.id);
+                .data(this.mini_nodes, d => d.id);
             this.e_mini_links = this.mini_tree_link_group.selectAll(".mini-tree-link")
-            .data(this.mini_links);
+                .data(this.mini_links);
             this.e_shadow_links = this.mini_shadow_link_group.selectAll(".mini-highlight")
-            .data(this.mini_links);
+                .data(this.mini_links);
             this.e_sets = this.set_group.selectAll(".set")
-            .data(this.sets); //TODO: id map
+                .data(this.sets); //TODO: id map
             this.e_set_links = this.set_link_group.selectAll(".set-link")
-            .data(this.set_links); // TODO: id map
+                .data(this.set_links); // TODO: id map
 
             // TODO: set remove ani when exit is none
 
@@ -104,12 +121,26 @@ export default {
                 .attr("id", d => "id-" + d.id)
                 .attr("transform", d => "translate(" + d.x + ", " + d.y + ")");
             node_groups
-                .on("mouseover", this.highlight)
-                .on("mouseout", this.dehighlight)
+                .on("mouseover", (ev, d) => {
+                    // let left = d.x + this.layer_height / 4 + this.max_text_width + 
+                    //     (this.expand_tree ? this.layer_height / 2 : 0) + 20;
+                    // let top = d.y + this.text_height + this.layer_height / 2;
+                    // let width = Global.getTextWidth(d.full_name, "18px Roboto, sans-serif") + 20;
+                    // console.log("mouseover", left, top);
+                    // this.showTooltip({top, left, width, content: d.full_name});
+                    this.highlight(ev, d);
+                })
+                .on("mouseout", () => {
+                    // this.hideTooltip();
+                    this.dehighlight();
+                })
                 .transition()
                 .duration(this.create_ani)
                 .delay(this.remove_ani + this.update_ani)
                 .style("opacity", 1);
+            node_groups.append("title")
+                .style("font-size", "18px")
+                .text(d => d.full_name);
             node_groups
                 .append("rect")
                 .attr("class", "background")
@@ -137,7 +168,7 @@ export default {
             // precision and recall
             let bars = node_groups.append("g")
                 .attr("class", "node-bars")
-                .attr("transform", d => "translate(" + (this.max_text_width - 15) + 
+                .attr("transform", () => "translate(" + (this.max_text_width - 15) + 
                     ", " + (- (this.bar_height - this.rounded_r) / 2) + ")");
             bars.append("rect")
                 .attr("class", "bar-background")
@@ -321,6 +352,14 @@ export default {
                     }
                 });
         },
+        rest_node_create(){
+            // let node_groups = this.e_rest_nodes.enter()
+            //     .append("g")
+            //     .attr("class", "rest-tree-node")
+            //     .attr("id", d => "id-" + d.id)
+            //     .attr("transform", d => "translate(" + d.x + ", " + d.y + ")");
+            // node_groups.data(d => d.children.reverse());
+        },
         update(){
             this.node_update();
             this.set_update();
@@ -384,7 +423,7 @@ export default {
                 .transition()
                 .duration(this.update_ani)
                 .delay(this.remove_ani)
-                .attr("transform", d => "translate(" + (this.max_text_width - 15) + 
+                .attr("transform", () => "translate(" + (this.max_text_width - 15) + 
                     ", " + (- (this.bar_height - this.rounded_r) / 2) + ")");
             bars.select("path.bar-precision")
                 .attr("d", d => Global.half_rounded_rect(0, (1 - d.data.precision) * this.bar_height,
@@ -431,6 +470,9 @@ export default {
                     }
                 });
         },
+        rest_node_update(){
+
+        },
         remove(){
             this.e_nodes.exit()
                 .remove();
@@ -444,6 +486,9 @@ export default {
 
         },
         mini_remove(){
+
+        },
+        rest_node_remove(){
 
         },
         highlight(ev, d){
@@ -529,6 +574,9 @@ export default {
         this.tree_node_group = this.svg.append("g")
             .attr("id", "tree-node-group")
             .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");
+        this.rest_node_group = this.svg.append("g")
+            .attr("id", "rest-node-group")
+            .attr("transform", "translate(" + 2 + ", " + (this.layout_height / 2) + ")");    
         this.mini_tree_node_group = this.svg.append("g")
             .attr("id", "mini-tree-node-group")
             .attr("transform", "translate(" + this.mini_tree_x + ", " + this.mini_tree_y + ")");

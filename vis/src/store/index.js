@@ -6,7 +6,6 @@ import * as d3 from "d3"
 //mount Vuex
 Vue.use(Vuex)
 
-
 //create VueX
 const store = new Vuex.Store({
     state:{
@@ -16,9 +15,16 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
-        expand_tree: false,
+        expand_tree: true,
         focus_node: null,
-        set_list: []
+        set_list: [],
+        tooltip: {
+          top: 0,
+          left: 0,
+          show: false,
+          width: 0,
+          content: '',
+        }
     },
     getters: {
         
@@ -89,6 +95,16 @@ const store = new Vuex.Store({
         set_expand_tree(state, node){
             console.log("set expand tree");
             state.expand_tree = node;
+        },
+        showTooltip(state, { top, left, width, content }) {
+            state.tooltip.top = top 
+            state.tooltip.left = left 
+            state.tooltip.content = content
+            state.tooltip.show = true
+            state.tooltip.width = width
+        },
+        hideTooltip(state) {
+            state.tooltip.show = false
         }
     },
     actions:{
