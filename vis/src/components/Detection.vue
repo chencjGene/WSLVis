@@ -137,6 +137,11 @@ export default {
                     // this.hideTooltip();
                     this.dehighlight();
                 })
+                .on("click", (ev, d) => {
+                    if(!this.expand_tree) return;
+                    console.log("click tree node", d.name);
+                    this.set_focus_node([d]);
+                })
                 .transition()
                 .duration(this.create_ani)
                 .delay(this.remove_ani + this.update_ani)
@@ -157,10 +162,6 @@ export default {
                 })
                 .style("fill", "#EBEBF3")
                 .style("fill-opacity", 0)
-                .on("click", (ev, d) => {
-                    console.log("click tree node", d.name);
-                    this.set_focus_node([d]);
-                })
                 .transition()
                 .duration(this.create_ani)
                 .delay(this.remove_ani + this.update_ani)
