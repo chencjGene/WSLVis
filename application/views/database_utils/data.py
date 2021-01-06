@@ -136,22 +136,7 @@ class Data(object):
             for c in categories:
                 id_to_leaf[c]["sets"].append(s)
 
-
-        # def get_counts(ids):
-        #     preds = []
-        #     for id in ids:
-        #         try:
-        #             logit = self.annos[id]["extracted_labels"]["logits"]
-        #         except:
-        #             import IPython; IPython.embed(); exit()
-        #         pred = sigmoid(np.array(logit)) > 0.5
-        #         preds.append(pred.reshape(-1))
-        #     preds = np.array(preds)
-        #     p = preds.sum(axis=0) / preds.shape[0]
-        #     return p
-        # labeled_p = get_counts(self.labeled_idx)
-        # unlabeled_p = get_counts(self.unlabeled_idx)
-        # import IPython; IPython.embed(); exit()
+        self.get_labels_importance()
 
         if DEBUG:
             for i in range(len(self.class_name)):
@@ -164,6 +149,8 @@ class Data(object):
                 leaf = id_to_leaf[i]
                 leaf["precision"] = self.precision[i]
                 leaf["recall"] = self.recall[i]
+                leaf["words"] = [[k, len(self.labeled_extracted_labels_by_cat[i][k])] 
+                    for k in self.labeled_extracted_labels_by_cat[i].keys()]
 
         return tree, set_list
 
