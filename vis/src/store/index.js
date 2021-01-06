@@ -20,6 +20,9 @@ const store = new Vuex.Store({
         expand_tree: true,
         focus_node: null,
         set_list: [],
+        words: [],
+        text_list: [],
+        image_list: [],
         tooltip: {
           top: 0,
           left: 0,
@@ -46,6 +49,7 @@ const store = new Vuex.Store({
             state.tree = d3.hierarchy(hypergraph_data.tree,
                 function(d){
                     let children = d.children;
+                    console.log("children", children);
                     // return children ? children : undefined;
                     return children
                 });
@@ -75,7 +79,16 @@ const store = new Vuex.Store({
                     let s = element.all_children.map(d=>d.data.recall);
                     if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
                 }
+                // element.words = element.words.map(d => {
+                //     let res = {};
+                //     res.text = d[0];
+                //     res.value = d[1];
+                // })
             });
+            
+            // //TODO: for debug
+            // state.words = state.tree.all_descendants[1].words;
+
             state.tree.all_descendants = state.tree.descendants();
 
             // process set
@@ -97,6 +110,14 @@ const store = new Vuex.Store({
         set_expand_tree(state, node){
             console.log("set expand tree");
             state.expand_tree = node;
+        },
+        set_words(state, words){
+            console.log("set words");
+            state.words = words;
+        },
+        set_text_list(state, text_list){
+            console.log("set text list");
+            state.text_list = text_list;
         },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 
