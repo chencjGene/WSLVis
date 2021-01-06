@@ -85,7 +85,7 @@ class Data(object):
         for i in range(len(self.class_name)):
             extracted_labels_by_cat[i] = {}
             labeled_extracted_labels_by_cat[i] = {}
-        for idx in self.train_idx:
+        for idx in self.labeled_idx:
             if idx in self.labeled_idx:
                 by_cat = labeled_extracted_labels_by_cat
             else:
