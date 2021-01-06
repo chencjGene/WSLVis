@@ -11,7 +11,8 @@ Vue.use(Vuex)
 //create VueX
 const store = new Vuex.Store({
     state:{
-        server_url: 'http://166.111.81.68:20211',
+        // server_url: 'http://166.111.81.68:20211',
+        server_url: 'http://localhost:20211',
         // action trail
         history: [],
         image_num: 0,
@@ -79,17 +80,23 @@ const store = new Vuex.Store({
                     let s = element.all_children.map(d=>d.data.recall);
                     if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
                 }
-                // element.words = element.words.map(d => {
-                //     let res = {};
-                //     res.text = d[0];
-                //     res.value = d[1];
-                // })
+                if (!element.data.words){
+                    let arr = element.children.map( d => d.data.words);
+                    element.data.words = unique(Array.prototype.concat.call(arr));
+                }
+                element.words = element.data.words.map(d => {
+                    let res = {};
+                    res.text = d[0];
+                    res.value = d[1];
+                    return res;
+                });
             });
+
+            state.tree.all_descendants = state.tree.descendants();
             
             // //TODO: for debug
             // state.words = state.tree.all_descendants[1].words;
-
-            state.tree.all_descendants = state.tree.descendants();
+            this.commit("set_words", state.tree.all_descendants[1].words);
 
             // process set
             state.set_list = hypergraph_data.set_list

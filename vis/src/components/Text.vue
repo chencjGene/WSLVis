@@ -9,10 +9,14 @@
 <script>
 import { mapState, mapActions } from "vuex";
 import * as d3 from "d3";
-// import { wordcloud } from "../plugins/wordcloud.js";
+import * as Global from '../plugins/global'
+import { wordcloud } from "../plugins/wordcloud.js";
 export default {
   name: "CapText",
   data: () => ({}),
+  computed: {
+    ...mapState(["words", "text_list"]),
+  },
   watch: {
     words() {
       console.log("triger words");
@@ -25,25 +29,44 @@ export default {
     },
   },
   methods: {
-    ...mapState(["words", "text_list"]),
     ...mapActions([]),
-    update_view() {},
-    update_data() {},
+    update_data() {
+      this.min_value = Math.min(...this.words.map(d => d.value));
+      this.max_value = Math.max(...this.words.map(d => d.value));
+      this.sizeScale = d3.scaleSqrt([this.min_value, this.max_value], [10, 30]);
+      this.texts = wordcloud()
+        .size([this.wordcloud_width, this.wordcloud_height])
+        .data(Global.deepCopy(this.words))
+        .padding(4)
+        .font(this.fontFamily)
+        .fontSize(d => this.sizeScale(d.value))
+        .start();
+    },
+    update_view() {
+
+    },
   },
   async mounted() {
     window.text = this;
     let container = d3.select(".text-content");
     // console.log("container", container);
     let bbox = container.node().getBoundingClientRect();
-    self.bbox_width = bbox.width;
-    self.bbox_height = bbox.height;
-    self.layout_width = self.bbox_width - self.margin_horizonal * 2;
-    self.layout_height = self.bbox_height * 0.98;
-    self.svg = container
+    this.bbox_width = bbox.width;
+    this.bbox_height = bbox.height;
+    this.layout_width = this.bbox_width - this.margin_horizonal * 2;
+    this.layout_height = this.bbox_height * 0.98;
+
+    // wordcloud
+    this.wordcloud_height = this.layout_height * 0.3;
+    this.wordcloud_width = this.layout_width;
+    this.fontFamily = "Arial";
+
+
+    this.svg = container
       .append("svg")
       .attr("id", "text-svg")
-      .attr("width", self.bbox_width)
-      .attr("height", self.layout_height);
+      .attr("width", this.bbox_width)
+      .attr("height", this.layout_height);
   },
 };
 </script>

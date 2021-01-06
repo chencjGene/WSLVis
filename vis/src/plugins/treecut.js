@@ -194,7 +194,7 @@ const tree_layout = function(nodeSize, layout_height){
         visible_nodes.forEach(d => {
             d.tmp_children = d.children.slice();
             if (d.afterList.length > 0){
-                console.log("process afterlist", d.name, d.children);
+                // console.log("process afterlist", d.name, d.children);
                 let rest_node = {};
                 rest_node.id = "rest-" + d.id;
                 rest_node.is_rest_node = true;
