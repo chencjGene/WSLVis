@@ -107,7 +107,6 @@ def rule_based_processing(extracted_labels, suffix="step1"):
     enable_rules = True
     if suffix == "":
         enable_rules = False
-    print("enable_rules", enable_rules)
     string = extracted_labels["string"]
     # string = [s + " " for s in string]
     # string = "".join(string)

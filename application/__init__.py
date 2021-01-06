@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, send_file, session, \
     request, render_template, send_from_directory
+from flask_cors import *
 from flask_session import Session
 from datetime import timedelta
 from .views.admin import admin
@@ -10,6 +11,7 @@ from .views.text import text
 
 def create_app():
     app = Flask(__name__)
+    CORS(app, resources=r'/*')
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['JSON_SORT_KEYS'] = False
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False

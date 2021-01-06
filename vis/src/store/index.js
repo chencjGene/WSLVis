@@ -3,13 +3,15 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import * as d3 from "d3"
 
+axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
+
 //mount Vuex
 Vue.use(Vuex)
 
 //create VueX
 const store = new Vuex.Store({
     state:{
-        server_url: 'http://localhost:20211',
+        server_url: 'http://166.111.81.68:20211',
         // action trail
         history: [],
         image_num: 0,
@@ -88,9 +90,9 @@ const store = new Vuex.Store({
             console.log("set history data");
             state.history = history_data;
         },
-        set_focus_node(state, node) {
+        set_focus_node(state, nodes) {
             console.log("set focus node");
-            state.focus_node = [node];
+            state.focus_node = nodes;
         },
         set_expand_tree(state, node){
             console.log("set expand tree");
@@ -110,18 +112,24 @@ const store = new Vuex.Store({
     actions:{
         async fetch_manifest({commit, state}, key){
             console.log("fetch_manifest");
-            const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, {"dataset": key});
+            const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, {"dataset": key}, 
+                {headers: {
+                    "Content-Type":"application/json",
+                    "Access-Control-Allow-Origin": "*",
+                }});
             // console.log(resp);
             commit("set_manifest_data", JSON.parse(JSON.stringify(resp.data)));
         },
         async fetch_hypergraph({commit, state}, key){
             console.log("fetch_hypergraph");
-            const resp = await axios.post(`${state.server_url}/hybrid/HyperGraph`, {word: key});
+            const resp = await axios.post(`${state.server_url}/hybrid/HyperGraph`, {word: key}, 
+                {headers: 
+                    {"Access-Control-Allow-Origin": "*"}});
             commit("set_hypergraph_data", JSON.parse(JSON.stringify(resp.data)));
         },
         async fetch_history({ commit, state }, key){
             console.log("fetch_history");
-            const resp = await axios.post(`${state.server_url}/history/GetHistory`, {word: key});
+            const resp = await axios.post(`${state.server_url}/history/GetHistory`, {word: key}, {headers: {"Access-Control-Allow-Origin": "*"}});
             // console.log(resp);
             commit("set_history_data", JSON.parse(JSON.stringify(resp.data)));
         }

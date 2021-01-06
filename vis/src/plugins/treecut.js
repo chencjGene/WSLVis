@@ -189,6 +189,7 @@ const tree_layout = function(nodeSize, layout_height){
     }
 
     this._layout = function(data){
+        data.all_descendants.forEach(d => d.is_rest_node = false);
         let visible_nodes = data.descendants();
         visible_nodes.forEach(d => {
             d.tmp_children = d.children.slice();
@@ -243,8 +244,27 @@ const tree_layout = function(nodeSize, layout_height){
             d.type = type;
         });
         let nodes = data.descendants().filter(d => d.name !== "root");
+        nodes.filter(d => d.is_rest_node).forEach(d => {
+            let children_num = d.rest_children.length;
+            let single_height = that.y_delta * 0.4;
+            let max_delta = 6;
+            let total_height = single_height + max_delta * (children_num - 1);
+            if (total_height > that.y_delta * 0.8){
+                let delta = (this.y_delta * 0.8 - single_height) / (children_num - 1);
+                d.rest_children.forEach((e,i) => {
+                    e.x_delta = i * 2;
+                    e.y_delta = - that.y_delta * 0.8 / 2 + i * delta;
+                    e.is_rest_node = true;
+                })
+            }
+            else{
+                d.rest_children.forEach((e,i) =>{
+                    e.x_delta = i * 2;
+                    e.y_delta = i * max_delta - total_height / 2;
+                })
+            }
+        })
         visible_nodes.forEach(d => {d.children = d.tmp_children});
-
         return nodes;
     }
 
@@ -351,7 +371,7 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
         }
         // let ratio = d.value_new.reduce((acc,x) => acc + x) / d.value.reduce((acc,x) => acc + x);
         //d.api = d._total_width * (1 + 10 * ratio) - 5 * Uncertainty(d);
-        d.api = 1 - (d.data.precision + d.data.recall) / 2; //Math.sqrt(d._total_width) * (1 + 10 * ratio) ;
+        d.api = 2 - (d.data.precision * 2 + d.data.recall) / 2; //Math.sqrt(d._total_width) * (1 + 10 * ratio) ;
         assert(!isNaN(d.api), "api NaN error");
         d.doi = d.api;
         d.all_children.forEach(_this._initial);
@@ -560,7 +580,7 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
         }
         let source = sources[0];
         _this.initial(_tree);
-        let nodes = _tree_layout(_tree); // update depth
+        let nodes = _tree_layout(_tree).filter(d => !d.is_rest_node); // update depth
         nodes.forEach(d=>d.debug_visited=false);
         traverse_for_doi(_tree, source);
         console.log("source in treecut", sources);
