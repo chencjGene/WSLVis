@@ -50,7 +50,7 @@ const store = new Vuex.Store({
             state.tree = d3.hierarchy(hypergraph_data.tree,
                 function(d){
                     let children = d.children;
-                    console.log("children", children);
+                    // console.log("children", children);
                     // return children ? children : undefined;
                     return children
                 });
@@ -90,6 +90,7 @@ const store = new Vuex.Store({
                     res.value = d[1];
                     return res;
                 });
+                element.words = element.words.slice(0, 20);
             });
 
             state.tree.all_descendants = state.tree.descendants();
@@ -97,6 +98,7 @@ const store = new Vuex.Store({
             // //TODO: for debug
             // state.words = state.tree.all_descendants[1].words;
             this.commit("set_words", state.tree.all_descendants[1].words);
+            
 
             // process set
             state.set_list = hypergraph_data.set_list
@@ -139,6 +141,39 @@ const store = new Vuex.Store({
     },
     actions:{
         async fetch_manifest({commit, state}, key){
+            this.commit("set_text_list", 
+            [{"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "1"}, 
+            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "2"}, 
+            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "3"}, 
+            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "5"}, 
+            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "6"}, 
+            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "7"}, 
+            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "8"}, 
+            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "9"}, 
+            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "10"}, 
+            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+            "active": true,
+            "id": "11"}, 
+            // {"text": "sdkfas;rlkgja"},
+        ]);
             console.log("fetch_manifest");
             const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, {"dataset": key}, 
                 {headers: {
