@@ -1,6 +1,8 @@
 import numpy as np
 import os 
 import cv2
+import sqlite3
+import json
 
 from ..utils.config_utils import config
 from ..utils.log_utils import logger
@@ -36,12 +38,11 @@ class Data(object):
 
     def _load_data(self):
         logger.info("begin loading data from processed data!")
-        filename = config.processed_dataname
-        if DEBUG:
-            filename = config.debug_processed_dataname
+        filename = config.debug_processed_dataname
         processed_data_filename = os.path.join(self.data_root, \
             filename.format(self.suffix))
         processed_data = json_load_data(processed_data_filename)
+        logger.info("finishing load!")
         self.processed_data = processed_data
         self.class_name = processed_data[config.class_name]
         self.X = processed_data[config.X_name]
@@ -56,13 +57,16 @@ class Data(object):
         for idx in self.labeled_idx:
             tmp_map[idx] = 1
         self.unlabeled_idx = [i for i in self.train_idx if tmp_map[i]]
-        # self.unlabeled_idx = [i for i in self.train_idx if i not in self.labeled_idx]
         self.val_idx = processed_data[config.valid_idx_name]
         self.test_idx = processed_data[config.test_idx_name]
         self.redundant_idx = processed_data[config.redundant_idx_name]
         self.image_by_type = processed_data["image_by_type"]
         self.categories = processed_data["categories"]
         self.add_info = processed_data[config.add_info_name]
+
+        database_file = os.path.join(self.data_root, "database.db")
+        self.conn = sqlite3.connect(database_file, check_same_thread=False)
+        # self.cursor = self.conn.cursor()
 
         # load hierarchy
         self.tree = json_load_data(os.path.join(self.data_root, "hierarchy-abbr.json"))
@@ -71,8 +75,17 @@ class Data(object):
 
     def get_precision_and_recall(self):
         labels = []
+        cursor = self.conn.cursor()
+        sql = "select activations, logits, string, labels from annos where id = ?"
         for i in self.labeled_idx:
-            el = self.annos[i]["extracted_labels"]
+            cursor.execute(sql, (i,))
+            activation, logits, string, label = cursor.fetchall()[0]
+            el = {
+                "activations": json.loads(activation),
+                "string": json.loads(string),
+                "logits": json.loads(logits),
+                "label": json.loads(label),
+            }
             el["rule_logit"] = rule_based_processing(el, self.suffix)
             labels.append(el)
         self.labeled_p, self.precision, self.recall = get_precision_and_recall(labels)
@@ -86,6 +99,8 @@ class Data(object):
 
     def get_labels_importance(self):
         # labels statistic
+        cursor = self.conn.cursor()
+        sql = "select (activations) from annos where id = ?"
         extracted_labels_by_cat = {}
         labeled_extracted_labels_by_cat = {}
         for i in range(len(self.class_name)):
@@ -97,8 +112,11 @@ class Data(object):
             else:
                 by_cat = extracted_labels_by_cat
             img_id = self.ids[idx]
-            extracted_labels = self.annos[idx]["extracted_labels"]
-            for act in extracted_labels["activations"]:
+            # extracted_labels = self.annos[idx]["extracted_labels"]
+            cursor.execute(sql, (idx,))
+            result = cursor.fetchall()[0]
+            activations = json.loads(result[0])
+            for act in activations:
                 string_idx = act["idx"]
                 text = act["text"]
                 cats = act["cats"]
