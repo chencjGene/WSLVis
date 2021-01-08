@@ -12,9 +12,6 @@ text = Blueprint("text", __name__)
 
 @text.route("/text/GetText", methods=["GET", "POST"])
 def app_get_text():
-    # query_data = json.loads(request.data)
-    query_data = {
-        "cat_id": 0,
-        "word": "person"
-    }
+    query_data = json.loads(request.data)["query"]
+    print(query_data)
     return get_text(query_data)

@@ -17,6 +17,7 @@
               >
               <text-item
                 :text="item.message"
+                :id="item.id"
               >
               </text-item>
               </DynamicScrollerItem>

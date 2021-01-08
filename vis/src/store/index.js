@@ -214,7 +214,7 @@ const store = new Vuex.Store({
                 "cat_id": key.cat_id,
                 "word": key.text
             }
-            const resp = await axios.post(`${state.server_url}/text/GetText`, {word: query});
+            const resp = await axios.post(`${state.server_url}/text/GetText`, {query});
             commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));
         }
     },
