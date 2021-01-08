@@ -175,8 +175,25 @@ class Data(object):
         img_path = os.path.join(self.data_root, phase, "%012d.jpg" %(image_id))
         return img_path, gt, det
     
-    def get_text(self, idx):
-        None
+    def get_text(self, query):
+        cat_id = query["cat_id"]
+        word = query["word"]
+        idxs = self.labeled_extracted_labels_by_cat[cat_id][word]
+        idxs = [i["id"] for i in idxs]
+        idxs = list(set(idxs))
+        texts = []
+        for idx in idxs:
+            anno = self.annos[idx]
+            caps = anno["caption"]
+            caps = [c + " " for c in caps]
+            caps = "".join(caps)
+            text = {
+                "message": caps,
+                "active": True,
+                "id": idx
+            }
+            texts.append(text)
+        return texts
     
     def get_tfidf(self, type="labeled"):
         idxs = self.labeled_idx

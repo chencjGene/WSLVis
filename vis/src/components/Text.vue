@@ -30,7 +30,7 @@
 
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState, mapActions, mapMutations } from "vuex";
 import * as d3 from "d3";
 import * as Global from "../plugins/global";
 import { wordcloud } from "../plugins/wordcloud.js";
@@ -48,7 +48,7 @@ export default {
     DynamicScrollerItem: DynamicScrollerItem
   },
   computed: {
-    ...mapState(["words", "text_list"]),
+    ...mapState(["words", "focus_word", "text_list", "focus_text"]),
   },
   watch: {
     words() {
@@ -56,6 +56,10 @@ export default {
       this.update_data();
       this.update_view();
     },
+    focus_word() {
+      console.log("triger focus word");
+      this.$store.dispatch("fetch_text", this.focus_word);
+    }
     // text_list() {
     //   console.log("triger text list", this.text_list);
     //   this.update_data();
@@ -63,7 +67,8 @@ export default {
     // },
   },
   methods: {
-    ...mapActions([]),
+    ...mapActions(["fetch_text"]),
+    ...mapMutations(["set_focus_word", "set_focus_text"]),
     update_data() {
       this.min_value = Math.min(...this.words.map((d) => d.value));
       this.max_value = Math.max(...this.words.map((d) => d.value));
@@ -98,7 +103,11 @@ export default {
         .append("g")
         .attr("class", "wordcloud")
         .attr("id", (d) => "id-" + d.id)
-        .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")");
+        .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
+        .on("click", (ev, d) => {
+          console.log("click word", ev, d);
+          this.set_focus_word(d);
+        });
       word_groups
         .append("text")
         .attr("x", 0)
@@ -177,6 +186,10 @@ export default {
   border-radius: 5px;
   height: calc(100% - 32px);
   margin-bottom: 10px;
+}
+
+.wordcloud{
+  cursor: pointer;
 }
 
 .wordcloud-col {

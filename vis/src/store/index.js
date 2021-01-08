@@ -22,7 +22,9 @@ const store = new Vuex.Store({
         focus_node: null,
         set_list: [],
         words: [],
+        focus_word: null,
         text_list: [],
+        focus_text: null,
         image_list: [],
         tooltip: {
           top: 0,
@@ -88,6 +90,8 @@ const store = new Vuex.Store({
                     let res = {};
                     res.text = d[0];
                     res.value = d[1];
+                    res.cat_id = element.data.cat_id;
+                    res.id = element.data.id;
                     return res;
                 });
                 element.words = element.words.slice(0, 20);
@@ -124,9 +128,17 @@ const store = new Vuex.Store({
             console.log("set words");
             state.words = words;
         },
+        set_focus_word(state, word){
+            console.log("set focus word");
+            state.focus_word = word;
+        },
         set_text_list(state, text_list){
             console.log("set text list");
             state.text_list = text_list;
+        },
+        set_focus_text(state, text){
+            console.log("set focus text");
+            state.focus_text = text;
         },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 
@@ -141,39 +153,39 @@ const store = new Vuex.Store({
     },
     actions:{
         async fetch_manifest({commit, state}, key){
-            this.commit("set_text_list", 
-            [{"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "1"}, 
-            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "2"}, 
-            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "3"}, 
-            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "5"}, 
-            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "6"}, 
-            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "7"}, 
-            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "8"}, 
-            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "9"}, 
-            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "10"}, 
-            {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-            "active": true,
-            "id": "11"}, 
-            // {"text": "sdkfas;rlkgja"},
-        ]);
+        //     this.commit("set_text_list", 
+        //     [{"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "1"}, 
+        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "2"}, 
+        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "3"}, 
+        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "5"}, 
+        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "6"}, 
+        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "7"}, 
+        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "8"}, 
+        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "9"}, 
+        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "10"}, 
+        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
+        //     "active": true,
+        //     "id": "11"}, 
+        //     // {"text": "sdkfas;rlkgja"},
+        // ]);
             console.log("fetch_manifest");
             const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, {"dataset": key}, 
                 {headers: {
@@ -195,6 +207,15 @@ const store = new Vuex.Store({
             const resp = await axios.post(`${state.server_url}/history/GetHistory`, {word: key}, {headers: {"Access-Control-Allow-Origin": "*"}});
             // console.log(resp);
             commit("set_history_data", JSON.parse(JSON.stringify(resp.data)));
+        },
+        async fetch_text({commit, state}, key){
+            console.log("fetch_text", key);
+            let query = {
+                "cat_id": key.cat_id,
+                "word": key.text
+            }
+            const resp = await axios.post(`${state.server_url}/text/GetText`, {word: query});
+            commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));
         }
     },
     modules:{
