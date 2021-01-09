@@ -29,3 +29,6 @@ def get_image(idx):
 def get_text(query):
     text_result = model.data.get_text(query)
     return jsonify(text_result)
+
+def get_word(query):
+    return jsonify(model.data.get_word(query))

@@ -14,6 +14,60 @@ from ..database_utils.utils import TFIDFTransform, rule_based_processing, get_pr
 
 DEBUG = False
 
+class TreeHelper(object):
+    def __init__(self, tree, class_name):
+        self.tree = tree
+        self.class_name = class_name
+        
+        # process
+        self.cat_id_2_node = {}
+        self.tree_node_id_2_node = {}
+        self.name_2_id = {}
+
+        # name to id map
+        for idx, name in enumerate(self.class_name):
+            self.name_2_id[name.strip("\n")] = idx
+
+        tree = self.get_tree()
+        leaf_node = []
+        visit_node = [tree]
+        while len(visit_node) > 0:
+            node = visit_node[-1]
+            self.tree_node_id_2_node[node["id"]] = node
+            visit_node = visit_node[:-1]
+            if len(node["children"]) == 0:
+                leaf_node.append(node)
+            visit_node.extend(node["children"])
+        
+        for node in leaf_node:
+            node["cat_id"] = self.name_2_id[node["name"]]
+            node["sets"] = []
+            self.cat_id_2_node[self.name_2_id[node["name"]]] = node
+
+    def get_tree(self):
+        return self.tree
+    
+    def get_node_by_cat_id(self, cat_id):
+        return self.cat_id_2_node[cat_id]
+    
+    def get_node_by_tree_node_id(self, tree_node_id):
+        return self.tree_node_id_2_node[tree_node_id]
+    
+    def get_cat_id_by_name(self, name):
+        return self.name_2_id[name]
+
+    def get_all_leaf_descendants(self, node):
+        leaf_node = []
+        visit_node = [node]
+        while len(visit_node) > 0:
+            node = visit_node[-1]
+            visit_node = visit_node[:-1]
+            if len(node["children"]) == 0:
+                leaf_node.append(node)
+            visit_node.extend(node["children"])
+        return leaf_node
+
+
 class Data(object):
     def __init__(self, dataname, suffix=""):
         self.dataname = dataname 
@@ -69,9 +123,21 @@ class Data(object):
         # self.cursor = self.conn.cursor()
 
         # load hierarchy
-        self.tree = json_load_data(os.path.join(self.data_root, "hierarchy-abbr.json"))
+        tree = json_load_data(os.path.join(self.data_root, "hierarchy-abbr.json"))
+        self.tree_helper = TreeHelper(tree, self.class_name)
 
         logger.info("end loading data from processed data!")
+
+    def database_fetch_by_idx(self, idx, keys):
+        cursor = self.conn.cursor()
+        keys = "".join([k + ", " for k in keys]).strip(", ")
+        sql = "select {} from annos where id = ?".format(keys)
+        cursor.execute(sql, (idx,))
+        res = cursor.fetchall()[0]
+        if len(res) == 1:
+            return res[0]
+        else:
+            return res
 
     def get_precision_and_recall(self):
         labels = []
@@ -97,7 +163,68 @@ class Data(object):
         caps = [self.annos[i]["caption"] for i in ids]
         return caps
 
-    def get_labels_importance(self):
+    def get_labeled_id_by_type(self, cats: list, match_type: str) -> list:
+        cursor = self.conn.cursor()
+        sql = "select labels, logits from annos where id = ?"
+        cats = np.array(cats)
+        tp = []
+        tn = []
+        fp = []
+        fn = []
+        for idx in self.labeled_idx:
+            cursor.execute(sql, (idx,))
+            result = cursor.fetchall()[0]
+            label, logits = result
+            label = np.array(json.loads(label)).reshape(-1)
+            pred = sigmoid(np.array(json.loads(logits))) > 0.5 #TODO: not support rules now
+            g = np.any(label[cats].any() > 0)
+            p = np.any(pred[cats].any() > 0)
+            # import IPython; IPython.embed(); exit()
+            if g == True and p == True:
+                tp.append(idx)
+            elif g == True and p == False:
+                fn.append(idx)
+            elif g is False and p == True:
+                fp.append(idx)
+            elif g == False and p == False:
+                tn.append(idx)
+        if match_type == "tp":
+            return tp
+        elif match_type == "tn":
+            return tn
+        elif match_type == "fp":
+            return fp
+        elif match_type == "fn":
+            return fn
+        elif match_type == "p":
+            return tp + fp
+        elif match_type == "n":
+            return tn + fn
+        else:
+            raise ValueError("unsupported match type")
+
+
+    def get_important_labels(self, idxs, _cats):
+        res = {}
+        for idx in idxs:
+            activation = self.database_fetch_by_idx(idx, ["activations"])
+            activation = json.loads(activation)
+            for act in activation:
+                text = act["text"]
+                cats = act["cats"]
+                for _, c in enumerate(cats):
+                    if c in _cats:
+                        if text not in res:
+                            res[text] = []
+                        res[text].append(idx)
+        for text in res:
+            res[text] = list(set(res[text]))
+        return res
+
+    def get_labeled_importance(self):
+        '''
+            This function is deprecated and will be removed in the future
+        '''
         # labels statistic
         cursor = self.conn.cursor()
         sql = "select (activations) from annos where id = ?"
@@ -107,17 +234,12 @@ class Data(object):
             extracted_labels_by_cat[i] = {}
             labeled_extracted_labels_by_cat[i] = {}
         for idx in self.labeled_idx:
-            if idx in self.labeled_idx:
-                by_cat = labeled_extracted_labels_by_cat
-            else:
-                by_cat = extracted_labels_by_cat
-            img_id = self.ids[idx]
+            by_cat = labeled_extracted_labels_by_cat
             # extracted_labels = self.annos[idx]["extracted_labels"]
             cursor.execute(sql, (idx,))
             result = cursor.fetchall()[0]
             activations = json.loads(result[0])
             for act in activations:
-                string_idx = act["idx"]
                 text = act["text"]
                 cats = act["cats"]
                 probs = act["probs"]
@@ -132,54 +254,31 @@ class Data(object):
         self.labeled_extracted_labels_by_cat = labeled_extracted_labels_by_cat
 
     def get_hypergraph(self):
-        tree = self.get_tree()
-        
-        leaf_node = []
-        visit_node = [tree]
-        while len(visit_node) > 0:
-            node = visit_node[-1]
-            visit_node = visit_node[:-1]
-            if len(node["children"]) == 0:
-                leaf_node.append(node)
-            visit_node.extend(node["children"])
-
-        # name to id map
-        name_2_id = {}
-        for idx, name in enumerate(self.class_name):
-            name_2_id[name.strip("\n")] = idx
-        
-        id_to_leaf = {}
-        for node in leaf_node:
-            node["cat_id"] = name_2_id[node["name"]]
-            node["sets"] = []
-            id_to_leaf[name_2_id[node["name"]]] = node
 
         set_list = self.get_set()
         for s in set_list:
             categories = decoding_categories(s)
             for c in categories:
-                id_to_leaf[c]["sets"].append(s)
+                self.tree_helper.get_node_by_cat_id(c)["sets"].append(s)
 
-        self.get_labels_importance()
+        self.get_labeled_importance()
 
         if DEBUG:
             for i in range(len(self.class_name)):
-                leaf = id_to_leaf[i]
+                leaf = self.tree_helper.get_node_by_cat_id(i)
                 leaf["precision"] = 1
                 leaf["recall"] = 1
         else:
             self.get_precision_and_recall()
             for i in range(len(self.class_name)):
-                leaf = id_to_leaf[i]
+                leaf = self.tree_helper.get_node_by_cat_id(i)
                 leaf["precision"] = self.precision[i]
                 leaf["recall"] = self.recall[i]
                 leaf["words"] = [[k, len(self.labeled_extracted_labels_by_cat[i][k])] 
                     for k in self.labeled_extracted_labels_by_cat[i].keys()]
 
-        return tree, set_list
+        return self.tree_helper.get_tree(), set_list
 
-    def get_tree(self):
-        return self.tree
 
     def get_set(self):
         all_types = self.image_by_type.keys()
@@ -223,7 +322,20 @@ class Data(object):
             }
             texts.append(text)
         return texts
-    
+
+    def get_word(self, query):
+        tree_node_id = query["tree_node_id"]
+        match_type = query["match_type"]
+        node = self.tree_helper.get_node_by_tree_node_id(tree_node_id)
+        leaf_node = self.tree_helper.get_all_leaf_descendants(node)
+        cats = [n["cat_id"] for n in leaf_node]
+        print("cats", cats)
+        self.current_text_idxs = self.get_labeled_id_by_type(cats, match_type)
+        # print("current_text_idxs", self.current_text_idxs)
+        self.current_wordcloud = self.get_important_labels(self.current_text_idxs, cats)
+        words = [[k, len(self.current_wordcloud[k])] for k in self.current_wordcloud]
+        return words
+
     def get_tfidf(self, type="labeled"):
         idxs = self.labeled_idx
         texts = [self.annos[idx]["extracted_labels"]["string"] for idx in idxs]

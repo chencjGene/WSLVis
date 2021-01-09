@@ -82,19 +82,19 @@ const store = new Vuex.Store({
                     let s = element.all_children.map(d=>d.data.recall);
                     if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
                 }
-                if (!element.data.words){
-                    let arr = element.children.map(d => d.data.words);
-                    element.data.words = unique(Array.prototype.concat.call(...arr));
-                }
-                element.words = element.data.words.map(d => {
-                    let res = {};
-                    res.text = d[0];
-                    res.value = d[1];
-                    res.cat_id = element.data.cat_id;
-                    res.id = element.data.id;
-                    return res;
-                });
-                element.words = element.words.slice(0, 20);
+                // if (!element.data.words){
+                //     let arr = element.children.map(d => d.data.words);
+                //     element.data.words = unique(Array.prototype.concat.call(...arr));
+                // }
+                // element.words = element.data.words.map(d => {
+                //     let res = {};
+                //     res.text = d[0];
+                //     res.value = d[1];
+                //     res.cat_id = element.data.cat_id;
+                //     res.id = element.data.id;
+                //     return res;
+                // });
+                // element.words = element.words.slice(0, 20);
             });
 
             state.tree.all_descendants = state.tree.descendants();
@@ -121,7 +121,16 @@ const store = new Vuex.Store({
         },
         set_words(state, words){
             console.log("set words");
-            state.words = words;
+            state.words = words.map(d => {
+                let res = {};
+                res.text = d[0];
+                res.value = d[1];
+                // res.cat_id = element.data.cat_id;
+                // res.id = element.data.id;
+                return res;
+
+            });
+            state.words = state.words.slice(0, 20);
         },
         set_focus_word(state, word){
             console.log("set focus word");
@@ -178,6 +187,15 @@ const store = new Vuex.Store({
             }
             const resp = await axios.post(`${state.server_url}/text/GetText`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));
+        },
+        async fetch_word({commit, state}, query){
+            console.log("fetch_word", query);
+            // let query = {
+            //     "tree_node_id": key.cat_id,
+            //     "match_type": key.text
+            // }
+            const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_words", JSON.parse(JSON.stringify(resp.data)));
         }
     },
     modules:{

@@ -84,14 +84,20 @@ export default {
       // this.wordclouds.then(d => this.wordclouds = d);
     },
     update_view() {
+      this.wordcloud_group
+        .selectAll(".wordcloud")
+        .transition()
+        .duration(this.remove_ani)
+        .style("opacity", 0)
+        .remove();
       this.e_words = this.wordcloud_group
         .selectAll(".wordcloud")
         .data(this.wordclouds, d=> d.text);
       // this.e_texts = this.text_group.selectAll("cap-text")
       //   .data(this.wordclouds); // for debug
-      this.remove();
       this.create();
       this.update();
+      this.remove();
     },
 
     create() {
@@ -154,13 +160,13 @@ export default {
       this.text_remove();
     },
     wordcloud_remove() {
-      console.log("wordcloud remove");
-      this.wordcloud_group
-        .selectAll(".wordcloud")
-        .transition()
-        .duration(this.remove_ani)
-        .style("opacity", 0)
-        .remove();
+      // console.log("wordcloud remove");
+      // this.wordcloud_group
+      //   .selectAll(".wordcloud")
+      //   .transition()
+      //   .duration(this.remove_ani)
+      //   .style("opacity", 0)
+      //   .remove();
     },
     text_remove() {},
   },

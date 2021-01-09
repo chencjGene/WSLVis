@@ -6,9 +6,18 @@ from .utils.config_utils import config
 import json
 import time
 
-from .model_utils import get_text
+from .model_utils import get_text, get_word
 
 text = Blueprint("text", __name__)
+
+@text.route("/text/GetWord", methods=["GET", "POST"])
+def app_get_word():
+    query_data = json.loads(request.data)["query"]
+    # query_data = {
+    #     "tree_node_id": 1,
+    #     "type": "tp"
+    # }
+    return get_word(query_data)
 
 @text.route("/text/GetText", methods=["GET", "POST"])
 def app_get_text():
