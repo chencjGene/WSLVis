@@ -371,7 +371,7 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
         }
         // let ratio = d.value_new.reduce((acc,x) => acc + x) / d.value.reduce((acc,x) => acc + x);
         //d.api = d._total_width * (1 + 10 * ratio) - 5 * Uncertainty(d);
-        d.api = 2 - (d.data.precision * 2 + d.data.recall) / 2; //Math.sqrt(d._total_width) * (1 + 10 * ratio) ;
+        // d.api = 2 - (d.data.precision * 2 + d.data.recall) / 2; //Math.sqrt(d._total_width) * (1 + 10 * ratio) ;
         assert(!isNaN(d.api), "api NaN error");
         d.doi = d.api;
         d.all_children.forEach(_this._initial);
@@ -585,7 +585,7 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
         traverse_for_doi(_tree, source);
         console.log("source in treecut", sources);
         clickQueue = get_selection_array(_tree, sources);
-        // console.log("clickqueue", clickQueue);
+        console.log("clickqueue", clickQueue.map(d => d.node.name));
         pinArray = nodes.filter(d=>d.pinned);
         console.log("pinArray: ", pinArray);
         collapse(_tree);
@@ -614,8 +614,19 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
         };
         let p = LCA2(r1, r2);
         let d = r1.depth + r2.depth - p.depth * 2;
+        if (r1.id != r2.id){
+            d = d + 0.1 - 0.1 / (r1.order - r2.order) / (r1.order - r2.order);
+        }
+        if (r1.id != r2.id && r1.depth === r2.depth && r1.parent.all_children.indexOf(r2) > 0){
+            console.log("siblings");
+            let siblings_dis = (r1.siblings_id - r2.siblings_id) * (r1.siblings_id - r2.siblings_id);
+            siblings_dis = 1 / siblings_dis / 5;
+            d = d - siblings_dis;
+        }
+        console.log(d, r1, r2);
         assert(d >= 0, "distance error!!!");
         if (p == r2) return d / 5;
+        if (p == r2.parent) return d / 2;
         return d;
     }
 

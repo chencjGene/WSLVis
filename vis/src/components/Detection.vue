@@ -54,6 +54,7 @@ export default {
         this.tree,
         this.tree_layout.layout_with_rest_node
       );
+      this.tree.all_descendants.map(d => d.api = 0);
       this.offset = 0;
       this.tree.sort(function (a, b) {
         return a.siblings_id - b.siblings_id;
@@ -137,19 +138,6 @@ export default {
         .attr("id", (d) => "id-" + d.id)
         .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")");
       node_groups
-        .on("mouseover", (ev, d) => {
-          // let left = d.x + this.layer_height / 4 + this.max_text_width +
-          //     (this.expand_tree ? this.layer_height / 2 : 0) + 20;
-          // let top = d.y + this.text_height + this.layer_height / 2;
-          // let width = Global.getTextWidth(d.full_name, "18px Roboto, sans-serif") + 20;
-          // console.log("mouseover", left, top);
-          // this.showTooltip({top, left, width, content: d.full_name});
-          this.highlight(ev, d);
-        })
-        .on("mouseout", () => {
-          // this.hideTooltip();
-          this.dehighlight();
-        })
         .transition()
         .duration(this.create_ani)
         .delay(this.remove_ani + this.update_ani)
@@ -171,6 +159,19 @@ export default {
         })
         .style("fill", "#EBEBF3")
         .style("fill-opacity", 0)
+        .on("mouseover", (ev, d) => {
+          // let left = d.x + this.layer_height / 4 + this.max_text_width +
+          //     (this.expand_tree ? this.layer_height / 2 : 0) + 20;
+          // let top = d.y + this.text_height + this.layer_height / 2;
+          // let width = Global.getTextWidth(d.full_name, "18px Roboto, sans-serif") + 20;
+          // console.log("mouseover", left, top);
+          // this.showTooltip({top, left, width, content: d.full_name});
+          this.highlight(ev, d);
+        })
+        .on("mouseout", () => {
+          // this.hideTooltip();
+          this.dehighlight();
+        })
         .on("click", (ev, d) => {
           console.log("on click tree node");
           let query = {
@@ -246,6 +247,7 @@ export default {
         .delay(this.remove_ani + this.update_ani)
         .style("opacity", 1);
 
+      
       node_groups
         .append("path")
         .attr("class", (d) => "icon icon-" + d.type)
@@ -254,15 +256,32 @@ export default {
         })
         .attr("fill", Global.GrayColor)
         .style("opacity", 0)
+        .transition()
+        .duration(this.create_ani)
+        .delay(this.update_ani + this.remove_ani)
+        .style("opacity", () => (this.expand_tree ? 1 : 0));
+      
+      node_groups
+        .append("rect")
+        .attr("class", "icon-background")
+        .attr("x", -8)
+        .attr("y", -8)
+        .attr("width", 16)
+        .attr("height", 16)
+        .style("fill", "white")
+        .style("opacity", 0)
+        .on("mouseover", (ev, d) => {
+          this.icon_highlight(ev, d);
+        })
+        .on("mouseout", () => {
+          this.icon_dehighlight();
+        })
         .on("click", (ev, d) => {
           if (!this.expand_tree) return;
           console.log("click tree node", d.name);
           this.set_focus_node([d]);
         })
-        .transition()
-        .duration(this.create_ani)
-        .delay(this.update_ani + this.remove_ani)
-        .style("opacity", () => (this.expand_tree ? 1 : 0));
+      
       // node name
       node_groups
         .append("text")
@@ -724,6 +743,19 @@ export default {
         .select("rect.background")
         .style("fill", "#EBEBF3");
     },
+    icon_highlight(ev, d){
+        console.log("icon-highlight");
+      this.tree_node_group
+        .select("#id-" + d.id)
+        .select("path.icon")
+        .style("fill", "#1f1f1f");
+    },
+    icon_dehighlight(){
+        this.svg
+        .selectAll("g.tree-node")
+        .select("path.icon")
+        .style("fill", Global.GrayColor);
+    }
   },
   watch: {
     tree() {

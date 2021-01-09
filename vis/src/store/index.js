@@ -82,6 +82,7 @@ const store = new Vuex.Store({
                     let s = element.all_children.map(d=>d.data.recall);
                     if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
                 }
+                element.api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
                 // if (!element.data.words){
                 //     let arr = element.children.map(d => d.data.words);
                 //     element.data.words = unique(Array.prototype.concat.call(...arr));
@@ -96,6 +97,8 @@ const store = new Vuex.Store({
                 // });
                 // element.words = element.words.slice(0, 20);
             });
+
+            state.tree.eachBefore((d, i) => d.order = i);
 
             state.tree.all_descendants = state.tree.descendants();
             
