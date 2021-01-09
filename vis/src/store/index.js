@@ -72,7 +72,7 @@ const store = new Vuex.Store({
                 element._total_width = 0;
                 if (!element.data.sets){
                     let arr = element.children.map(d => d.data.sets);
-                    element.data.sets = unique(Array.prototype.concat.call(arr));
+                    element.data.sets = unique(Array.prototype.concat.call(...arr));
                 }
                 if (!element.data.precision){
                     let s = element.all_children.map(d=>d.data.precision);
@@ -83,8 +83,8 @@ const store = new Vuex.Store({
                     if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
                 }
                 if (!element.data.words){
-                    let arr = element.children.map( d => d.data.words);
-                    element.data.words = unique(Array.prototype.concat.call(arr));
+                    let arr = element.children.map(d => d.data.words);
+                    element.data.words = unique(Array.prototype.concat.call(...arr));
                 }
                 element.words = element.data.words.map(d => {
                     let res = {};
