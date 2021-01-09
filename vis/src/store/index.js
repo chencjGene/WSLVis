@@ -99,11 +99,6 @@ const store = new Vuex.Store({
 
             state.tree.all_descendants = state.tree.descendants();
             
-            // //TODO: for debug
-            // state.words = state.tree.all_descendants[1].words;
-            this.commit("set_words", state.tree.all_descendants[1].words);
-            
-
             // process set
             state.set_list = hypergraph_data.set_list
 
@@ -153,39 +148,6 @@ const store = new Vuex.Store({
     },
     actions:{
         async fetch_manifest({commit, state}, key){
-        //     this.commit("set_text_list", 
-        //     [{"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "1"}, 
-        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "2"}, 
-        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "3"}, 
-        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "5"}, 
-        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "6"}, 
-        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "7"}, 
-        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "8"}, 
-        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "9"}, 
-        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "10"}, 
-        //     {"message": "teswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasgteswtsetasegasg",
-        //     "active": true,
-        //     "id": "11"}, 
-        //     // {"text": "sdkfas;rlkgja"},
-        // ]);
             console.log("fetch_manifest");
             const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, {"dataset": key}, 
                 {headers: {
@@ -214,7 +176,7 @@ const store = new Vuex.Store({
                 "cat_id": key.cat_id,
                 "word": key.text
             }
-            const resp = await axios.post(`${state.server_url}/text/GetText`, {query});
+            const resp = await axios.post(`${state.server_url}/text/GetText`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));
         }
     },

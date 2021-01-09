@@ -85,8 +85,8 @@ export default {
     },
     update_view() {
       this.e_words = this.wordcloud_group
-        .selectAll("wordcloud")
-        .data(this.wordclouds);
+        .selectAll(".wordcloud")
+        .data(this.wordclouds, d=> d.text);
       // this.e_texts = this.text_group.selectAll("cap-text")
       //   .data(this.wordclouds); // for debug
       this.create();
@@ -103,7 +103,7 @@ export default {
         .enter()
         .append("g")
         .attr("class", "wordcloud")
-        .attr("id", (d) => "id-" + d.id)
+        .attr("id", (d) => "id-" + d.text)
         .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
         .on("click", (ev, d) => {
           console.log("click word", ev, d);
@@ -118,19 +118,49 @@ export default {
         .attr("font-size", (d) => d.size)
         .style("font-family", (d) => d.font)
         .text((d) => d.text);
+      word_groups
+        .attr("opacity", 0)
+        .transition()
+        .duration(this.create_ani)
+        .delay(this.remove_ani + this.update_ani)
+        .attr("opacity", 1);
+
     },
     text_create() {},
     update() {
       this.wordcloud_update();
       this.text_update();
     },
-    wordcloud_update() {},
+    wordcloud_update() {
+      this.e_words
+        .transition()
+        .duration(this.update_ani)
+        .delay(this.remove_ani)
+        .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")");
+      this.e_words
+        .select("text")
+        .transition()
+        .duration(this.update_ani)
+        .delay(this.remove_ani)
+        .attr("dx", (d) => d.dx)
+        .attr("dy", (d) => d.dy)
+        .attr("font-size", (d) => d.size)
+        .style("font-family", (d) => d.font)
+        .text((d) => d.text);
+    },
     text_update() {},
     remove() {
       this.wordcloud_remove();
       this.text_remove();
     },
-    wordcloud_remove() {},
+    wordcloud_remove() {
+      console.log("wordcloud remove");
+      this.e_words.exit()
+        .transition()
+        .duration(this.remove_ani)
+        .style("opacity", 0)
+        .remove();
+    },
     text_remove() {},
   },
   async mounted() {
@@ -143,6 +173,9 @@ export default {
     // this.bbox_height = bbox.height;
     // this.layout_width = this.bbox_width;
     // this.layout_height = this.bbox_height * 0.98;
+    this.create_ani = Global.Animation / 4;
+    this.update_ani = Global.Animation / 4;
+    this.remove_ani = Global.Animation / 4;
 
     // wordcloud
     this.wordcloud_height = wordcloud_container

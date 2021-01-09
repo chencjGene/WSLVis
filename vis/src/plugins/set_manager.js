@@ -35,7 +35,7 @@ const SetManager = function (){
         let arr = that.leaf_nodes.map(d => d.data.sets);
         arr = Array.prototype.concat.call(...arr);
         that.arr = unique(arr);
-        console.log("arr in get_sets", arr);
+        // console.log("arr in get_sets", arr);
         // TODO: filtering or sorting
         let num_to_display = 
             Math.floor(that.layout_height / that.set_height);

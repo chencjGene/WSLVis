@@ -200,6 +200,8 @@ class Data(object):
         return img_path, gt, det
     
     def get_text(self, query):
+        cursor = self.conn.cursor()
+        sql = "select (cap) from annos where id = ?"
         cat_id = query["cat_id"]
         word = query["word"]
         idxs = self.labeled_extracted_labels_by_cat[cat_id][word]
@@ -207,10 +209,13 @@ class Data(object):
         idxs = list(set(idxs))
         texts = []
         for idx in idxs:
-            anno = self.annos[idx]
-            caps = anno["caption"]
-            caps = [c + " " for c in caps]
-            caps = "".join(caps)
+            # anno = self.annos[idx]
+            # caps = anno["caption"]
+            result = cursor.execute(sql, (idx,))
+            result = cursor.fetchall()[0]
+            caps = result[0]
+            # caps = [c + " " for c in caps]
+            # caps = "".join(caps)
             text = {
                 "message": caps,
                 "active": True,

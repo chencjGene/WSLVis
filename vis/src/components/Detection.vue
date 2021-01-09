@@ -45,7 +45,7 @@ export default {
             "fetch_hypergraph"
         ]),
         ...mapMutations([
-            "set_focus_node", "set_expand_tree", "showTooltip", "hideTooltip"
+            "set_focus_node", "set_expand_tree", "showTooltip", "hideTooltip", "set_words"
         ]),
         treecut() {
             console.log("detection treecut");
@@ -137,11 +137,6 @@ export default {
                     // this.hideTooltip();
                     this.dehighlight();
                 })
-                .on("click", (ev, d) => {
-                    if(!this.expand_tree) return;
-                    console.log("click tree node", d.name);
-                    this.set_focus_node([d]);
-                })
                 .transition()
                 .duration(this.create_ani)
                 .delay(this.remove_ani + this.update_ani)
@@ -162,6 +157,10 @@ export default {
                 })
                 .style("fill", "#EBEBF3")
                 .style("fill-opacity", 0)
+                .on("click", (ev, d) => {
+                    console.log("on click tree node");
+                    this.set_words(d.words);
+                })
                 .transition()
                 .duration(this.create_ani)
                 .delay(this.remove_ani + this.update_ani)
@@ -201,45 +200,51 @@ export default {
                 .style("opacity", 1);
 
             node_groups
-            .append("path")
-            .attr("class", "icon")
-            .attr("d", function(d){
-                return Global.node_icon(0, 0, d.type);
-            })
-            .attr("fill", Global.GrayColor)
-            .style("opacity", 0)
-            .transition()
-            .duration(this.create_ani)
-            .delay(this.update_ani + this.remove_ani)
-            .style("opacity", () => this.expand_tree ? 1 : 0);
+                .append("path")
+                .attr("class", d => "icon icon-" + d.type)
+                .attr("d", function(d){
+                    return Global.node_icon(0, 0, d.type);
+                })
+                .attr("fill", Global.GrayColor)
+                .style("opacity", 0)
+                .on("click", (ev, d) => {
+                        if(!this.expand_tree) return;
+                        console.log("click tree node", d.name);
+                        this.set_focus_node([d]);
+                    })
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.update_ani + this.remove_ani)
+                .style("opacity", () => this.expand_tree ? 1 : 0)
             // node name
             node_groups.append("text")
-            .text(d => {
-                return d.name;
-            })
-            .attr("text-anchor", "start")
-            .attr("x", this.layer_height / 2)
-            .attr("font-size", "18px")
-            .attr("dy", ".3em")
-            .style("opacity", 0)
-            .transition()
-            .duration(this.create_ani)
-            .delay(this.update_ani + this.remove_ani)
-            .style("opacity", 1);
+                .attr("class", "node-name")
+                .text(d => {
+                    return d.name;
+                })
+                .attr("text-anchor", "start")
+                .attr("x", this.layer_height / 2)
+                .attr("font-size", "18px")
+                .attr("dy", ".3em")
+                .style("opacity", 0)
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.update_ani + this.remove_ani)
+                .style("opacity", 1);
             // node link
             node_groups.append("path")
-            .attr("class", "node-link")
-            .attr("d", d => {
-                return  "M" + d.link_x + ", " + d.link_top + " L " 
-                    + d.link_x + ", " + d.link_bottom;
-            })
-            .style("stroke", Global.GrayColor)
-            .style("stroke-width", 0.5)
-            .style("opacity", 0)
-            .transition()
-            .duration(this.create_ani)
-            .delay(this.update_ani + this.remove_ani)
-            .style("opacity", 1);
+                .attr("class", "node-link")
+                .attr("d", d => {
+                    return  "M" + d.link_x + ", " + d.link_top + " L " 
+                        + d.link_x + ", " + d.link_bottom;
+                })
+                .style("stroke", Global.GrayColor)
+                .style("stroke-width", 0.5)
+                .style("opacity", 0)
+                .transition()
+                .duration(this.create_ani)
+                .delay(this.update_ani + this.remove_ani)
+                .style("opacity", 1);
         },
         mini_create(){
             this.e_mini_nodes.enter()
@@ -687,8 +692,15 @@ export default {
 </script>
 
 <style>
-.tree-node{
+/* .tree-node{
+} */
+
+.icon-0{
     cursor: pointer;
+}
+
+.node-name{
+    pointer-events: none;
 }
 
 .rest-tree-node{
