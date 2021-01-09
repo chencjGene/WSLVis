@@ -1,7 +1,8 @@
 import numpy as np
 import os
 
-from ..database_utils.data import Data
+from ..database_utils.data_database import Data
+# from ..database_utils.data import Data
 from ..utils.config_utils import config
 from ..utils.log_utils import logger
 from ..utils.helper_utils import *

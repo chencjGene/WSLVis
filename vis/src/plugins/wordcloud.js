@@ -161,7 +161,8 @@ function wordcloud() {
       return ret
     }
   
-    self.start = async (callback) => {
+    // self.start = async () => {
+    self.start =  () => {
       let cw = 1 << 11 >> 5, ch = 1 << 11, canvas
       if (typeof document !== "undefined") {
         canvas = document.createElement("canvas")
@@ -170,7 +171,7 @@ function wordcloud() {
         canvas.width = (cw << 5)
         canvas.height = ch
       } else {
-        canvas = new DOM.canvas(cw << 5, ch)
+        canvas = new canvas(cw << 5, ch)
       }
   
       const ctx = canvas.getContext("2d")
@@ -313,7 +314,8 @@ function wordcloud() {
         .force("collide", forceCollide())
   
       for (let i = 0; i < 5; ++i) {
-        await simulation.tick()
+        // await simulation.tick()
+        simulation.tick()
       }
   
       data = previous_data
@@ -328,7 +330,8 @@ function wordcloud() {
           data[i].y = size[1] * data[i].rangey[2] + data[i].height / 2
         }
       }
-      callback(data)
+      // callback(data)
+      return data;
     }
   
     self.data = function (x) {

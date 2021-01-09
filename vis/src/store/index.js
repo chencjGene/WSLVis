@@ -21,7 +21,9 @@ const store = new Vuex.Store({
         focus_node: null,
         set_list: [],
         words: [],
+        focus_word: null,
         text_list: [],
+        focus_text: null,
         image_list: [],
         tooltip: {
           top: 0,
@@ -49,7 +51,7 @@ const store = new Vuex.Store({
             state.tree = d3.hierarchy(hypergraph_data.tree,
                 function(d){
                     let children = d.children;
-                    console.log("children", children);
+                    // console.log("children", children);
                     // return children ? children : undefined;
                     return children
                 });
@@ -69,7 +71,7 @@ const store = new Vuex.Store({
                 element._total_width = 0;
                 if (!element.data.sets){
                     let arr = element.children.map(d => d.data.sets);
-                    element.data.sets = unique(Array.prototype.concat.call(arr));
+                    element.data.sets = unique(Array.prototype.concat.call(...arr));
                 }
                 if (!element.data.precision){
                     let s = element.all_children.map(d=>d.data.precision);
@@ -79,18 +81,26 @@ const store = new Vuex.Store({
                     let s = element.all_children.map(d=>d.data.recall);
                     if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
                 }
-                // element.words = element.words.map(d => {
+                element.api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
+                // if (!element.data.words){
+                //     let arr = element.children.map(d => d.data.words);
+                //     element.data.words = unique(Array.prototype.concat.call(...arr));
+                // }
+                // element.words = element.data.words.map(d => {
                 //     let res = {};
                 //     res.text = d[0];
                 //     res.value = d[1];
-                // })
+                //     res.cat_id = element.data.cat_id;
+                //     res.id = element.data.id;
+                //     return res;
+                // });
+                // element.words = element.words.slice(0, 20);
             });
-            
-            // //TODO: for debug
-            // state.words = state.tree.all_descendants[1].words;
+
+            state.tree.eachBefore((d, i) => d.order = i);
 
             state.tree.all_descendants = state.tree.descendants();
-
+            
             // process set
             state.set_list = hypergraph_data.set_list
 
@@ -113,11 +123,28 @@ const store = new Vuex.Store({
         },
         set_words(state, words){
             console.log("set words");
-            state.words = words;
+            state.words = words.map(d => {
+                let res = {};
+                res.text = d[0];
+                res.value = d[1];
+                // res.cat_id = element.data.cat_id;
+                // res.id = element.data.id;
+                return res;
+
+            });
+            state.words = state.words.slice(0, 20);
+        },
+        set_focus_word(state, word){
+            console.log("set focus word");
+            state.focus_word = word;
         },
         set_text_list(state, text_list){
             console.log("set text list");
             state.text_list = text_list;
+        },
+        set_focus_text(state, text){
+            console.log("set focus text");
+            state.focus_text = text;
         },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 
@@ -153,6 +180,24 @@ const store = new Vuex.Store({
             const resp = await axios.post(`${state.server_url}/history/GetHistory`, {word: key}, {headers: {"Access-Control-Allow-Origin": "*"}});
             // console.log(resp);
             commit("set_history_data", JSON.parse(JSON.stringify(resp.data)));
+        },
+        async fetch_text({commit, state}, key){
+            console.log("fetch_text", key);
+            let query = {
+                "cat_id": key.cat_id,
+                "word": key.text
+            }
+            const resp = await axios.post(`${state.server_url}/text/GetText`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));
+        },
+        async fetch_word({commit, state}, query){
+            console.log("fetch_word", query);
+            // let query = {
+            //     "tree_node_id": key.cat_id,
+            //     "match_type": key.text
+            // }
+            const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_words", JSON.parse(JSON.stringify(resp.data)));
         }
     },
     modules:{

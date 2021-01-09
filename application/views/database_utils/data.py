@@ -50,7 +50,13 @@ class Data(object):
         self.ids = processed_data[config.ids_name]
         self.labeled_idx = processed_data["labeled_idx"]
         self.train_idx = processed_data[config.train_idx_name]
-        self.unlabeled_idx = [i for i in self.train_idx if i not in self.labeled_idx]
+        tmp_map = {}
+        for idx in self.train_idx:
+            tmp_map[idx] = 0
+        for idx in self.labeled_idx:
+            tmp_map[idx] = 1
+        self.unlabeled_idx = [i for i in self.train_idx if tmp_map[i]]
+        # self.unlabeled_idx = [i for i in self.train_idx if i not in self.labeled_idx]
         self.val_idx = processed_data[config.valid_idx_name]
         self.test_idx = processed_data[config.test_idx_name]
         self.redundant_idx = processed_data[config.redundant_idx_name]
@@ -175,8 +181,25 @@ class Data(object):
         img_path = os.path.join(self.data_root, phase, "%012d.jpg" %(image_id))
         return img_path, gt, det
     
-    def get_text(self, idx):
-        None
+    def get_text(self, query):
+        cat_id = query["cat_id"]
+        word = query["word"]
+        idxs = self.labeled_extracted_labels_by_cat[cat_id][word]
+        idxs = [i["id"] for i in idxs]
+        idxs = list(set(idxs))
+        texts = []
+        for idx in idxs:
+            anno = self.annos[idx]
+            caps = anno["caption"]
+            caps = [c + " " for c in caps]
+            caps = "".join(caps)
+            text = {
+                "message": caps,
+                "active": True,
+                "id": idx
+            }
+            texts.append(text)
+        return texts
     
     def get_tfidf(self, type="labeled"):
         idxs = self.labeled_idx
