@@ -127,7 +127,6 @@ const store = new Vuex.Store({
                 let res = {};
                 res.text = d[0];
                 res.value = d[1];
-                // res.cat_id = element.data.cat_id;
                 // res.id = element.data.id;
                 return res;
 

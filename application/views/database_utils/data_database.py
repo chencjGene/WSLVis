@@ -301,10 +301,8 @@ class Data(object):
     def get_text(self, query):
         cursor = self.conn.cursor()
         sql = "select (cap) from annos where id = ?"
-        cat_id = query["cat_id"]
         word = query["word"]
-        idxs = self.labeled_extracted_labels_by_cat[cat_id][word]
-        idxs = [i["id"] for i in idxs]
+        idxs = self.current_wordcloud[word]
         idxs = list(set(idxs))
         texts = []
         for idx in idxs:
