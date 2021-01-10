@@ -193,12 +193,16 @@ const tree_layout = function(nodeSize, layout_height){
         let visible_nodes = data.descendants();
         visible_nodes.forEach(d => {
             d.tmp_children = d.children.slice();
-            if (d.afterList.length > 0){
-                // console.log("process afterlist", d.name, d.children);
+            if (d.beforeList.length > 0){
+                // if (d.beforeList.length === 1){
+                //     d.children.push(d.beforeList[0]);
+                //     d.tmp_children.push(d.beforeList[0]);
+                //     d.tmp_children.sort(function(a,b){return a.siblings_id - b.siblings_id;})
+                // }
                 let rest_node = {};
-                rest_node.id = "rest-" + d.id;
+                rest_node.id = "rest-before-" + d.id;
                 rest_node.is_rest_node = true;
-                rest_node.rest_children = d.afterList;
+                rest_node.rest_children = d.beforeList;
                 rest_node.parent = d;
                 rest_node.depth = d.depth + 1;
                 rest_node.data = {};
@@ -206,7 +210,28 @@ const tree_layout = function(nodeSize, layout_height){
                 rest_node.data.recall = 1;
                 rest_node.siblings_id = 1000;
                 d.children.push(rest_node);
+
             }
+            if (d.afterList.length > 0){
+                // console.log("process afterlist", d.name, d.children);
+                // if (d.afterList.length === 1){
+                //     d.children.push(d.afterList[0]);
+                //     d.tmp_children.push(d.afterList[0]);
+                //     d.tmp_children.sort(function(a,b){return a.siblings_id - b.siblings_id;})
+                // }
+                let rest_node = {};
+                rest_node.id = "rest-before-" + d.id;
+                rest_node.is_rest_node = true;
+                rest_node.rest_children = d.afterList;
+                rest_node.parent = d;
+                rest_node.depth = d.depth + 1;
+                rest_node.data = {};
+                rest_node.data.precision = 1;
+                rest_node.data.recall = 1;
+                rest_node.siblings_id = -1;
+                d.children.push(rest_node);
+            }
+            d.children.sort(function(a,b){return a.siblings_id - b.siblings_id;})
         });
 
         data.eachBefore((d,i) => {
@@ -411,11 +436,33 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
             return;
         }
 
-        for (let i = 0; i < source.all_children.length; i++) {
-            if (source.children.indexOf(source.all_children[i]) < 0) {
-                source.afterList.push(source.all_children[i]);
+        let min_idx = 1000, max_idx = -1;
+        for (let i = 0; i < source.children.length; i++){
+            let siblings_id = source.children[i].siblings_id;
+            if (siblings_id > max_idx){
+                max_idx = siblings_id;
+            }
+            if (siblings_id < min_idx){
+                min_idx = siblings_id;
             }
         }
+        console.log("update has after cnt field", min_idx, max_idx, source.children.map(d => d.siblings_id), source.all_children.map(d => d.siblings_id));
+        for (let i = max_idx - 1; i >= 0; i--) {
+            if (source.children.indexOf(source.all_children[i]) < 0) {
+                source.beforeList.push(source.all_children[i]);
+            }
+        }
+        for (let i = max_idx + 1; i < source.all_children.length; i++) {
+            // if (source.children.indexOf(source.all_children[i]) < 0) {
+                source.afterList.push(source.all_children[i]);
+            // }
+        }
+
+        // for (let i = 0; i < source.all_children.length; i++) {
+        //     if (source.children.indexOf(source.all_children[i]) < 0) {
+        //         source.afterList.push(source.all_children[i]);
+        //     }
+        // }
     };
 
     this.check_order = function(arr){
@@ -447,7 +494,6 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
             }
             node.parent.children.splice(i,0,node);
             this.check_order(node.parent.children);
-
 
             // reordering(node.parent);
 
@@ -511,6 +557,20 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
             source.window.y = y + 1;
         }
     };
+
+    this.searchDownX = function (source) {
+        for (var x = source.window.x - 1; x >= 0; x--) {
+            if (source.children.indexOf(source.all_children[x]) < 0) {
+                var node = source.all_children[x];
+                _this.from_rest_to_children(node);
+                if (!_this.candraw(_tree)) {
+                    _this.from_children_to_rest(node);
+                    break;
+                }
+            }
+            source.window.x = x;
+        }
+    }
 
     this.draw_my_children = function(source){
         source.window.x = 0;

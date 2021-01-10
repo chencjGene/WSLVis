@@ -620,7 +620,7 @@ export default {
           );
         });
 
-      let bars = this.e_nodes
+      this.e_nodes
         .select("g.node-bars")
         .transition()
         .duration(this.update_ani)
