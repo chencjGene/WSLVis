@@ -962,7 +962,8 @@ export default {
 }
 
 .main-content {
-  background: rgb(248, 249, 254);
+  /* background: rgb(248, 249, 254); */
+  background: rgb(255, 255, 255);
   border: 1px solid #c1c1c1;
   border-radius: 5px;
   height: 100%;
