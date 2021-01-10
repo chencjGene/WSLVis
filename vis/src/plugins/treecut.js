@@ -208,7 +208,7 @@ const tree_layout = function(nodeSize, layout_height){
                 rest_node.data = {};
                 rest_node.data.precision = 1;
                 rest_node.data.recall = 1;
-                rest_node.siblings_id = 1000;
+                rest_node.siblings_id = -1;
                 d.children.push(rest_node);
 
             }
@@ -220,7 +220,7 @@ const tree_layout = function(nodeSize, layout_height){
                 //     d.tmp_children.sort(function(a,b){return a.siblings_id - b.siblings_id;})
                 // }
                 let rest_node = {};
-                rest_node.id = "rest-before-" + d.id;
+                rest_node.id = "rest-after-" + d.id;
                 rest_node.is_rest_node = true;
                 rest_node.rest_children = d.afterList;
                 rest_node.parent = d;
@@ -228,7 +228,7 @@ const tree_layout = function(nodeSize, layout_height){
                 rest_node.data = {};
                 rest_node.data.precision = 1;
                 rest_node.data.recall = 1;
-                rest_node.siblings_id = -1;
+                rest_node.siblings_id = 1000;
                 d.children.push(rest_node);
             }
             d.children.sort(function(a,b){return a.siblings_id - b.siblings_id;})
