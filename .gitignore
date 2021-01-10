@@ -11,6 +11,9 @@ logs/
 images/
 test/
 
+#config
+application/views/case_utils/case_config.json
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
