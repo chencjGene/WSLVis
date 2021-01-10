@@ -245,6 +245,7 @@ const tree_layout = function(nodeSize, layout_height){
         });
         let nodes = data.descendants().filter(d => d.name !== "root");
         nodes.filter(d => d.is_rest_node).forEach(d => {
+            d.rest_children = d.rest_children.slice(0, 3); // show max 3 rest children
             let children_num = d.rest_children.length;
             let single_height = that.y_delta * 0.4;
             let max_delta = 6;
@@ -252,17 +253,20 @@ const tree_layout = function(nodeSize, layout_height){
             if (total_height > that.y_delta * 0.8){
                 let delta = (this.y_delta * 0.8 - single_height) / (children_num - 1);
                 d.rest_children.forEach((e,i) => {
-                    e.x_delta = i * 2;
+                    e.x_delta = i * 4;
                     e.y_delta = - that.y_delta * 0.8 / 2 + i * delta;
                     e.is_rest_node = true;
                 })
             }
             else{
                 d.rest_children.forEach((e,i) =>{
-                    e.x_delta = i * 2;
+                    e.x_delta = i * 4;
                     e.y_delta = i * max_delta - total_height / 2;
                 })
             }
+            d.rest_children.forEach((e,i) => {
+                e.last_rest_children = i === (d.rest_children.length - 1);
+            })
         })
         visible_nodes.forEach(d => {d.children = d.tmp_children});
         return nodes;

@@ -534,7 +534,7 @@ export default {
         .attr("width", () => {
           return this.max_text_width;
         })
-        .style("fill", "#EBEBF3")
+        .style("fill", (d) => d.last_rest_children ? "#EBEBF3": "rgb(211, 211, 229)")
         .style("stroke", "white")
         .style("stroke-width", 1);
       node_groups
