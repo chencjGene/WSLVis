@@ -57,6 +57,16 @@ def process_extracted_result(result):
     # import IPython; IPython.embed(); exit()
     return map
 
+def jsonify(detection_result):
+    for i in range(66):
+        cat_res = detection_result["all_boxes"][i]
+        for idx, boxs in enumerate(cat_res):
+            if type(boxs) == np.ndarray:
+                cat_res[idx] = boxs.tolist()
+            # else:
+            #     import IPython; IPython.embed(); exit()
+    return detection_result
+
 class DataCOCO17(DataBase):
     def __init__(self, suffix=""):
         dataname = config.coco17
@@ -68,15 +78,19 @@ class DataCOCO17(DataBase):
         t0 = time()
     
         logger.info("loading detection results")
-        # # val detection result
-        # val_detection_path = os.path.join(self.raw_data_dir, \
-        #     "detections_val.pkl")
-        # val_detection_result = pickle_load_data(val_detection_path)
+        # val detection result
+        val_detection_path = os.path.join(self.raw_data_dir, \
+            "detections_val.pkl")
+        val_detection_result = pickle_load_data(val_detection_path)
+        val_detection_result = jsonify(val_detection_result)
+
+        # import IPython; IPython.embed(); exit()
 
         # train detection result
-        # train_detection_path =  os.path.join(self.raw_data_dir, \
-        #     "detections_train.pkl")
-        # train_detection_result = pickle_load_data(train_detection_path)
+        train_detection_path =  os.path.join(self.raw_data_dir, \
+            "detections_train.pkl")
+        train_detection_result = pickle_load_data(train_detection_path)
+        train_detection_result = jsonify(train_detection_result)
 
         logger.info("loading groundtruth")
         # val groundtruth
@@ -123,8 +137,8 @@ class DataCOCO17(DataBase):
             "COCO17", "val_image_output.npy")).tolist()
 
         self.all_data = {
-            # "train_detections": train_detection_result,
-            # "val_detections": val_detection_result,
+            "train_detections": train_detection_result,
+            "val_detections": val_detection_result,
             "train_images": train_images,
             "val_images": val_images,
             "train_annos": train_annos,
@@ -143,8 +157,8 @@ class DataCOCO17(DataBase):
     
     def process_data(self):
         self.load_cache(loading_from_buffer=True, load_method=json_load_data)
-        # train_detection = self.all_data["train_detections"]
-        # val_detection = self.all_data["val_detections"] # disable detection result for debug
+        train_detection = self.all_data["train_detections"]
+        val_detection = self.all_data["val_detections"] # disable detection result for debug
         train_images = self.all_data["train_images"]
         val_images = self.all_data["val_images"]
         train_annos = self.all_data["train_annos"]
@@ -162,8 +176,8 @@ class DataCOCO17(DataBase):
         # val_ids = val_detection["img_id"]
         train_ids = [int(i) for i in train_ids]
         val_ids = [int(d["id"]) for d in val_images]
-        # train_detection = train_detection["all_boxes"]
-        # val_detection = val_detection["all_boxes"]
+        train_detection = train_detection["all_boxes"]
+        val_detection = val_detection["all_boxes"]
         train_num = len(train_ids)
         val_num = len(val_ids)
         total_num = train_num + val_num
@@ -211,21 +225,19 @@ class DataCOCO17(DataBase):
                 None
 
 
-        # # processing detection
-        # logger.info('processing detection')
-        # for category in tqdm(range(1, len(self.class_name) + 1)):
-        #     for idx in range(train_num):
-        #         bboxes = train_detection[category][idx]
-        #         for bbox in bboxes:
-        #             bbox = bbox.tolist() + [category]
-        #             self.detection[idx]["bbox"].append(bbox)
-        # for debug
-        self.detections = self.annos
+        # processing detection
+        logger.info('processing detection')
+        for category in tqdm(range(1, len(self.class_name) + 1)):
+            for idx in range(train_num):
+                bboxes = train_detection[category][idx]
+                for bbox in bboxes:
+                    bbox = bbox + [category]
+                    self.detection[idx]["bbox"].append(bbox)
         
         self.image_by_type = {}
         self.categories = [[] for i in range(len(self.train_idx) + len(self.val_idx))]
         for idx in self.train_idx:
-            det = self.detections[idx]
+            det = self.detection[idx]
             category = [d[-1] for d in det["bbox"]]
             self.categories[idx] = category
             cat_str = encoding_categories(category)
