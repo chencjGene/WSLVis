@@ -199,53 +199,95 @@ export default {
             -(this.bar_height - this.rounded_r) / 2 +
             ")"
         );
-      bars
-        .append("rect")
-        .attr("class", "bar-background")
-        .attr("rx", this.rounded_r)
-        .attr("ry", this.rounded_r)
-        .attr("y", -this.rounded_r)
-        .attr("width", this.bar_width * 2)
-        .attr("height", this.bar_height + this.rounded_r);
-      bars
-        .append("path")
-        .attr("class", "bar-precision")
-        .attr("d", (d) =>
-          Global.half_rounded_rect(
-            0,
-            (1 - d.data.precision) * this.bar_height,
-            this.bar_width,
-            d.data.precision * this.bar_height,
-            this.rounded_r,
-            0
-          )
-        );
-      bars
-        .append("path")
-        .attr("class", "bar-recall")
-        .attr("d", (d) =>
-          Global.half_rounded_rect(
-            this.bar_width,
-            (1 - d.data.recall) * this.bar_height,
-            this.bar_width,
-            d.data.recall * this.bar_height,
-            0,
-            this.rounded_r
-          )
-        );
-      bars
-        .append("rect")
-        .attr("class", "bar-line")
-        .attr("x", this.bar_width - 0.5 / 2)
-        .attr("y", -this.rounded_r)
-        .attr("width", 0.5)
-        .attr("height", this.bar_height + this.rounded_r);
-      bars
-        .style("opacity", 0)
-        .transition()
-        .duration(this.create_ani)
-        .delay(this.remove_ani + this.update_ani)
-        .style("opacity", 1);
+      let individual_bar = bars.selectAll("g.bar")
+        .data(d => {
+            let precision = {
+                "value": d.data.precision,
+                "color": "#c982ce",
+                "type": "precision"
+            };
+            let recall = {
+                "value": d.data.recall,
+                "color": "#4fa7ff",
+                "type": "recall"
+            }
+            return [precision, recall];
+        })
+        .enter()
+        .append("g")
+        .attr("class", "bar")
+        .attr("transform", (_, i) => "translate(" + (i * (this.bar_width + 3)) + ", " + 0 + ")");
+        individual_bar.append("rect")
+            .attr("rx", this.rounded_r)
+            .attr("ry", this.rounded_r)
+            .attr("width", this.bar_width)
+            .attr("height", this.bar_height)
+            .style("fill", "none")
+            .style("stroke", d => d.color)
+            .style("stroke-width", 1);
+        
+        individual_bar.append("rect")
+            .attr("class", d => "bar-value bar-" + d.type)
+            .attr("rx", this.rounded_r)
+            .attr("ry", this.rounded_r)
+            .attr("width", this.bar_width)
+            .attr("height", this.bar_height)
+            .style("fill", d => d.color)
+            .style("clip-path", d => {
+                return `inset(${(1-d.value) * this.bar_height}px ${0}px ${0}px ${0}px)`;
+            })
+        bars.style("opacity", 0)
+            .transition()
+            .duration(this.create_ani)
+            .delay(this.remove_ani + this.update_ani)
+            .style("opacity", 1);
+
+    //     .append("rect")
+    //     .attr("class", "bar-background")
+    //     .attr("rx", this.rounded_r)
+    //     .attr("ry", this.rounded_r)
+    //     .attr("y", -this.rounded_r)
+    //     .attr("width", this.bar_width * 2)
+    //     .attr("height", this.bar_height + this.rounded_r);
+    //   bars
+    //     .append("path")
+    //     .attr("class", "bar-precision")
+    //     .attr("d", (d) =>
+    //       Global.half_rounded_rect(
+    //         0,
+    //         (1 - d.data.precision) * this.bar_height,
+    //         this.bar_width,
+    //         d.data.precision * this.bar_height,
+    //         this.rounded_r,
+    //         0
+    //       )
+    //     );
+    //   bars
+    //     .append("path")
+    //     .attr("class", "bar-recall")
+    //     .attr("d", (d) =>
+    //       Global.half_rounded_rect(
+    //         this.bar_width,
+    //         (1 - d.data.recall) * this.bar_height,
+    //         this.bar_width,
+    //         d.data.recall * this.bar_height,
+    //         0,
+    //         this.rounded_r
+    //       )
+    //     );
+    //   bars
+    //     .append("rect")
+    //     .attr("class", "bar-line")
+    //     .attr("x", this.bar_width - 0.5 / 2)
+    //     .attr("y", -this.rounded_r)
+    //     .attr("width", 0.5)
+    //     .attr("height", this.bar_height + this.rounded_r);
+    //   bars
+    //     .style("opacity", 0)
+    //     .transition()
+    //     .duration(this.create_ani)
+    //     .delay(this.remove_ani + this.update_ani)
+    //     .style("opacity", 1);
 
       
       node_groups
@@ -592,30 +634,28 @@ export default {
             -(this.bar_height - this.rounded_r) / 2 +
             ")"
         );
-      bars
-        .select("path.bar-precision")
-        .attr("d", (d) =>
-          Global.half_rounded_rect(
-            0,
-            (1 - d.data.precision) * this.bar_height,
-            this.bar_width,
-            d.data.precision * this.bar_height,
-            this.rounded_r,
-            0
-          )
-        );
-      bars
-        .select("path.bar-recall")
-        .attr("d", (d) =>
-          Global.half_rounded_rect(
-            this.bar_width,
-            (1 - d.data.recall) * this.bar_height,
-            this.bar_width,
-            d.data.recall * this.bar_height,
-            0,
-            this.rounded_r
-          )
-        );
+        this.e_nodes
+        .select("g.node-bars")
+        .selectAll("g.bar")
+        .data(d => {
+            let precision = {
+                "value": d.data.precision,
+                "color": "#c982ce",
+                "type": "precision"
+            };
+            let recall = {
+                "value": d.data.recall,
+                "color": "#4fa7ff",
+                "type": "recall"
+            }
+            return [precision, recall];
+        })
+        .attr("transform", (_, i) => "translate(" + (i * (this.bar_width + 3)) + ", " + 0 + ")")
+        .selectAll(".bar-value")
+        .style("clip-path", d => {
+            return `inset(${(1-d.value) * this.bar_height}px ${0}px ${0}px ${0}px)`;
+        });
+
     },
     mini_update() {
       this.e_mini_nodes
@@ -803,9 +843,9 @@ export default {
     this.layer_height = 40; // TODO
 
     // bar size
-    this.bar_width = 8;
+    this.bar_width = 6;
     this.bar_height = this.layer_height * 0.45;
-    this.rounded_r = 3;
+    this.rounded_r = 1.5;
 
     this.set_height = 112;
     this.set_left = this.layer_height * 3 + 200;
