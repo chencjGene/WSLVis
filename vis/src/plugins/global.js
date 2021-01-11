@@ -44,8 +44,8 @@ const getTextWidth = function(text, font) {
     return context.measureText(text).width;
   }
 
-const node_icon = function(x, y, type){
-    let basic_ratio = 2;
+const node_icon = function(x, y, type, basic_ratio){
+    basic_ratio = basic_ratio || 2;
     if (type === 0){
         let ratio = basic_ratio * 1.8;
         let p1 = {x: x + ratio, y: y};

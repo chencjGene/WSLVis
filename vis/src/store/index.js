@@ -107,6 +107,7 @@ const store = new Vuex.Store({
             state.tree.eachBefore((d, i) => d.order = i);
 
             state.tree.all_descendants = state.tree.descendants();
+            state.tree.all_descendants.forEach(d => d.children = []);
             
             // process set
             state.set_list = hypergraph_data.set_list
