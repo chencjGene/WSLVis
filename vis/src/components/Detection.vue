@@ -764,64 +764,6 @@ export default {
         .attr("transform", d => d.translate + " scale(1, 0)")
         .style("opacity", 1)
         .remove();
-    //   this.e_nodes
-    //     .exit()
-    //     .selectAll("rect.background")
-    //     .transition()
-    //     .duration(d => d.exit_duration)
-    //     .delay(d => d.exit_delay)
-    //     .attr("height", 0);
-    //   this.e_nodes
-    //     .exit()
-    //     .selectAll(".node-name")
-    //     .transition()
-    //     .duration(d => d.exit_duration)
-    //     .delay(d => d.exit_delay)
-    //     .attr("font-size", "0px");
-    //   this.e_nodes
-    //     .exit()
-    //     .selectAll("path.node-link")
-    //     .transition()
-    //     .duration(d => d.exit_duration)
-    //     .delay(d => d.exit_delay)
-    //     .attr("d", (d) => {
-    //       return (
-    //         "M" +
-    //         d.link_x +
-    //         ", " +
-    //         d.link_top +
-    //         " L " +
-    //         d.link_x +
-    //         ", " +
-    //         d.link_top
-    //       );
-    //     });
-    //   this.e_nodes
-    //     .exit()
-    //     .selectAll("path.icon")
-    //     .transition()
-    //     .duration(d => d.exit_duration)
-    //     .delay(d => d.exit_delay)
-    //     .attr("d", d => Global.node_icon(0, 0, d.type, 0.001));
-    //   this.e_nodes
-    //     .exit()
-    //     .exit()
-    //     .selectAll("g.node-bars")
-    //     .selectAll("g.bar")
-    //     .selectAll("rect.bar-background")
-    //     .transition()
-    //     .duration(d => d.exit_duration)
-    //     .delay(d => d.exit_delay)
-    //     .attr("height", 0);
-    //   this.e_nodes
-    //     .exit()
-    //     .selectAll("g.node-bars")
-    //     .selectAll("g.bar")
-    //     .selectAll("rect.bar-value")
-    //     .transition()
-    //     .duration(d => d.exit_duration)
-    //     .delay(d => d.exit_delay)
-    //     .attr("height", 0);
     },
     mini_remove() {},
     rest_node_remove() {
