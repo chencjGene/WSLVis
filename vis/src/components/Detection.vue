@@ -293,7 +293,9 @@ export default {
           this.icon_dehighlight();
         })
         .on("click", (ev, d) => {
+          console.log("click icon", d.type, d);
           if (!this.expand_tree) return;
+          if (d.type > 0) return;
           console.log("click tree node", d.name);
           this.set_focus_node([d]);
         });
@@ -762,7 +764,7 @@ export default {
         .duration(d => d.exit_duration)
         .delay(d => d.exit_delay)
         .attr("transform", d => d.translate + " scale(1, 0)")
-        .style("opacity", 1)
+        .style("opacity", 0)
         .remove();
     },
     mini_remove() {},
@@ -781,7 +783,7 @@ export default {
         .duration(d => d.exit_duration)
         .delay(d => d.exit_delay)
         .attr("transform", d => d.translate + " scale(1, 0)")
-        .style("opacity", 1)
+        .style("opacity", 0)
         .remove();
     //   this.e_rest_nodes
     //     .exit()
@@ -809,6 +811,7 @@ export default {
     },
     icon_highlight(ev, d) {
       console.log("icon-highlight");
+      if (d.type > 0) return;
       this.tree_node_group
         .select("#id-" + d.id)
         .select("path.icon")
