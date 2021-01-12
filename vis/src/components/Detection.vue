@@ -763,7 +763,7 @@ export default {
         .delay(d => d.exit_delay)
         .attr("transform", d => d.translate + " scale(1, 0)")
         .style("opacity", 1)
-        // .remove();
+        .remove();
     //   this.e_nodes
     //     .exit()
     //     .selectAll("rect.background")
