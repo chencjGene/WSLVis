@@ -762,7 +762,7 @@ export default {
         .duration(d => d.exit_duration)
         .delay(d => d.exit_delay)
         .attr("transform", d => d.translate + " scale(1, 0)")
-        .style("opacity", 0.5)
+        .style("opacity", 1)
         // .remove();
     //   this.e_nodes
     //     .exit()
