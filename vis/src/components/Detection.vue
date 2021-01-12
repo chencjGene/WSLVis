@@ -578,9 +578,9 @@ export default {
           return this.max_text_width;
         });
 
-      if (detection.focus_node){
+      if (this.focus_node){
         this.tree_node_group
-            .select("#id-" + detection.focus_node[0].id)
+            .select("#id-" + this.focus_node[0].id)
             .select("rect.background")
             .transition()
             .duration(this.create_ani)
