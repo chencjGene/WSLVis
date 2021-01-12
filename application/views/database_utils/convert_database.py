@@ -14,19 +14,21 @@ from application.views.utils.helper_utils import pickle_load_data, pickle_save_d
 def convert(dataname):
     data = Data(dataname)
     database_file = os.path.join(data.data_root, "database.db")
+    
     conn = sqlite3.connect(database_file)
     
-    # conn.execute('''create table annos
-    # (id int primary key not null,
-    # cap text not null,
-    # bbox text not null,
-    # logits text not null,
-    # labels text not null,
-    # activations text not null,
-    # string text not null
-    # );
-    # ''')
-    # conn.commit()
+    conn.execute('''create table annos
+    (id int primary key not null,
+    cap text not null,
+    bbox text not null,
+    logits text not null,
+    labels text not null,
+    activations text not null,
+    string text not null,
+    detection text not null,
+    );
+    ''')
+    conn.commit()
 
     c = conn.cursor()
     sql = "insert into annos (id, cap, bbox, logits, labels, activations, string) values(?,?,?,?,?,?,?)"
