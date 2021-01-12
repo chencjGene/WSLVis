@@ -91,6 +91,41 @@ function assert(flag, string){
 //     }
 // }
 
+const exit_type = function(d){
+    let p = d;
+    let child_p = null;
+    // 0: collapsing to parent
+    // 1: stay till
+    // 2: collapsing to beforelist
+    // 3: collapsing to afterlist
+    let type = -1;
+    let translate = "";
+    while(p.parent && p.parent.children.indexOf(p) < 0){
+        child_p = p;
+        p = p.parent;
+    }
+    if (p.children.length === 0){
+        type = 0;
+        translate = "translate(" + p.prev_x + ", " + p.prev_y + ")";
+    }
+    else if (child_p && p.children.length !== 0){
+        if (child_p.in_before_list){
+            type = 2;
+            translate = "translate(" + p.before_node.x + ", " + p.before_node.y + ")";
+        }
+        else if (child_p.in_after_list){
+            type = 3;
+            translate = "translate(" + p.after_node.x + 
+                ", " + p.after_node.y + ")";
+        }
+    }
+    else{
+        type = 1;
+        translate = "translate(" + p.prev_x + ", " + p.prev_y + ")";
+    }
+    return [type, translate]
+}
+
 const mini_tree_layout = function(Size){
     let that = this;
     that.Size = Size;
@@ -189,14 +224,38 @@ const tree_layout = function(nodeSize, layout_height){
     }
 
     this._layout = function(data){
-        data.all_descendants.forEach(d => d.is_rest_node = false);
+        data.all_descendants.forEach(d => {
+            d.is_rest_node = false;
+            d.in_before_list = false;
+            d.in_after_list = false;
+        });
         let visible_nodes = data.descendants();
         visible_nodes.forEach(d => {
             d.tmp_children = d.children.slice();
-            if (d.afterList.length > 0){
-                // console.log("process afterlist", d.name, d.children);
+            if (d.beforeList.length > 0){
+                d.beforeList.forEach(n => n.in_before_list = true);
                 let rest_node = {};
-                rest_node.id = "rest-" + d.id;
+                rest_node.id = "rest-before-" + d.id;
+                rest_node.is_rest_node = true;
+                rest_node.rest_children = d.beforeList;
+                rest_node.parent = d;
+                rest_node.depth = d.depth + 1;
+                rest_node.data = {};
+                rest_node.data.precision = 1;
+                rest_node.data.recall = 1;
+                rest_node.siblings_id = -1;
+                rest_node.prev_vis = false;
+                d.beforeList.forEach(n => {
+                    if (n.prev_vis) rest_node.prev_vis=true;
+                })
+                d.children.push(rest_node);
+                d.before_node = rest_node;
+
+            }
+            if (d.afterList.length > 0){
+                d.afterList.forEach(n => n.in_after_list = true);
+                let rest_node = {};
+                rest_node.id = "rest-after-" + d.id;
                 rest_node.is_rest_node = true;
                 rest_node.rest_children = d.afterList;
                 rest_node.parent = d;
@@ -205,8 +264,14 @@ const tree_layout = function(nodeSize, layout_height){
                 rest_node.data.precision = 1;
                 rest_node.data.recall = 1;
                 rest_node.siblings_id = 1000;
+                rest_node.prev_vis = false;
+                d.afterList.forEach(n => {
+                    if (n.prev_vis) rest_node.prev_vis=true;
+                })
                 d.children.push(rest_node);
+                d.after_node = rest_node;
             }
+            d.children.sort(function(a,b){return a.siblings_id - b.siblings_id;})
         });
 
         data.eachBefore((d,i) => {
@@ -215,6 +280,10 @@ const tree_layout = function(nodeSize, layout_height){
         });
         data.descendants().forEach(d => {
             if (!d.children) d.children = [];
+            // if (d.parent){
+            //     d.parent_x = d.parent.x;
+            //     d.parent_y = d.parent.y;
+            // }
         })
         // calculate node link 
         data.descendants().forEach(d => {
@@ -245,6 +314,8 @@ const tree_layout = function(nodeSize, layout_height){
         });
         let nodes = data.descendants().filter(d => d.name !== "root");
         nodes.filter(d => d.is_rest_node).forEach(d => {
+            d.rest_children.forEach(n => {n.x = d.x; n.y = d.y;})
+            d.rest_children = d.rest_children.slice(0, 3); // show max 3 rest children
             let children_num = d.rest_children.length;
             let single_height = that.y_delta * 0.4;
             let max_delta = 6;
@@ -252,17 +323,20 @@ const tree_layout = function(nodeSize, layout_height){
             if (total_height > that.y_delta * 0.8){
                 let delta = (this.y_delta * 0.8 - single_height) / (children_num - 1);
                 d.rest_children.forEach((e,i) => {
-                    e.x_delta = i * 2;
+                    e.x_delta = i * 4;
                     e.y_delta = - that.y_delta * 0.8 / 2 + i * delta;
                     e.is_rest_node = true;
                 })
             }
             else{
                 d.rest_children.forEach((e,i) =>{
-                    e.x_delta = i * 2;
+                    e.x_delta = i * 4;
                     e.y_delta = i * max_delta - total_height / 2;
                 })
             }
+            d.rest_children.forEach((e,i) => {
+                e.last_rest_children = i === (d.rest_children.length - 1);
+            })
         })
         visible_nodes.forEach(d => {d.children = d.tmp_children});
         return nodes;
@@ -407,11 +481,33 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
             return;
         }
 
-        for (let i = 0; i < source.all_children.length; i++) {
-            if (source.children.indexOf(source.all_children[i]) < 0) {
-                source.afterList.push(source.all_children[i]);
+        let min_idx = 1000, max_idx = -1;
+        for (let i = 0; i < source.children.length; i++){
+            let siblings_id = source.children[i].siblings_id;
+            if (siblings_id > max_idx){
+                max_idx = siblings_id;
+            }
+            if (siblings_id < min_idx){
+                min_idx = siblings_id;
             }
         }
+        // console.log("update has after cnt field", min_idx, max_idx, source.children.map(d => d.siblings_id), source.all_children.map(d => d.siblings_id));
+        for (let i = max_idx - 1; i >= 0; i--) {
+            if (source.children.indexOf(source.all_children[i]) < 0) {
+                source.beforeList.push(source.all_children[i]);
+            }
+        }
+        for (let i = max_idx + 1; i < source.all_children.length; i++) {
+            // if (source.children.indexOf(source.all_children[i]) < 0) {
+                source.afterList.push(source.all_children[i]);
+            // }
+        }
+
+        // for (let i = 0; i < source.all_children.length; i++) {
+        //     if (source.children.indexOf(source.all_children[i]) < 0) {
+        //         source.afterList.push(source.all_children[i]);
+        //     }
+        // }
     };
 
     this.check_order = function(arr){
@@ -443,7 +539,6 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
             }
             node.parent.children.splice(i,0,node);
             this.check_order(node.parent.children);
-
 
             // reordering(node.parent);
 
@@ -507,6 +602,20 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
             source.window.y = y + 1;
         }
     };
+
+    this.searchDownX = function (source) {
+        for (var x = source.window.x - 1; x >= 0; x--) {
+            if (source.children.indexOf(source.all_children[x]) < 0) {
+                var node = source.all_children[x];
+                _this.from_rest_to_children(node);
+                if (!_this.candraw(_tree)) {
+                    _this.from_children_to_rest(node);
+                    break;
+                }
+            }
+            source.window.x = x;
+        }
+    }
 
     this.draw_my_children = function(source){
         source.window.x = 0;
@@ -623,7 +732,7 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
             siblings_dis = 1 / siblings_dis / 5;
             d = d - siblings_dis;
         }
-        console.log(d, r1, r2);
+        // console.log(d, r1, r2);
         assert(d >= 0, "distance error!!!");
         if (p == r2) return d / 5;
         if (p == r2.parent) return d / 2;
@@ -743,4 +852,4 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
     // }
 };
 
-export {TreeCut, tree_layout, mini_tree_layout}
+export {TreeCut, tree_layout, mini_tree_layout, exit_type}

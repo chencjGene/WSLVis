@@ -17,7 +17,12 @@
 import { mapActions, mapState, mapMutations } from "vuex";
 import * as d3 from "d3";
 import * as Global from "../plugins/global";
-import { mini_tree_layout, TreeCut, tree_layout } from "../plugins/treecut";
+import {
+  exit_type,
+  mini_tree_layout,
+  TreeCut,
+  tree_layout,
+} from "../plugins/treecut";
 import { SetManager } from "../plugins/set_manager";
 import InfoTooltip from "../components/infotooltip";
 export default {
@@ -49,12 +54,19 @@ export default {
     treecut() {
       console.log("detection treecut");
       console.log("before treecut", this.tree);
+      // tree position backup
+      this.tree.all_descendants.forEach((d) => {
+        d.prev_x = d.x;
+        d.prev_y = d.y;
+        d.prev_vis = false;
+      });
+      this.tree.descendants().forEach((d) => (d.prev_vis = true));
       this.offset = this.treecut_class.treeCut(
         this.focus_node,
         this.tree,
         this.tree_layout.layout_with_rest_node
       );
-      this.tree.all_descendants.map(d => d.api = 0);
+      this.tree.all_descendants.map((d) => (d.api = 0));
       this.offset = 0;
       this.tree.sort(function (a, b) {
         return a.siblings_id - b.siblings_id;
@@ -199,47 +211,52 @@ export default {
             -(this.bar_height - this.rounded_r) / 2 +
             ")"
         );
-      bars
+      let individual_bar = bars
+        .selectAll("g.bar")
+        .data((d) => {
+          let precision = {
+            value: d.data.precision,
+            color: "#c982ce",
+            type: "precision",
+          };
+          let recall = {
+            value: d.data.recall,
+            color: "#4fa7ff",
+            type: "recall",
+          };
+          return [precision, recall];
+        })
+        .enter()
+        .append("g")
+        .attr("class", "bar")
+        .attr(
+          "transform",
+          (_, i) => "translate(" + i * (this.bar_width + 3) + ", " + 0 + ")"
+        );
+      individual_bar
         .append("rect")
         .attr("class", "bar-background")
         .attr("rx", this.rounded_r)
         .attr("ry", this.rounded_r)
-        .attr("y", -this.rounded_r)
-        .attr("width", this.bar_width * 2)
-        .attr("height", this.bar_height + this.rounded_r);
-      bars
-        .append("path")
-        .attr("class", "bar-precision")
-        .attr("d", (d) =>
-          Global.half_rounded_rect(
-            0,
-            (1 - d.data.precision) * this.bar_height,
-            this.bar_width,
-            d.data.precision * this.bar_height,
-            this.rounded_r,
-            0
-          )
-        );
-      bars
-        .append("path")
-        .attr("class", "bar-recall")
-        .attr("d", (d) =>
-          Global.half_rounded_rect(
-            this.bar_width,
-            (1 - d.data.recall) * this.bar_height,
-            this.bar_width,
-            d.data.recall * this.bar_height,
-            0,
-            this.rounded_r
-          )
-        );
-      bars
+        .attr("width", this.bar_width)
+        .attr("height", this.bar_height)
+        .style("fill", "none")
+        .style("stroke", (d) => d.color)
+        .style("stroke-width", 1);
+
+      individual_bar
         .append("rect")
-        .attr("class", "bar-line")
-        .attr("x", this.bar_width - 0.5 / 2)
-        .attr("y", -this.rounded_r)
-        .attr("width", 0.5)
-        .attr("height", this.bar_height + this.rounded_r);
+        .attr("class", (d) => "bar-value bar-" + d.type)
+        .attr("rx", this.rounded_r)
+        .attr("ry", this.rounded_r)
+        .attr("width", this.bar_width)
+        .attr("height", this.bar_height)
+        .style("fill", (d) => d.color)
+        .style("clip-path", (d) => {
+          return `inset(${
+            (1 - d.value) * this.bar_height
+          }px ${0}px ${0}px ${0}px)`;
+        });
       bars
         .style("opacity", 0)
         .transition()
@@ -247,7 +264,6 @@ export default {
         .delay(this.remove_ani + this.update_ani)
         .style("opacity", 1);
 
-      
       node_groups
         .append("path")
         .attr("class", (d) => "icon icon-" + d.type)
@@ -260,7 +276,7 @@ export default {
         .duration(this.create_ani)
         .delay(this.update_ani + this.remove_ani)
         .style("opacity", () => (this.expand_tree ? 1 : 0));
-      
+
       node_groups
         .append("rect")
         .attr("class", "icon-background")
@@ -280,8 +296,8 @@ export default {
           if (!this.expand_tree) return;
           console.log("click tree node", d.name);
           this.set_focus_node([d]);
-        })
-      
+        });
+
       // node name
       node_groups
         .append("text")
@@ -492,13 +508,29 @@ export default {
         .attr("width", () => {
           return this.max_text_width;
         })
-        .style("fill", "#EBEBF3")
+        .style("fill", (d) =>
+          d.last_rest_children ? "#EBEBF3" : "rgb(211, 211, 229)"
+        )
         .style("stroke", "white")
         .style("stroke-width", 1);
       node_groups
         .transition()
-        .duration(this.create_ani)
-        .delay(this.remove_ani + this.update_ani)
+        .duration((d) => {
+          if (d.prev_vis) {
+            // return this.remove_ani * 0.5;
+            return this.create_ani;
+          } else {
+            return this.create_ani;
+          }
+        })
+        .delay((d) => {
+          if (d.prev_vis) {
+            // return this.remove_ani * 0.5 + this.remove_ani;
+            return this.remove_ani + this.update_ani;
+          } else {
+            return this.remove_ani + this.update_ani;
+          }
+        })
         .style("opacity", 1);
     },
     update() {
@@ -578,7 +610,7 @@ export default {
           );
         });
 
-      let bars = this.e_nodes
+      this.e_nodes
         .select("g.node-bars")
         .transition()
         .duration(this.update_ani)
@@ -592,30 +624,32 @@ export default {
             -(this.bar_height - this.rounded_r) / 2 +
             ")"
         );
-      bars
-        .select("path.bar-precision")
-        .attr("d", (d) =>
-          Global.half_rounded_rect(
-            0,
-            (1 - d.data.precision) * this.bar_height,
-            this.bar_width,
-            d.data.precision * this.bar_height,
-            this.rounded_r,
-            0
-          )
-        );
-      bars
-        .select("path.bar-recall")
-        .attr("d", (d) =>
-          Global.half_rounded_rect(
-            this.bar_width,
-            (1 - d.data.recall) * this.bar_height,
-            this.bar_width,
-            d.data.recall * this.bar_height,
-            0,
-            this.rounded_r
-          )
-        );
+      this.e_nodes
+        .select("g.node-bars")
+        .selectAll("g.bar")
+        .data((d) => {
+          let precision = {
+            value: d.data.precision,
+            color: "#c982ce",
+            type: "precision",
+          };
+          let recall = {
+            value: d.data.recall,
+            color: "#4fa7ff",
+            type: "recall",
+          };
+          return [precision, recall];
+        })
+        .attr(
+          "transform",
+          (_, i) => "translate(" + i * (this.bar_width + 3) + ", " + 0 + ")"
+        )
+        .selectAll(".bar-value")
+        .style("clip-path", (d) => {
+          return `inset(${
+            (1 - d.value) * this.bar_height
+          }px ${0}px ${0}px ${0}px)`;
+        });
     },
     mini_update() {
       this.e_mini_nodes
@@ -698,12 +732,6 @@ export default {
         });
     },
     remove() {
-      this.e_nodes
-        .exit()
-        .transition()
-        .duration(this.remove_ani)
-        .style("opacity", 0)
-        .remove();
       this.e_sets
         .exit()
         .transition()
@@ -716,18 +744,112 @@ export default {
         .duration(this.remove_ani)
         .style("opacity", 0)
         .remove();
+      this.node_remove();
       this.mini_remove();
       this.rest_node_remove();
     },
-    node_remove() {},
+    node_remove() {
+      this.e_nodes.exit().attr("", d=>{
+          let [type, translate] = exit_type(d);
+          d.exit_type = type;
+          d.translate = translate;
+          d.exit_duration = d.exit_type > 1 ? this.update_ani : this.remove_ani;
+          d.exit_delay = d.exit_type > 1 ? this.remove_ani : 0;
+      })
+      this.e_nodes
+        .exit()
+        .transition()
+        .duration(d => d.exit_duration)
+        .delay(d => d.exit_delay)
+        .attr("transform", d => d.translate + " scale(1, 0)")
+        .style("opacity", 0.5)
+        // .remove();
+    //   this.e_nodes
+    //     .exit()
+    //     .selectAll("rect.background")
+    //     .transition()
+    //     .duration(d => d.exit_duration)
+    //     .delay(d => d.exit_delay)
+    //     .attr("height", 0);
+    //   this.e_nodes
+    //     .exit()
+    //     .selectAll(".node-name")
+    //     .transition()
+    //     .duration(d => d.exit_duration)
+    //     .delay(d => d.exit_delay)
+    //     .attr("font-size", "0px");
+    //   this.e_nodes
+    //     .exit()
+    //     .selectAll("path.node-link")
+    //     .transition()
+    //     .duration(d => d.exit_duration)
+    //     .delay(d => d.exit_delay)
+    //     .attr("d", (d) => {
+    //       return (
+    //         "M" +
+    //         d.link_x +
+    //         ", " +
+    //         d.link_top +
+    //         " L " +
+    //         d.link_x +
+    //         ", " +
+    //         d.link_top
+    //       );
+    //     });
+    //   this.e_nodes
+    //     .exit()
+    //     .selectAll("path.icon")
+    //     .transition()
+    //     .duration(d => d.exit_duration)
+    //     .delay(d => d.exit_delay)
+    //     .attr("d", d => Global.node_icon(0, 0, d.type, 0.001));
+    //   this.e_nodes
+    //     .exit()
+    //     .exit()
+    //     .selectAll("g.node-bars")
+    //     .selectAll("g.bar")
+    //     .selectAll("rect.bar-background")
+    //     .transition()
+    //     .duration(d => d.exit_duration)
+    //     .delay(d => d.exit_delay)
+    //     .attr("height", 0);
+    //   this.e_nodes
+    //     .exit()
+    //     .selectAll("g.node-bars")
+    //     .selectAll("g.bar")
+    //     .selectAll("rect.bar-value")
+    //     .transition()
+    //     .duration(d => d.exit_duration)
+    //     .delay(d => d.exit_delay)
+    //     .attr("height", 0);
+    },
     mini_remove() {},
     rest_node_remove() {
+      this.e_rest_nodes.exit().attr("", d=>{
+          let [type, translate] = exit_type(d.parent);
+          d.exit_type = type;
+          d.translate = translate;
+          d.exit_duration = d.exit_type > 1 ? this.update_ani : this.remove_ani;
+          d.exit_delay = d.exit_type > 1 ? this.remove_ani : 0;
+          console.log("rest_node_remove", d.exit_type, d.exit_duration, d.exit_delay, d.translate);
+      })
       this.e_rest_nodes
         .exit()
         .transition()
-        .duration(this.remove_ani)
-        .style("opacity", 0)
+        .duration(d => d.exit_duration)
+        .delay(d => d.exit_delay)
+        .attr("transform", d => d.translate + " scale(1, 0)")
+        .style("opacity", 1)
         .remove();
+    //   this.e_rest_nodes
+    //     .exit()
+    //     .selectAll(".rest-node-rect")
+    //     .transition()
+    //     .duration(d => d.exit_duration)
+    //     .delay(d => d.exit_delay)
+    //     .attr("height", 0)
+    //     .style("opacity", 1)
+    //     .remove();
     },
     highlight(ev, d) {
       // console.log("highlight in tree");
@@ -743,19 +865,19 @@ export default {
         .select("rect.background")
         .style("fill", "#EBEBF3");
     },
-    icon_highlight(ev, d){
-        console.log("icon-highlight");
+    icon_highlight(ev, d) {
+      console.log("icon-highlight");
       this.tree_node_group
         .select("#id-" + d.id)
         .select("path.icon")
         .style("fill", "#1f1f1f");
     },
-    icon_dehighlight(){
-        this.svg
+    icon_dehighlight() {
+      this.svg
         .selectAll("g.tree-node")
         .select("path.icon")
         .style("fill", Global.GrayColor);
-    }
+    },
   },
   watch: {
     tree() {
@@ -803,9 +925,9 @@ export default {
     this.layer_height = 40; // TODO
 
     // bar size
-    this.bar_width = 8;
+    this.bar_width = 6;
     this.bar_height = this.layer_height * 0.45;
-    this.rounded_r = 3;
+    this.rounded_r = 1.5;
 
     this.set_height = 112;
     this.set_left = this.layer_height * 3 + 200;
@@ -813,7 +935,7 @@ export default {
     this.set_margin = 6;
     this.create_ani = Global.Animation;
     this.update_ani = Global.Animation;
-    this.remove_ani = Global.Animation / 4;
+    this.remove_ani = Global.Animation / 2;
     this.svg = container
       .append("svg")
       .attr("id", "main-svg")
@@ -962,7 +1084,8 @@ export default {
 }
 
 .main-content {
-  background: rgb(248, 249, 254);
+  /* background: rgb(248, 249, 254); */
+  background: rgb(255, 255, 255);
   border: 1px solid #c1c1c1;
   border-radius: 5px;
   height: 100%;

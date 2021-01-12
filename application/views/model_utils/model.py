@@ -1,6 +1,7 @@
 import numpy as np
 import os
 
+from ..case_utils import get_case_util
 from ..database_utils.data_database import Data
 # from ..database_utils.data import Data
 from ..utils.config_utils import config
@@ -18,6 +19,8 @@ class MMModel(object):
     
     def _init(self):
         self.data = Data(self.dataname)
+        self.case_util = get_case_util(self.dataname)
+        self.case_util.connect_data(self.data)
 
     def init(self, dataname):
         self.dataname = dataname

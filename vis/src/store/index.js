@@ -61,7 +61,13 @@ const store = new Vuex.Store({
             state.tree.eachAfter(element => {
                 element.id = element.data.id;
                 element.full_name = element.data.name;
-                element.name = element.data.abbr_name;
+                element.name = element.full_name;
+                if (element.full_name.indexOf(" ") > 0){
+                    element.name = element.data.abbr_name;
+                }
+                else if (element.name.length > 7){
+                    element.name = element.name.slice(0,7) + "."
+                }
                 // all_children: all children
                 // children: children that are visible
                 // _children: children that are invisible
@@ -100,6 +106,7 @@ const store = new Vuex.Store({
             state.tree.eachBefore((d, i) => d.order = i);
 
             state.tree.all_descendants = state.tree.descendants();
+            state.tree.all_descendants.forEach(d => d.children = []);
             
             // process set
             state.set_list = hypergraph_data.set_list
