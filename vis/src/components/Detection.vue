@@ -180,9 +180,9 @@ export default {
           // this.showTooltip({top, left, width, content: d.full_name});
           this.highlight(ev, d);
         })
-        .on("mouseout", () => {
+        .on("mouseout", (ev, d) => {
           // this.hideTooltip();
-          this.dehighlight();
+          this.dehighlight(ev, d);
         })
         .on("click", (ev, d) => {
           console.log("on click tree node");
@@ -270,7 +270,7 @@ export default {
         .attr("d", function (d) {
           return Global.node_icon(0, 0, d.type);
         })
-        .attr("fill", Global.GrayColor)
+        .style("fill", d => d.type > 0 ? "rgb(227, 227, 227)" : Global.GrayColor)
         .style("opacity", 0)
         .transition()
         .duration(this.create_ani)
@@ -279,7 +279,7 @@ export default {
 
       node_groups
         .append("rect")
-        .attr("class", "icon-background")
+        .attr("class", d => "icon-background icon-bg-" + d.type)
         .attr("x", -8)
         .attr("y", -8)
         .attr("width", 16)
@@ -289,14 +289,15 @@ export default {
         .on("mouseover", (ev, d) => {
           this.icon_highlight(ev, d);
         })
-        .on("mouseout", () => {
-          this.icon_dehighlight();
+        .on("mouseout", (ev, d) => {
+          this.icon_dehighlight(ev, d);
         })
         .on("click", (ev, d) => {
           console.log("click icon", d.type, d);
           if (!this.expand_tree) return;
           if (d.type > 0) return;
           console.log("click tree node", d.name);
+          this.highlight(ev, d, "rgb(211, 211, 229)");
           this.set_focus_node([d]);
         });
 
@@ -376,8 +377,7 @@ export default {
         .attr("class", "mini-highlight")
         .attr(
           "d",
-          d3
-            .linkHorizontal()
+          d3.linkHorizontal()
             .x((d) => d.mini_y)
             .y((d) => d.mini_x)
         )
@@ -491,7 +491,7 @@ export default {
       node_groups
         .append("path")
         .attr("class", "icon")
-        .attr("d", Global.node_icon(0, 0, 2))
+        .attr("d", Global.node_icon(0, 0, 0))
         .attr("fill", Global.GrayColor);
       node_groups
         .selectAll("rest-node-rect")
@@ -578,6 +578,16 @@ export default {
           return this.max_text_width;
         });
 
+      if (detection.focus_node){
+        this.tree_node_group
+            .select("#id-" + detection.focus_node[0].id)
+            .select("rect.background")
+            .transition()
+            .duration(this.create_ani)
+            .delay(this.remove_ani + this.update_ani + this.create_ani)
+            .style("fill", "#EBEBF3");
+      }
+
       this.e_nodes
         .select("path.icon")
         .transition()
@@ -586,7 +596,11 @@ export default {
         .attr("d", function (d) {
           return Global.node_icon(0, 0, d.type);
         })
-        .style("opacity", () => (this.expand_tree ? 1 : 0));
+        .style("opacity", () => (this.expand_tree ? 1 : 0))
+        .style("fill", d => d.type > 0 ? "rgb(227, 227, 227)" : Global.GrayColor)
+      this.e_nodes
+        .select("rect.icon-background")
+        .attr("class", d => "icon-background icon-bg-" + d.type);
       this.e_nodes
         .select("text")
         .transition()
@@ -785,27 +799,24 @@ export default {
         .attr("transform", d => d.translate + " scale(1, 0)")
         .style("opacity", 0)
         .remove();
-    //   this.e_rest_nodes
-    //     .exit()
-    //     .selectAll(".rest-node-rect")
-    //     .transition()
-    //     .duration(d => d.exit_duration)
-    //     .delay(d => d.exit_delay)
-    //     .attr("height", 0)
-    //     .style("opacity", 1)
-    //     .remove();
     },
-    highlight(ev, d) {
+    highlight(ev, d, color) {
       // console.log("highlight in tree");
+      color = color || "#E0E0EC";
       this.tree_node_group
         .select("#id-" + d.id)
         .select("rect.background")
-        .style("fill", "#E0E0EC");
+        .style("fill", color);
     },
-    dehighlight() {
+    dehighlight(ev, d) {
       // console.log("dehighlight in tree");
-      this.svg
-        .selectAll("g.tree-node")
+      console.log("dehighlight", ev, d);
+    //   this.svg
+    //     .selectAll("g.tree-node")
+    //     .select("rect.background")
+    //     .style("fill", "#EBEBF3");
+      this.tree_node_group
+        .select("#id-" + d.id)
         .select("rect.background")
         .style("fill", "#EBEBF3");
     },
@@ -817,11 +828,15 @@ export default {
         .select("path.icon")
         .style("fill", "#1f1f1f");
     },
-    icon_dehighlight() {
-      this.svg
-        .selectAll("g.tree-node")
+    icon_dehighlight(ev, d) {
+    //   this.svg
+    //     .selectAll("g.tree-node")
+    //     .select("path.icon")
+    //     .style("fill", Global.GrayColor);
+      this.tree_node_group
+        .select("#id-" + d.id)
         .select("path.icon")
-        .style("fill", Global.GrayColor);
+        .style("fill", d => d.type > 0 ? "rgb(227, 227, 227)" : Global.GrayColor);
     },
   },
   watch: {
@@ -973,7 +988,7 @@ export default {
 /* .tree-node{
 } */
 
-.icon-0 {
+.icon-bg-0 {
   cursor: pointer;
 }
 
