@@ -9,9 +9,9 @@ from ..utils.helper_utils import json_load_data, json_save_data
 from ..utils.log_utils import logger 
 
 class DataBase(object):
-    def __init__(self, dataname, suffix=""):
+    def __init__(self, dataname, suffix="step0"):
         self.dataname = dataname
-        self.data_dir = os.path.join(config.data_root, dataname)
+        self.data_dir = os.path.join(config.data_root, dataname, suffix)
         check_dir(self.data_dir)
         self.raw_data_dir = os.path.join(config.raw_data_root, dataname)
         self.all_data = {}

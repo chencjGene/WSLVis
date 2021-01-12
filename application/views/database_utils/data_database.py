@@ -69,9 +69,10 @@ class TreeHelper(object):
 
 
 class Data(object):
-    def __init__(self, dataname, suffix=""):
+    def __init__(self, dataname, suffix="step0"):
         self.dataname = dataname 
-        self.data_root = os.path.join(config.data_root, self.dataname)
+        self.data_all_step_root = os.path.join(config.data_root, self.dataname)
+        self.data_root = os.path.join(config.data_root, self.dataname, suffix)
         self.suffix = suffix
     
         self.class_name = []
@@ -93,8 +94,8 @@ class Data(object):
     def _load_data(self):
         logger.info("begin loading data from processed data!")
         filename = config.debug_processed_dataname
-        processed_data_filename = os.path.join(self.data_root, \
-            filename.format(self.suffix))
+        processed_data_filename = os.path.join(self.data_all_step_root, \
+            filename.format(""))
         processed_data = json_load_data(processed_data_filename)
         logger.info("finishing load!")
         self.processed_data = processed_data

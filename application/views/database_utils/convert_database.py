@@ -14,6 +14,7 @@ from application.views.utils.helper_utils import pickle_load_data, pickle_save_d
 def convert(dataname):
     data = Data(dataname)
     database_file = os.path.join(data.data_root, "database.db")
+    os.remove(database_file)
     
     conn = sqlite3.connect(database_file)
     
@@ -25,13 +26,13 @@ def convert(dataname):
     labels text not null,
     activations text not null,
     string text not null,
-    detection text not null,
+    detection text not null
     );
     ''')
     conn.commit()
 
     c = conn.cursor()
-    sql = "insert into annos (id, cap, bbox, logits, labels, activations, string) values(?,?,?,?,?,?,?)"
+    sql = "insert into annos (id, cap, bbox, logits, labels, activations, string, detection) values(?,?,?,?,?,?,?,?)"
 
 
     # annos = []
@@ -58,7 +59,8 @@ def convert(dataname):
         label = json.dumps(anno["extracted_labels"]["label"])
         activation = json.dumps(anno["extracted_labels"]["activations"])
         string = json.dumps(anno["extracted_labels"]["string"])
-        results.append((idx, cap, bbox, logit, label, activation, string))
+        detection = json.dumps(data.detections[idx]["bbox"])
+        results.append((idx, cap, bbox, logit, label, activation, string, detection))
 
     # caps = np.array(caps)
     # np.save(os.path.join(data.data_root, "caps.npy"), caps)
@@ -96,6 +98,6 @@ def speed_test():
     print("time cost", time() - t0)
 
 if __name__ == "__main__":
-    # convert(config.coco17)
+    convert(config.coco17)
     # test()
-    speed_test()
+    # speed_test()
