@@ -230,7 +230,6 @@ class Data(object):
             for c in categories:
                 self.tree_helper.get_node_by_cat_id(c)["sets"].append(s)
 
-        self.get_labeled_importance()
 
         if DEBUG:
             for i in range(len(self.class_name)):
@@ -254,12 +253,22 @@ class Data(object):
         types = []
         for t in all_types:
             if len(self.image_by_type[t]) > 50 and len(t) > 0:
-                types.append(t)
+                cats = decoding_categories(t)
+                image_list = self.image_by_type[t]
+                pred = self.get_category_pred(image_list, data_type="text")
+                pred = pred[:, cats]
+                match_percent = pred.sum(axis=0) / pred.shape[0]                
+                types.append({
+                    "type": t,
+                    "match_percent": match_percent,
+                })
         return types        
 
     def get_category_pred(self, label_type="unlabeled", data_type="text"):
         logger.info("begin get category pred with {} in {}".format(label_type, data_type))
-        if label_type == "all":
+        if not isinstance(label_type, str) and isinstance(label_type, list):
+            idxs = label_type
+        elif label_type == "all":
             idxs = self.train_idx
         elif label_type == "labeled":
             idxs = self.labeled_idx

@@ -24,4 +24,13 @@ class DataTest(unittest.TestCase):
         pred = d.get_category_pred(label_type="all", data_type="text")
         self.assertEqual(pred.shape, (112297, 65))
 
-unittest.main()
+    def test_data_database_get_set(self):
+        d = Data(config.coco17)
+        d.get_set()
+
+if __name__ == "__main__":
+    suite = unittest.TestSuite()
+    # suite.addTest(DataTest(""))
+    
+    suite =  unittest.TestLoader().loadTestsFromTestCase(DataTest)
+    unittest.TextTestRunner(verbosity=2).run(suite)
