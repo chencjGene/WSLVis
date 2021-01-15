@@ -15,6 +15,7 @@ DEBUG = False
 class Data(object):
     def __init__(self, dataname, suffix="step0"):
         self.dataname = dataname 
+        self.data_all_step_root = os.path.join(config.data_root, self.dataname)
         self.data_root = os.path.join(config.data_root, self.dataname, suffix)
         self.suffix = suffix
     
@@ -65,7 +66,7 @@ class Data(object):
         self.add_info = processed_data[config.add_info_name]
 
         # load hierarchy
-        self.tree = json_load_data(os.path.join(self.data_root, "hierarchy-abbr.json"))
+        self.tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
 
         logger.info("end loading data from processed data!")
 

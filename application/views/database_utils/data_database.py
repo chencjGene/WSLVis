@@ -111,7 +111,7 @@ class Data(object):
             tmp_map[idx] = 0
         for idx in self.labeled_idx:
             tmp_map[idx] = 1
-        self.unlabeled_idx = [i for i in self.train_idx if tmp_map[i]]
+        self.unlabeled_idx = [i for i in self.train_idx if not tmp_map[i]]
         self.val_idx = processed_data[config.valid_idx_name]
         self.test_idx = processed_data[config.test_idx_name]
         self.redundant_idx = processed_data[config.redundant_idx_name]
@@ -124,12 +124,13 @@ class Data(object):
         # self.cursor = self.conn.cursor()
 
         # load hierarchy
-        tree = json_load_data(os.path.join(self.data_root, "hierarchy-abbr.json"))
+        tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
         self.tree_helper = TreeHelper(tree, self.class_name)
 
         logger.info("end loading data from processed data!")
 
     def database_fetch_by_idx(self, idx, keys):
+        # id, cap, bbox, logits, labels, activations, string, detection
         cursor = self.conn.cursor()
         keys = "".join([k + ", " for k in keys]).strip(", ")
         sql = "select {} from annos where id = ?".format(keys)
@@ -222,40 +223,7 @@ class Data(object):
             res[text] = list(set(res[text]))
         return res
 
-    def get_labeled_importance(self):
-        '''
-            This function is deprecated and will be removed in the future
-        '''
-        # labels statistic
-        cursor = self.conn.cursor()
-        sql = "select (activations) from annos where id = ?"
-        extracted_labels_by_cat = {}
-        labeled_extracted_labels_by_cat = {}
-        for i in range(len(self.class_name)):
-            extracted_labels_by_cat[i] = {}
-            labeled_extracted_labels_by_cat[i] = {}
-        for idx in self.labeled_idx:
-            by_cat = labeled_extracted_labels_by_cat
-            # extracted_labels = self.annos[idx]["extracted_labels"]
-            cursor.execute(sql, (idx,))
-            result = cursor.fetchall()[0]
-            activations = json.loads(result[0])
-            for act in activations:
-                text = act["text"]
-                cats = act["cats"]
-                probs = act["probs"]
-                for i, c in enumerate(cats):
-                    if text not in by_cat[c]:
-                        by_cat[c][text] = []
-                    by_cat[c][text].append({
-                        "id": idx,
-                        "prob": probs[i]
-                    })
-        self.extracted_labels_by_cat = extracted_labels_by_cat
-        self.labeled_extracted_labels_by_cat = labeled_extracted_labels_by_cat
-
     def get_hypergraph(self):
-
         set_list = self.get_set()
         for s in set_list:
             categories = decoding_categories(s)
@@ -288,6 +256,56 @@ class Data(object):
             if len(self.image_by_type[t]) > 50 and len(t) > 0:
                 types.append(t)
         return types        
+
+    def get_category_pred(self, label_type="unlabeled", data_type="text"):
+        logger.info("begin get category pred with {} in {}".format(label_type, data_type))
+        if label_type == "all":
+            idxs = self.train_idx
+        elif label_type == "labeled":
+            idxs = self.labeled_idx
+        elif label_type == "unlabeled":
+            idxs = self.unlabeled_idx
+        else:
+            raise ValueError("unsupported label type")
+        preds = []
+        if data_type == "text":
+            for idx in idxs:
+                logit = self.database_fetch_by_idx(idx, ["logits"])
+                pred = sigmoid(np.array(json.loads(logit))) > 0.5
+                preds.append(pred.astype(float))
+            preds = np.array(preds)
+        elif data_type == "image":
+            for idx in idxs:
+                detection = self.database_fetch_by_idx(idx, ["detection"])
+                detection = np.array(json.loads(detection))[:,-1].astype(int)
+                cats = np.array(list(set(detection))).astype(int) - 1
+                pred = np.zeros(len(self.class_name))
+                pred[cats] = 1
+                preds.append(pred)
+            preds = np.array(preds)
+        else:
+            raise ValueError("unsupported data type")
+        logger.info("finish get category pred with {} in {}".format(label_type, data_type))
+        return preds
+    
+    def get_groundtruth_labels(self, label_type="unlabeled"):
+        logger.info("begin get groundtruth category with {}".format(label_type))
+        if label_type == "all":
+            idxs = self.train_idx
+        elif label_type == "labeled":
+            idxs = self.labeled_idx
+        elif label_type == "unlabeled":
+            idxs = self.unlabeled_idx
+        else:
+            raise ValueError("unsupported label type")
+        gt = []
+        for idx in idxs:
+            label = self.database_fetch_by_idx(idx, ["labels"])
+            label = np.array(json.loads(label))
+            gt.append(label)
+        gt = np.array(gt)
+        logger.info("finish get groundtruth category pred with {}".format(label_type))
+        return gt.astype(int)
 
     def get_image(self, idx):
         gt = self.annos[idx]["bbox"]

@@ -34,12 +34,14 @@ def pickle_load_data(filename):
 
 # json loading and saving
 def json_save_data(filename, data):
-    open(filename, "w").write(json.dumps(data))
+    with open(filename, "w") as f:
+        f.write(json.dumps(data))
     return True
 
 
 def json_load_data(filename, encoding=None):
-    return json.load(open(filename, "r", encoding=encoding))
+    with open(filename, "r", encoding=encoding) as f:
+        return json.load(f)
 
 
 # directory
