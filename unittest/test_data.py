@@ -1,6 +1,7 @@
 import unittest
 
 from application.views.database_utils import Data
+from application.views.database_utils.utils import multiclass_precision_and_recall
 from application.views.utils.config_utils import config
 
 class DataTest(unittest.TestCase):
@@ -14,11 +15,14 @@ class DataTest(unittest.TestCase):
         pred = d.get_category_pred(label_type="all", data_type="image")
         self.assertEqual(pred.shape, (112297, 65))
 
-
     def test_data_database_get_category_pred(self):
         d = Data(config.coco17)
         pred = d.get_category_pred(label_type="labeled", data_type="text")
         self.assertEqual(pred.shape, (5000, 65))
+        gt = d.get_groundtruth_labels(label_type="labeled")
+        precision, recall = multiclass_precision_and_recall(gt, pred)
+        self.assertAlmostEqual(precision[33], 0.638, delta=0.001)
+        self.assertAlmostEqual(recall[33], 0.302, delta=0.001)
         pred = d.get_category_pred(label_type="unlabeled", data_type="text")
         self.assertEqual(pred.shape, (107297, 65))
         pred = d.get_category_pred(label_type="all", data_type="text")

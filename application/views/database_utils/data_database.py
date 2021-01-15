@@ -130,7 +130,7 @@ class Data(object):
         logger.info("end loading data from processed data!")
 
     def database_fetch_by_idx(self, idx, keys):
-        # id, cap, bbox, logits, labels, activations, string, detection
+        # id, cap, bbox, logits, labels, activations, string, detection, image_output
         cursor = self.conn.cursor()
         keys = "".join([k + ", " for k in keys]).strip(", ")
         sql = "select {} from annos where id = ?".format(keys)
@@ -226,7 +226,7 @@ class Data(object):
     def get_hypergraph(self):
         set_list = self.get_set()
         for s in set_list:
-            categories = decoding_categories(s)
+            categories = decoding_categories(s["type"])
             for c in categories:
                 self.tree_helper.get_node_by_cat_id(c)["sets"].append(s)
 
@@ -242,8 +242,8 @@ class Data(object):
                 leaf = self.tree_helper.get_node_by_cat_id(i)
                 leaf["precision"] = self.precision[i]
                 leaf["recall"] = self.recall[i]
-                leaf["words"] = [[k, len(self.labeled_extracted_labels_by_cat[i][k])] 
-                    for k in self.labeled_extracted_labels_by_cat[i].keys()]
+                # leaf["words"] = [[k, len(self.labeled_extracted_labels_by_cat[i][k])] 
+                #     for k in self.labeled_extracted_labels_by_cat[i].keys()]
 
         return self.tree_helper.get_tree(), set_list
 
@@ -260,28 +260,33 @@ class Data(object):
                 match_percent = pred.sum(axis=0) / pred.shape[0]                
                 types.append({
                     "type": t,
-                    "match_percent": match_percent,
+                    "match_percent": match_percent.tolist(),
                 })
         return types        
 
     def get_category_pred(self, label_type="unlabeled", data_type="text"):
-        logger.info("begin get category pred with {} in {}".format(label_type, data_type))
         if not isinstance(label_type, str) and isinstance(label_type, list):
             idxs = label_type
+            label_type_text = "idx"
         elif label_type == "all":
             idxs = self.train_idx
+            label_type_text = label_type
         elif label_type == "labeled":
             idxs = self.labeled_idx
+            label_type_text = label_type
         elif label_type == "unlabeled":
             idxs = self.unlabeled_idx
+            label_type_text = label_type
         else:
             raise ValueError("unsupported label type")
+        logger.info("begin get category pred with {} in {}".format(label_type_text, data_type))
         preds = []
         if data_type == "text":
             for idx in idxs:
-                logit = self.database_fetch_by_idx(idx, ["logits"])
+                logit, image_output = self.database_fetch_by_idx(idx, ["logits", "image_output"])
                 pred = sigmoid(np.array(json.loads(logit))) > 0.5
-                preds.append(pred.astype(float))
+                image_output = np.array(json.loads(image_output)) > 0.5
+                preds.append((image_output + pred).astype(float))
             preds = np.array(preds)
         elif data_type == "image":
             for idx in idxs:
@@ -294,7 +299,7 @@ class Data(object):
             preds = np.array(preds)
         else:
             raise ValueError("unsupported data type")
-        logger.info("finish get category pred with {} in {}".format(label_type, data_type))
+        logger.info("finish get category pred with {} in {}".format(label_type_text, data_type))
         return preds
     
     def get_groundtruth_labels(self, label_type="unlabeled"):

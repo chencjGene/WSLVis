@@ -67,7 +67,7 @@ def jsonify(detection_result):
     return detection_result
 
 class DataCOCO17(DataBase):
-    def __init__(self, suffix=""):
+    def __init__(self, suffix="step0"):
         dataname = config.coco17
         super(DataCOCO17, self).__init__(dataname, suffix)
         self.label_map, self.class_name = get_label_map(os.path.join(\
