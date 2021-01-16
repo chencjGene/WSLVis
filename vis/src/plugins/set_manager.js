@@ -79,7 +79,7 @@ const SetManager = function (text_width){
 
             // console.log("node:", node);
             for (let j = 0; j < node.data.sets.length; j++){
-                let set_name = node.data.sets[j];
+                let set_name = node.data.sets[j]["type"];
                 let set_node = that.set_map[set_name];
                 if (!set_node) continue;
                 let target = {
@@ -103,7 +103,7 @@ const SetManager = function (text_width){
             that.set_to_display.push({
                 "name": that.arr[i]
             });
-            that.set_map[that.arr[i]] = that.set_to_display[i];
+            that.set_map[that.arr[i]["type"]] = that.set_to_display[i];
         }
     }
 }

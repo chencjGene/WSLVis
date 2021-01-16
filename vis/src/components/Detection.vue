@@ -97,7 +97,8 @@ export default {
       this.selected_nodes = this.leaf_nodes; // TODO: selected_nodes can be specified by users
       console.log("selected_nodes", this.selected_nodes);
       this.set_manager.update_selected_nodes(this.selected_nodes);
-      this.set_manager.update_tree_node_position({x: this.tree_node_group_x, y: this.tree_node_group_y});
+      this.set_manager.update_tree_node_position({x: this.tree_node_group_x, 
+        y: this.tree_node_group_y - this.text_height});
       [this.sets, this.set_links] = this.set_manager.get_sets();
       // this.sets = result.sets;
       // this.set_links = result.set_links;
@@ -423,7 +424,7 @@ export default {
         .style("opacity", 0)
         .style("stroke", Global.GrayColor)
         .style("stroke-width", 0.5)
-        .style("stroke-dasharray", "5, 5")
+        // .style("stroke-dasharray", "5, 5")
         .transition()
         .duration(this.create_ani)
         .delay(this.update_ani + this.remove_ani)
@@ -886,7 +887,7 @@ export default {
     this.bar_height = this.layer_height * 0.45;
     this.rounded_r = 1.5;
 
-    this.set_height = 112;
+    this.set_height = 120;
     this.set_left = this.layer_height * 3 + 200;
     this.set_width = this.layout_width - this.set_left;
     this.set_margin = 6;
@@ -945,11 +946,11 @@ export default {
     this.set_group = this.svg
       .append("g")
       .attr("id", "set-group")
-      .attr("transform", "translate(" + 0 + ", " + 0 + ")");
+      .attr("transform", "translate(" + 0 + ", " + this.text_height + ")");
     this.set_link_group = this.svg
       .append("g")
       .attr("id", "set-link-group")
-      .attr("transform", "translate(" + 0 + ", " + 0 + ")");
+      .attr("transform", "translate(" + 0 + ", " + this.text_height + ")");
 
     this.tree_layout = new tree_layout(
       [this.node_width, this.layer_height],
