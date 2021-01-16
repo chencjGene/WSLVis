@@ -24,6 +24,8 @@ import {
 } from "../plugins/treecut";
 import { SetManager } from "../plugins/set_manager";
 import TextTree from "../plugins/text_tree";
+import TextImageConnection from "../plugins/text_image_connection";
+// import TextTree from "../plugins/text_tree";
 import InfoTooltip from "../components/infotooltip";
 export default {
     name: "Detection",
@@ -117,6 +119,7 @@ export default {
             console.log("detection update view");
 
             this.text_tree_view.sub_component_update(this.nodes, this.rest_nodes);
+            this.connection_view.sub_component_update(this.set_links);
 
             this.e_mini_nodes = this.mini_tree_node_group
                 .selectAll(".mini-tree-node")
@@ -128,9 +131,6 @@ export default {
                 .selectAll(".mini-highlight")
                 .data(this.mini_links);
             this.e_sets = this.set_group.selectAll(".set").data(this.sets); //TODO: id map
-            this.e_set_links = this.set_link_group
-                .selectAll(".set-link")
-                .data(this.set_links); // TODO: id map
 
             // TODO: set remove ani when exit is none
 
@@ -217,27 +217,6 @@ export default {
                 .delay(this.update_ani + this.remove_ani)
                 .style("opacity", 1);
 
-            // set links
-            this.e_set_links
-                .enter()
-                .append("path")
-                .attr("class", "set-link")
-                // .attr("d", Global.set_line)
-                .attr(
-                    "d",
-                    d3
-                        .linkHorizontal()
-                        .x((d) => d.x)
-                        .y((d) => d.y)
-                )
-                .style("opacity", 0)
-                .style("stroke", Global.GrayColor)
-                .style("stroke-width", 0.5)
-                // .style("stroke-dasharray", "5, 5")
-                .transition()
-                .duration(this.create_ani)
-                .delay(this.update_ani + this.remove_ani)
-                .style("opacity", 1);
         },
         title_create() {
             this.svg
@@ -342,12 +321,6 @@ export default {
         },
         remove() {
             this.e_sets
-                .exit()
-                .transition()
-                .duration(this.remove_ani)
-                .style("opacity", 0)
-                .remove();
-            this.e_set_links
                 .exit()
                 .transition()
                 .duration(this.remove_ani)
@@ -514,6 +487,7 @@ export default {
         });
 
         this.text_tree_view = new TextTree(this);
+        this.connection_view = new TextImageConnection(this);
     },
 };
 </script>

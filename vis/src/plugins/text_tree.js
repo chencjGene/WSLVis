@@ -9,6 +9,7 @@ const TextTree = function (parent) {
     that.tree_node_group = that.parent.tree_node_group;
     that.rest_node_group = that.parent.rest_node_group;
     
+    // text position
     that.text_height = that.parent.text_height;
     
     // node width
