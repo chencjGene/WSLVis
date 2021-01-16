@@ -25,7 +25,7 @@ import {
 import { SetManager } from "../plugins/set_manager";
 import TextTree from "../plugins/text_tree";
 import TextImageConnection from "../plugins/text_image_connection";
-// import TextTree from "../plugins/text_tree";
+import ImageCards from "../plugins/image_card";
 import InfoTooltip from "../components/infotooltip";
 export default {
     name: "Detection",
@@ -120,6 +120,7 @@ export default {
 
             this.text_tree_view.sub_component_update(this.nodes, this.rest_nodes);
             this.connection_view.sub_component_update(this.set_links);
+            this.image_view.sub_component_update(this.sets);
 
             this.e_mini_nodes = this.mini_tree_node_group
                 .selectAll(".mini-tree-node")
@@ -130,9 +131,6 @@ export default {
             this.e_shadow_links = this.mini_shadow_link_group
                 .selectAll(".mini-highlight")
                 .data(this.mini_links);
-            this.e_sets = this.set_group.selectAll(".set").data(this.sets); //TODO: id map
-
-            // TODO: set remove ani when exit is none
 
             this.remove();
             this.update();
@@ -140,7 +138,6 @@ export default {
         },
         create() {
             console.log("Global", Global.GrayColor, Global.Animation);
-            this.set_create();
             this.expand_icon_create();
             this.mini_create();
         },
@@ -192,32 +189,6 @@ export default {
                 .delay(this.remove_ani + this.update_ani)
                 .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
         },
-        set_create() {
-            // set
-            let set_groups = this.e_sets
-                .enter()
-                .append("g")
-                .attr("class", "set")
-                .attr(
-                    "transform",
-                    (d) => "translate(" + d.x + ", " + d.y + ")"
-                );
-
-            set_groups
-                .append("rect")
-                .attr("class", "background")
-                .style("fill", "white")
-                .style("stroke", "#f0f0f0")
-                .style("stroke-width", 1)
-                .style("opacity", 0)
-                .attr("width", (d) => d.width)
-                .attr("height", (d) => d.height)
-                .transition()
-                .duration(this.create_ani)
-                .delay(this.update_ani + this.remove_ani)
-                .style("opacity", 1);
-
-        },
         title_create() {
             this.svg
                 .append("text")
@@ -265,7 +236,6 @@ export default {
                 });
         },
         update() {
-            this.set_update();
             this.expand_icon_update();
             this.mini_update();
         },
@@ -306,7 +276,6 @@ export default {
                 )
                 .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
         },
-        set_update() {},
         expand_icon_update() {
             this.expanded_icon_group
                 .selectAll("path")
@@ -320,12 +289,6 @@ export default {
                 });
         },
         remove() {
-            this.e_sets
-                .exit()
-                .transition()
-                .duration(this.remove_ani)
-                .style("opacity", 0)
-                .remove();
             this.mini_remove();
         },
         mini_remove() {},
@@ -488,6 +451,7 @@ export default {
 
         this.text_tree_view = new TextTree(this);
         this.connection_view = new TextImageConnection(this);
+        this.image_view = new ImageCards(this);
     },
 };
 </script>
