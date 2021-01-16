@@ -76,33 +76,31 @@ export default {
     update_data() {
       console.log("detection update data");
       console.log(this.tree);
+      
       // tree layout
       this.nodes = this.tree_layout.layout_with_rest_node(
         this.tree,
         this.expand_tree
       );
       this.rest_nodes = this.nodes.filter((d) => d.is_rest_node);
-      // this.rest_nodes = this.rest_nodes.map(d => d.rest_children).reduce((a,c) => a = a.concat(c), []);
-      // this.rest_nodes.forEach(d => d.is_rest_node = true);
       this.nodes = this.nodes.filter((d) => !d.is_rest_node);
+      this.tree_node_group_x = this.expand_tree ? this.layer_height /2 : 0;
+      this.tree_node_group_y = (this.text_height + this.layer_height / 2);
+      
       // minitree layout
       let mat = this.mini_tree_layout.layout(this.tree);
       this.mini_nodes = mat.nodes;
       this.mini_links = mat.links;
+
       // set layout
-      // this.max_text_width = this.nodes.map(d =>
-      //     Global.getTextWidth(d.data.name, "16px Roboto, sans-serif"));
-      // console.log("max text width", this.max_text_width);
-      // this.max_text_width = Math.max(...this.max_text_width) + 10;
-      this.max_text_width = 120;
       this.leaf_nodes = this.nodes.filter((d) => d.children.length === 0);
-      console.log("leaf_nodes", this.leaf_nodes);
-      this.set_manager.update_leaf_nodes(this.leaf_nodes);
-      // this.set_manager.update_tree_root(2, this.layout_height / 2 - this.offset);
-      let result = this.set_manager.get_sets();
-      this.sets = result.sets;
+      this.selected_nodes = this.leaf_nodes; // TODO: selected_nodes can be specified by users
+      console.log("selected_nodes", this.selected_nodes);
+      this.set_manager.update_selected_nodes(this.selected_nodes);
+      this.set_manager.update_tree_node_position({x: this.tree_node_group_x, y: this.tree_node_group_y});
+      [this.sets, this.set_links] = this.set_manager.get_sets();
+      // this.sets = result.sets;
       // this.set_links = result.set_links;
-      this.set_links = []; // TODO: disable set links for debug
     },
     update_view() {
       console.log("detection update view");
@@ -548,15 +546,11 @@ export default {
         .duration(this.update_ani)
         .delay(this.remove_ani)
         .attr("transform", () => {
-          let x = this.layer_height / 2;
-          if (!this.expand_tree) {
-            x = 0;
-          }
           return (
             "translate(" +
-            x +
+            this.tree_node_group_x +
             ", " +
-            (this.text_height + this.layer_height / 2) +
+            this.tree_node_group_y +
             ")"
           );
         });
@@ -810,7 +804,7 @@ export default {
     },
     dehighlight(ev, d) {
       // console.log("dehighlight in tree");
-      console.log("dehighlight", ev, d);
+      // console.log("dehighlight", ev, d);
     //   this.svg
     //     .selectAll("g.tree-node")
     //     .select("rect.background")
@@ -871,6 +865,9 @@ export default {
 
     // text position
     this.text_height = this.bbox_height * 0.06;
+
+    // node width
+    this.max_text_width = 120; // fixed max_text_width
 
     // mini tree
     this.mini_tree_width = 35;
@@ -948,11 +945,11 @@ export default {
     this.set_group = this.svg
       .append("g")
       .attr("id", "set-group")
-      .attr("transform", "translate(" + 0 + ", " + this.text_height + ")");
+      .attr("transform", "translate(" + 0 + ", " + 0 + ")");
     this.set_link_group = this.svg
       .append("g")
       .attr("id", "set-link-group")
-      .attr("transform", "translate(" + 0 + ", " + this.text_height + ")");
+      .attr("transform", "translate(" + 0 + ", " + 0 + ")");
 
     this.tree_layout = new tree_layout(
       [this.node_width, this.layer_height],
@@ -970,7 +967,7 @@ export default {
       this.layer_height
     );
 
-    this.set_manager = new SetManager();
+    this.set_manager = new SetManager(this.max_text_width + this.layer_height / 4);
 
     this.set_manager.update_layout({
       layout_width: this.layout_width,

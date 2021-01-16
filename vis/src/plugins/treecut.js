@@ -611,7 +611,7 @@ const TreeCut = function (bbox_width, bbox_height, layer_height) {
         traverse_for_doi(_tree, source);
         console.log("source in treecut", sources);
         clickQueue = get_selection_array(_tree, sources);
-        console.log("clickqueue", clickQueue.map(d => d.node.name));
+        // console.log("clickqueue", clickQueue.map(d => d.node.name));
         pinArray = nodes.filter(d=>d.pinned);
         console.log("pinArray: ", pinArray);
         collapse(_tree);
