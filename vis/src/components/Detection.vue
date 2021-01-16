@@ -18,7 +18,6 @@ import { mapActions, mapState, mapMutations } from "vuex";
 import * as d3 from "d3";
 import * as Global from "../plugins/global";
 import {
-    exit_type,
     mini_tree_layout,
     TreeCut,
     tree_layout,
@@ -117,11 +116,8 @@ export default {
         update_view() {
             console.log("detection update view");
 
-            this.text_tree_view.sub_component_update(this.nodes);
+            this.text_tree_view.sub_component_update(this.nodes, this.rest_nodes);
 
-            this.e_rest_nodes = this.rest_node_group
-                .selectAll(".rest-tree-node")
-                .data(this.rest_nodes, (d) => d.id);
             this.e_mini_nodes = this.mini_tree_node_group
                 .selectAll(".mini-tree-node")
                 .data(this.mini_nodes, (d) => d.id);
@@ -147,7 +143,6 @@ export default {
             this.set_create();
             this.expand_icon_create();
             this.mini_create();
-            this.rest_node_create();
         },
 
         mini_create() {
@@ -290,69 +285,10 @@ export default {
                     }
                 });
         },
-        rest_node_create() {
-            let node_groups = this.e_rest_nodes
-                .enter()
-                .append("g")
-                .attr("class", "rest-tree-node")
-                .attr("id", (d) => "id-" + d.id)
-                .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
-                .style("opacity", 0)
-                .on("click", (ev, d) => {
-                    this.set_focus_node(d.rest_children);
-                });
-            node_groups
-                .append("path")
-                .attr("class", "icon")
-                .attr("d", Global.node_icon(0, 0, 0))
-                .attr("fill", Global.GrayColor);
-            node_groups
-                .selectAll("rest-node-rect")
-                .data((d) => {
-                    console.log("rest node groups data", d);
-                    return d.rest_children;
-                })
-                .enter()
-                .append("rect")
-                .attr("class", "rest-node-rect")
-                .attr("rx", this.layer_height / 12)
-                .attr("ry", this.layer_height / 12)
-                .attr("x", (d) => this.layer_height / 4 + d.x_delta)
-                .attr("y", (d) => d.y_delta)
-                .attr("height", this.layer_height * 0.4)
-                .attr("width", () => {
-                    return this.max_text_width;
-                })
-                .style("fill", (d) =>
-                    d.last_rest_children ? "#EBEBF3" : "rgb(211, 211, 229)"
-                )
-                .style("stroke", "white")
-                .style("stroke-width", 1);
-            node_groups
-                .transition()
-                .duration((d) => {
-                    if (d.prev_vis) {
-                        // return this.remove_ani * 0.5;
-                        return this.create_ani;
-                    } else {
-                        return this.create_ani;
-                    }
-                })
-                .delay((d) => {
-                    if (d.prev_vis) {
-                        // return this.remove_ani * 0.5 + this.remove_ani;
-                        return this.remove_ani + this.update_ani;
-                    } else {
-                        return this.remove_ani + this.update_ani;
-                    }
-                })
-                .style("opacity", 1);
-        },
         update() {
             this.set_update();
             this.expand_icon_update();
             this.mini_update();
-            this.rest_node_update();
         },
         mini_update() {
             this.e_mini_nodes
@@ -404,39 +340,6 @@ export default {
                     }
                 });
         },
-        rest_node_update() {
-            this.rest_node_group
-                .transition()
-                .duration(this.update_ani)
-                .delay(this.remove_ani)
-                .attr("transform", () => {
-                    let x = this.layer_height / 2;
-                    if (!this.expand_tree) {
-                        x = 0;
-                    }
-                    return (
-                        "translate(" +
-                        x +
-                        ", " +
-                        (this.text_height + this.layer_height / 2) +
-                        ")"
-                    );
-                });
-            this.e_rest_nodes
-                .transition()
-                .duration(this.update_ani)
-                .delay(this.remove_ani)
-                .attr(
-                    "transform",
-                    (d) => "translate(" + d.x + ", " + d.y + ")"
-                );
-            this.e_rest_nodes
-                .selectAll("rest-node-rect")
-                .attr("y", (d, i) => (-this.layer_height * 0.8) / 2 + i * 10)
-                .attr("width", () => {
-                    return this.max_text_width;
-                });
-        },
         remove() {
             this.e_sets
                 .exit()
@@ -451,34 +354,8 @@ export default {
                 .style("opacity", 0)
                 .remove();
             this.mini_remove();
-            this.rest_node_remove();
         },
         mini_remove() {},
-        rest_node_remove() {
-            this.e_rest_nodes.exit().attr("", (d) => {
-                let [type, translate] = exit_type(d.parent);
-                d.exit_type = type;
-                d.translate = translate;
-                d.exit_duration =
-                    d.exit_type > 1 ? this.update_ani : this.remove_ani;
-                d.exit_delay = d.exit_type > 1 ? this.remove_ani : 0;
-                console.log(
-                    "rest_node_remove",
-                    d.exit_type,
-                    d.exit_duration,
-                    d.exit_delay,
-                    d.translate
-                );
-            });
-            this.e_rest_nodes
-                .exit()
-                .transition()
-                .duration((d) => d.exit_duration)
-                .delay((d) => d.exit_delay)
-                .attr("transform", (d) => d.translate + " scale(1, 0)")
-                .style("opacity", 0)
-                .remove();
-        },
     },
     watch: {
         tree() {

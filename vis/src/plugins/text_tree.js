@@ -7,6 +7,7 @@ const TextTree = function (parent) {
     that.parent = parent;
 
     that.tree_node_group = that.parent.tree_node_group;
+    that.rest_node_group = that.parent.rest_node_group;
     
     that.text_height = that.parent.text_height;
     
@@ -39,7 +40,7 @@ const TextTree = function (parent) {
         that.parent.$store.dispatch("fetch_word", query);
     }
 
-    that.sub_component_update = function (nodes) {
+    that.sub_component_update = function (nodes, rest_nodes) {
         // update state
         that.tree_node_group_x = that.parent.tree_node_group_x;
         that.tree_node_group_y = that.parent.tree_node_group_y;
@@ -49,6 +50,10 @@ const TextTree = function (parent) {
         that.e_nodes = that.tree_node_group
             .selectAll(".tree-node")
             .data(nodes, (d) => d.id);
+        
+        that.e_rest_nodes = that.rest_node_group
+            .selectAll(".rest-tree-node")
+            .data(rest_nodes, (d) => d.id);
 
         that.create();
         that.update();
@@ -57,6 +62,7 @@ const TextTree = function (parent) {
 
     that.create = function () {
         that.node_create();
+        that.rest_node_create();
     };
 
     that.node_create = function () {
@@ -251,10 +257,70 @@ const TextTree = function (parent) {
             .duration(that.create_ani)
             .delay(that.update_ani + that.remove_ani)
             .style("opacity", 1);
-    }
+    };
+    
+    that.rest_node_create = function() {
+        let node_groups = that.e_rest_nodes
+            .enter()
+            .append("g")
+            .attr("class", "rest-tree-node")
+            .attr("id", (d) => "id-" + d.id)
+            .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
+            .style("opacity", 0)
+            .on("click", (ev, d) => {
+                that.set_focus_node(d.rest_children);
+            });
+        node_groups
+            .append("path")
+            .attr("class", "icon")
+            .attr("d", Global.node_icon(0, 0, 0))
+            .attr("fill", Global.GrayColor);
+        node_groups
+            .selectAll("rest-node-rect")
+            .data((d) => {
+                console.log("rest node groups data", d);
+                return d.rest_children;
+            })
+            .enter()
+            .append("rect")
+            .attr("class", "rest-node-rect")
+            .attr("rx", that.layer_height / 12)
+            .attr("ry", that.layer_height / 12)
+            .attr("x", (d) => that.layer_height / 4 + d.x_delta)
+            .attr("y", (d) => d.y_delta)
+            .attr("height", that.layer_height * 0.4)
+            .attr("width", () => {
+                return that.max_text_width;
+            })
+            .style("fill", (d) =>
+                d.last_rest_children ? "#EBEBF3" : "rgb(211, 211, 229)"
+            )
+            .style("stroke", "white")
+            .style("stroke-width", 1);
+        node_groups
+            .transition()
+            .duration((d) => {
+                if (d.prev_vis) {
+                    // return that.remove_ani * 0.5;
+                    return that.create_ani;
+                } else {
+                    return that.create_ani;
+                }
+            })
+            .delay((d) => {
+                if (d.prev_vis) {
+                    // return that.remove_ani * 0.5 + that.remove_ani;
+                    return that.remove_ani + that.update_ani;
+                } else {
+                    return that.remove_ani + that.update_ani;
+                }
+            })
+            .style("opacity", 1);
+    };
 
     that.update = function () {
         that.node_update();
+        that.rest_node_update();
     };
 
     that.node_update = function () {
@@ -377,9 +443,44 @@ const TextTree = function (parent) {
                     }px ${0}px ${0}px ${0}px)`;
             });
     };
+    
+    that.rest_node_update = function() {
+        that.rest_node_group
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            .attr("transform", () => {
+                let x = that.layer_height / 2;
+                if (!that.expand_tree) {
+                    x = 0;
+                }
+                return (
+                    "translate(" +
+                    x +
+                    ", " +
+                    (that.text_height + that.layer_height / 2) +
+                    ")"
+                );
+            });
+        that.e_rest_nodes
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            .attr(
+                "transform",
+                (d) => "translate(" + d.x + ", " + d.y + ")"
+            );
+        that.e_rest_nodes
+            .selectAll("rest-node-rect")
+            .attr("y", (d, i) => (-that.layer_height * 0.8) / 2 + i * 10)
+            .attr("width", () => {
+                return that.max_text_width;
+            });
+    };
 
     that.remove = function () {
         that.node_remove();
+        that.rest_node_remove();
     };
 
     that.node_remove = function () {
@@ -396,6 +497,32 @@ const TextTree = function (parent) {
             .duration(d => d.exit_duration)
             .delay(d => d.exit_delay)
             .attr("transform", d => d.translate + " scale(1, 0)")
+            .style("opacity", 0)
+            .remove();
+    };
+    
+    that.rest_node_remove = function() {
+        that.e_rest_nodes.exit().attr("", (d) => {
+            let [type, translate] = exit_type(d.parent);
+            d.exit_type = type;
+            d.translate = translate;
+            d.exit_duration =
+                d.exit_type > 1 ? that.update_ani : that.remove_ani;
+            d.exit_delay = d.exit_type > 1 ? that.remove_ani : 0;
+            console.log(
+                "rest_node_remove",
+                d.exit_type,
+                d.exit_duration,
+                d.exit_delay,
+                d.translate
+            );
+        });
+        that.e_rest_nodes
+            .exit()
+            .transition()
+            .duration((d) => d.exit_duration)
+            .delay((d) => d.exit_delay)
+            .attr("transform", (d) => d.translate + " scale(1, 0)")
             .style("opacity", 0)
             .remove();
     };
