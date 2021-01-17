@@ -50,13 +50,6 @@ const SetManager = function (text_width){
         that.arr = set_unique(arr);
         console.log("arr in get_sets", that.arr);
         that.filter_and_sort();
-        that.set_to_display.forEach(function(d, i){
-            d.x = that.set_left;
-            d.y = i * that.set_height + that.set_margin / 2;
-            d.y_center = d.y + (that.set_height - that.set_margin) / 2;
-            d.width = that.set_width - that.set_margin;
-            d.height = that.set_height - that.set_margin;
-        });
 
         that.get_set_links();
         return [that.set_to_display, that.set_links]
@@ -100,11 +93,17 @@ const SetManager = function (text_width){
         that.set_to_display = [];
         that.set_map = [];
         for (let i = 0; i < num_to_display; i++){
-            that.set_to_display.push({
-                "name": that.arr[i]
-            });
+            that.set_to_display.push(that.arr[i]);
             that.set_map[that.arr[i]["type"]] = that.set_to_display[i];
         }
+        
+        that.set_to_display.forEach(function(d, i){
+            d.x = that.set_left;
+            d.y = i * that.set_height + that.set_margin / 2;
+            d.y_center = d.y + (that.set_height - that.set_margin) / 2;
+            d.width = that.set_width - that.set_margin;
+            d.height = that.set_height - that.set_margin;
+        });
     }
 }
 

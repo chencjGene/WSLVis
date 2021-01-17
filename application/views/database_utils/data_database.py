@@ -68,8 +68,9 @@ class TreeHelper(object):
         return leaf_node
 
 class SetHelper(object):
-    def __init__(self, image_by_type, class_name):
+    def __init__(self, image_by_type, width_height, class_name):
         self.image_by_type = image_by_type
+        self.width_height = width_height
         self.class_name = class_name
 
     def get_all_set_name(self):
@@ -80,11 +81,20 @@ class SetHelper(object):
                 types.append(t)
         return types
 
-    def get_image_list_by_type(self, t, scope="selected"):
+    def get_image_list_by_type(self, t, scope="selected", with_wh = False):
+        def add_width_height(idx):
+            w, h = self.width_height[idx]
+            return {"idx": idx, "w": w, "h": h}
         if scope == "all":
-            return self.image_by_type[t]
+            if with_wh:
+                return [add_width_height(i) for i in self.image_by_type[t]]
+            else:
+                return self.image_by_type[t]
         elif scope == "selected":
-            return self.image_by_type[t][:10]
+            if with_wh:
+                return [add_width_height(i) for i in self.image_by_type[t][:10]]
+            else:
+                return self.image_by_type[t][:10]
 
 class Data(object):
     def __init__(self, dataname, suffix="step0"):
@@ -144,7 +154,11 @@ class Data(object):
         # load hierarchy
         tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
         self.tree_helper = TreeHelper(tree, self.class_name)
-        self.set_helper = SetHelper(self.image_by_type, self.class_name)
+
+        # load image width and height
+        self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
+            "width_height.json"))
+        self.set_helper = SetHelper(self.image_by_type, self.width_height, self.class_name)
 
         logger.info("end loading data from processed data!")
 
@@ -279,24 +293,11 @@ class Data(object):
             types.append({
                 "type": t,
                 "match_percent": match_percent.tolist(),
-                "selected_image": self.set_helper.get_image_list_by_type(t, scope="selected")
+                "selected_image": self.set_helper.get_image_list_by_type(t, \
+                    scope="selected", with_wh=True)
             })
 
-        return types        
-        # all_types = self.image_by_type.keys()
-        # types = []
-        # for t in all_types:
-        #     if len(self.image_by_type[t]) > 50 and len(t) > 0:
-        #         cats = decoding_categories(t)
-        #         image_list = self.image_by_type[t]
-        #         pred = self.get_category_pred(image_list, data_type="text")
-        #         pred = pred[:, cats]
-        #         match_percent = pred.sum(axis=0) / pred.shape[0]                
-        #         types.append({
-        #             "type": t,
-        #             "match_percent": match_percent.tolist(),
-        #         })
-        # return types        
+        return types   
 
     def get_category_pred(self, label_type="unlabeled", data_type="text"):
         if not isinstance(label_type, str) and isinstance(label_type, list):
@@ -313,7 +314,7 @@ class Data(object):
             label_type_text = label_type
         else:
             raise ValueError("unsupported label type")
-        logger.info("begin get category pred with {} in {}".format(label_type_text, data_type))
+        logger.debug("begin get category pred with {} in {}".format(label_type_text, data_type))
         preds = []
         if data_type == "text":
             for idx in idxs:
@@ -333,11 +334,11 @@ class Data(object):
             preds = np.array(preds)
         else:
             raise ValueError("unsupported data type")
-        logger.info("finish get category pred with {} in {}".format(label_type_text, data_type))
+        logger.debug("finish get category pred with {} in {}".format(label_type_text, data_type))
         return preds
     
     def get_groundtruth_labels(self, label_type="unlabeled"):
-        logger.info("begin get groundtruth category with {}".format(label_type))
+        logger.debug("begin get groundtruth category with {}".format(label_type))
         if label_type == "all":
             idxs = self.train_idx
         elif label_type == "labeled":
@@ -352,18 +353,18 @@ class Data(object):
             label = np.array(json.loads(label))
             gt.append(label)
         gt = np.array(gt)
-        logger.info("finish get groundtruth category pred with {}".format(label_type))
+        logger.debug("finish get groundtruth category pred with {}".format(label_type))
         return gt.astype(int)
 
     def get_image(self, idx):
-        gt = self.annos[idx]["bbox"]
-        det = self.detections[idx]["bbox"]
+        # gt = self.annos[idx]["bbox"]
+        # det = self.detections[idx]["bbox"]
         image_id = self.ids[idx]
         phase = "train2017"
         if idx in self.val_idx:
             phase = "val2017"
-        img_path = os.path.join(self.data_root, phase, "%012d.jpg" %(image_id))
-        return img_path, gt, det
+        img_path = os.path.join(self.data_all_step_root, phase, "%012d.jpg" %(image_id))
+        return img_path #, gt, det
     
     def get_text(self, query):
         cursor = self.conn.cursor()

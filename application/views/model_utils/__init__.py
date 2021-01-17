@@ -24,7 +24,7 @@ def get_current_hypergraph():
 
 
 def get_image(idx):
-    None
+    return model.data.get_image(idx)
 
 def get_text(query):
     text_result = model.data.get_text(query)

@@ -48,6 +48,7 @@ export default {
             "focus_node",
             "expand_tree",
             "tooltip",
+            "server_url"
         ]),
     },
     methods: {
@@ -346,6 +347,7 @@ export default {
         this.bar_height = this.layer_height * 0.45;
         this.rounded_r = 1.5;
 
+        // set
         this.set_height = 120;
         this.set_left = this.layer_height * 3 + 200;
         this.set_width = this.layout_width - this.set_left;
