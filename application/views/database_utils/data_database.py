@@ -68,9 +68,10 @@ class TreeHelper(object):
         return leaf_node
 
 class SetHelper(object):
-    def __init__(self, image_by_type, width_height, class_name):
+    def __init__(self, image_by_type, width_height, conn, class_name):
         self.image_by_type = image_by_type
         self.width_height = width_height
+        self.conn = conn
         self.class_name = class_name
 
     def get_all_set_name(self):
@@ -81,10 +82,25 @@ class SetHelper(object):
                 types.append(t)
         return types
 
+    def get_detection_result(self, idx):
+        cursor = self.conn.cursor()
+        sql = "select detection from annos where id = ?"
+        cursor.execute(sql, (idx,))
+        res = cursor.fetchall()[0][0]
+        return json.loads(res)
+
     def get_image_list_by_type(self, t, scope="selected", with_wh = False):
         def add_width_height(idx):
             w, h = self.width_height[idx]
-            return {"idx": idx, "w": w, "h": h}
+            detection = self.get_detection_result(idx)
+            detection = np.array(detection)
+            conf_detection = detection[detection[:, -2] > 0.5].astype(np.float32)
+            conf_detection[:, 0] /= w
+            conf_detection[:, 2] /= w
+            conf_detection[:, 1] /= h
+            conf_detection[:, 3] /= h
+            conf_detection = np.round(conf_detection, 3)
+            return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist()}
         if scope == "all":
             if with_wh:
                 return [add_width_height(i) for i in self.image_by_type[t]]
@@ -158,7 +174,7 @@ class Data(object):
         # load image width and height
         self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
             "width_height.json"))
-        self.set_helper = SetHelper(self.image_by_type, self.width_height, self.class_name)
+        self.set_helper = SetHelper(self.image_by_type, self.width_height, self.conn, self.class_name)
 
         logger.info("end loading data from processed data!")
 

@@ -72,6 +72,31 @@ const ImageCards = function(parent){
             .attr("width", d => d.vis_w)
             .attr("height", d => d.vis_h)
             .attr("href", d => that.server_url + `/image/image?filename=${d.idx}.jpg`);
+        
+        that.box_groups = e_image_groups.selectAll("rect.box")
+            .data(d => {
+                let dets = d.d;
+                let res = [];
+                for (let i = 0; i < dets.length; i++){
+                    let x = d.vis_w * dets[i][0];
+                    let width = d.vis_w * (dets[i][2] - dets[i][0]);
+                    let y = d.vis_h * dets[i][1];
+                    let height = d.vis_h * (dets[i][3] - dets[i][1]);
+                    res.push({x, y, width, height});
+                }
+                return res;
+            });
+        that.box_groups.enter()
+            .append("rect")
+            .attr("rect", "box")
+            .attr("x", d => d.x)
+            .attr("y", d => d.y)
+            .attr("width", d => d.width)
+            .attr("height", d => d.height)
+            .style("fill", "none")
+            .style("stroke", "green")
+            .style("stroke-width", 1);
+
             
     };
 

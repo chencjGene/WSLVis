@@ -109,17 +109,10 @@ const SetManager = function (text_width){
             let x = that.image_margin;
             for (let j = 0; j < d.selected_image.length; j++){
                 let img = d.selected_image[j];
-                // if (img.w > img.h){
-                //     let height = that.image_height;
-                //     let width = img.w / img.h * height;
-                // }
-                // else{
                 let height = that.image_height;
                 let width = img.w / img.h * height;
-                // }
                 img.vis_w = width;
                 img.vis_h = height;
-                // x += (width + that.image_margin);
                 if ((x + width + that.image_margin) < that.set_width){
                     img.x = x;
                     x = x + width + that.image_margin;
