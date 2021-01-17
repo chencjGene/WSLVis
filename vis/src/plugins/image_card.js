@@ -11,6 +11,8 @@ const ImageCards = function(parent){
     that.set_left = that.parent.set_left;
     that.set_width = that.parent.set_width;
     that.set_margin = that.parent.set_margin;
+    that.image_height = that.parent.image_height;
+    that.image_margin = that.parent.image_margin;
 
 
     // animation
@@ -56,19 +58,19 @@ const ImageCards = function(parent){
             .style("opacity", 1);
         
         that.image_groups = set_groups.selectAll("g.detection-result")
-            .data(d => d.selected_image);
+            .data(d => d.vis_image);
         let e_image_groups = that.image_groups.enter()
             .append("g")
             .attr("class", "detection-result")
             .attr(
                 "transform",
-                (d, i) => "translate(" + (i * that.set_height) + ", " + 0 + ")"
+                (d) => "translate(" + d.x + ", " + that.image_margin / 2 + ")"
             );
         e_image_groups.append("image")
             .attr("x", 0)
             .attr("y", 0)
-            .attr("width", that.set_height)
-            .attr("height", that.set_height)
+            .attr("width", d => d.vis_w)
+            .attr("height", d => d.vis_h)
             .attr("href", d => that.server_url + `/image/image?filename=${d.idx}.jpg`);
             
     };

@@ -348,10 +348,12 @@ export default {
         this.rounded_r = 1.5;
 
         // set
-        this.set_height = 120;
+        this.set_height = 144;
         this.set_left = this.layer_height * 3 + 200;
         this.set_width = this.layout_width - this.set_left;
         this.set_margin = 6;
+        this.image_height = this.set_height * 0.9;
+        this.image_margin = this.set_margin;
 
         // animation
         this.create_ani = Global.Animation;
@@ -449,6 +451,8 @@ export default {
             set_width: this.set_width,
             set_margin: this.set_margin,
             set_height: this.set_height,
+            image_height: this.image_height,
+            image_margin: this.image_margin,
         });
 
         this.text_tree_view = new TextTree(this);
