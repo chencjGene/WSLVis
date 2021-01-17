@@ -67,6 +67,24 @@ class TreeHelper(object):
             visit_node.extend(node["children"])
         return leaf_node
 
+class SetHelper(object):
+    def __init__(self, image_by_type, class_name):
+        self.image_by_type = image_by_type
+        self.class_name = class_name
+
+    def get_all_set_name(self):
+        all_types = self.image_by_type.keys()
+        types = []
+        for t in all_types:
+            if len(self.image_by_type[t]) > 50 and len(t) > 0:
+                types.append(t)
+        return types
+
+    def get_image_list_by_type(self, t, scope="selected"):
+        if scope == "all":
+            return self.image_by_type[t]
+        elif scope == "selected":
+            return self.image_by_type[t][:10]
 
 class Data(object):
     def __init__(self, dataname, suffix="step0"):
@@ -126,6 +144,7 @@ class Data(object):
         # load hierarchy
         tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
         self.tree_helper = TreeHelper(tree, self.class_name)
+        self.set_helper = SetHelper(self.image_by_type, self.class_name)
 
         logger.info("end loading data from processed data!")
 
@@ -159,6 +178,7 @@ class Data(object):
         self.labeled_p, self.precision, self.recall = get_precision_and_recall(labels)
 
     def get_captions_by_word_and_cat(self, word, cat):
+        # this function is deprecated and will be removed in the future
         ids = self.labeled_extracted_labels_by_cat[cat][word]
         ids = [i["id"] for i in ids]
         ids = list(set(ids))
@@ -205,7 +225,6 @@ class Data(object):
         else:
             raise ValueError("unsupported match type")
 
-
     def get_important_labels(self, idxs, _cats):
         res = {}
         for idx in idxs:
@@ -249,20 +268,35 @@ class Data(object):
 
 
     def get_set(self):
-        all_types = self.image_by_type.keys()
+        all_types = self.set_helper.get_all_set_name()
         types = []
         for t in all_types:
-            if len(self.image_by_type[t]) > 50 and len(t) > 0:
-                cats = decoding_categories(t)
-                image_list = self.image_by_type[t]
-                pred = self.get_category_pred(image_list, data_type="text")
-                pred = pred[:, cats]
-                match_percent = pred.sum(axis=0) / pred.shape[0]                
-                types.append({
-                    "type": t,
-                    "match_percent": match_percent.tolist(),
-                })
+            cats = decoding_categories(t)
+            image_list = self.set_helper.get_image_list_by_type(t, scope="all")
+            pred = self.get_category_pred(image_list, data_type="text")
+            pred = pred[:, cats]
+            match_percent = pred.sum(axis=0) / pred.shape[0]                
+            types.append({
+                "type": t,
+                "match_percent": match_percent.tolist(),
+                "selected_image": self.set_helper.get_image_list_by_type(t, scope="selected")
+            })
+
         return types        
+        # all_types = self.image_by_type.keys()
+        # types = []
+        # for t in all_types:
+        #     if len(self.image_by_type[t]) > 50 and len(t) > 0:
+        #         cats = decoding_categories(t)
+        #         image_list = self.image_by_type[t]
+        #         pred = self.get_category_pred(image_list, data_type="text")
+        #         pred = pred[:, cats]
+        #         match_percent = pred.sum(axis=0) / pred.shape[0]                
+        #         types.append({
+        #             "type": t,
+        #             "match_percent": match_percent.tolist(),
+        #         })
+        # return types        
 
     def get_category_pred(self, label_type="unlabeled", data_type="text"):
         if not isinstance(label_type, str) and isinstance(label_type, list):

@@ -186,13 +186,13 @@ const store = new Vuex.Store({
         },
         async fetch_word({commit, state}, query){
             console.log("fetch_word", query);
-            // let query = {
-            //     "tree_node_id": key.cat_id,
-            //     "match_type": key.text
-            // }
             const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_words", JSON.parse(JSON.stringify(resp.data)));
-        }
+        },
+        // async fetch_image_by_set_id({commit, state}, query){
+        //     console.log("fetch_image_by_set_id", query);
+
+        // }
     },
     modules:{
         // empty
