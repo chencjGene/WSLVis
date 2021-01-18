@@ -69,17 +69,17 @@ class TreeHelper(object):
         return leaf_node
 
 class SetHelper(object):
-    def __init__(self, train_idx, width_height, conn, data_all_step_root, class_name):
+    def __init__(self, train_idx, width_height, conn, data_root, class_name):
         self.train_idx = train_idx
         self.width_height = width_height
         self.conn = conn
-        self.data_all_step_root = data_all_step_root
+        self.data_root = data_root
         self.class_name = class_name
         self.conf_thresh = 0.5
         self._get_image_by_type()
 
     def _get_image_by_type(self):
-        filename = os.path.join(self.data_all_step_root, "image_by_type.json")
+        filename = os.path.join(self.data_root, "image_by_type.json")
         if os.path.exists(filename):
             logger.info("using image_by_type.json buffer")
             self.image_by_type = json_load_data(filename)
@@ -195,7 +195,7 @@ class Data(object):
         self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
             "width_height.json"))
         self.set_helper = SetHelper(self.train_idx, self.width_height,\
-            self.conn, self.data_all_step_root, self.class_name)
+            self.conn, self.data_root, self.class_name)
 
         logger.info("end loading data from processed data!")
 
@@ -296,7 +296,7 @@ class Data(object):
     def get_hypergraph(self):
         set_list = self.get_set()
         for s in set_list:
-            categories = decoding_categories(s["type"])
+            categories = decoding_categories(s)
             for c in categories:
                 self.tree_helper.get_node_by_cat_id(c)["sets"].append(s)
 
@@ -320,20 +320,20 @@ class Data(object):
 
     def get_set(self):
         all_types = self.set_helper.get_all_set_name()
-        types = []
+        types = {}
         for t in all_types:
             cats = decoding_categories(t)
             image_list = self.set_helper.get_image_list_by_type(t, scope="all")
             pred = self.get_category_pred(image_list, data_type="text")
             pred = pred[:, cats]
             match_percent = pred.sum(axis=0) / pred.shape[0]                
-            types.append({
+            types[t] = {
                 "type": t,
                 "num": len(image_list),
                 "match_percent": match_percent.tolist(),
                 "selected_image": self.set_helper.get_image_list_by_type(t, \
                     scope="selected", with_wh=True)
-            })
+            }
 
         return types   
 
