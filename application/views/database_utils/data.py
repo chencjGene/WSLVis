@@ -61,8 +61,8 @@ class Data(object):
         self.val_idx = processed_data[config.valid_idx_name]
         self.test_idx = processed_data[config.test_idx_name]
         self.redundant_idx = processed_data[config.redundant_idx_name]
-        self.image_by_type = processed_data["image_by_type"]
-        self.categories = processed_data["categories"]
+        # self.image_by_type = processed_data["image_by_type"]
+        # self.categories = processed_data["categories"]
         self.add_info = processed_data[config.add_info_name]
 
         # load hierarchy

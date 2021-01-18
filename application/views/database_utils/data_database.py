@@ -3,6 +3,7 @@ import os
 import cv2
 import sqlite3
 import json
+from tqdm import tqdm
 
 from ..utils.config_utils import config
 from ..utils.log_utils import logger
@@ -68,11 +69,32 @@ class TreeHelper(object):
         return leaf_node
 
 class SetHelper(object):
-    def __init__(self, image_by_type, width_height, conn, class_name):
-        self.image_by_type = image_by_type
+    def __init__(self, train_idx, width_height, conn, data_all_step_root, class_name):
+        self.train_idx = train_idx
         self.width_height = width_height
         self.conn = conn
+        self.data_all_step_root = data_all_step_root
         self.class_name = class_name
+        self._get_image_by_type()
+
+    def _get_image_by_type(self):
+        filename = os.path.join(self.data_all_step_root, "image_by_type.json")
+        if os.path.exists(filename):
+            logger.info("using image_by_type.json buffer")
+            self.image_by_type = json_load_data(filename)
+            return 
+
+        self.image_by_type = {}
+        cat_min = 100
+        cat_max = 0
+        for idx in tqdm(self.train_idx):
+            det = self.get_detection_result(idx)
+            category = [d[-1] for d in det if d[-2] > 0.5]
+            cat_str = encoding_categories(category)
+            if cat_str not in self.image_by_type:
+                self.image_by_type[cat_str] = []
+            self.image_by_type[cat_str].append(int(idx))
+        json_save_data(filename, self.image_by_type)
 
     def get_all_set_name(self):
         all_types = self.image_by_type.keys()
@@ -87,14 +109,15 @@ class SetHelper(object):
         sql = "select detection from annos where id = ?"
         cursor.execute(sql, (idx,))
         res = cursor.fetchall()[0][0]
-        return json.loads(res)
+        res = json.loads(res)
+        return res
 
     def get_image_list_by_type(self, t, scope="selected", with_wh = False):
         def add_width_height(idx):
             w, h = self.width_height[idx]
             detection = self.get_detection_result(idx)
             detection = np.array(detection)
-            conf_detection = detection[detection[:, -2] > 0.5].astype(np.float32)
+            conf_detection = detection[detection[:, -2] > 0.1].astype(np.float32)
             conf_detection[:, 0] /= w
             conf_detection[:, 2] /= w
             conf_detection[:, 1] /= h
@@ -108,9 +131,9 @@ class SetHelper(object):
                 return self.image_by_type[t]
         elif scope == "selected":
             if with_wh:
-                return [add_width_height(i) for i in self.image_by_type[t][:10]]
+                return [add_width_height(i) for i in self.image_by_type[t][-10:]]
             else:
-                return self.image_by_type[t][:10]
+                return self.image_by_type[t][-10:]
 
 class Data(object):
     def __init__(self, dataname, suffix="step0"):
@@ -159,8 +182,6 @@ class Data(object):
         self.val_idx = processed_data[config.valid_idx_name]
         self.test_idx = processed_data[config.test_idx_name]
         self.redundant_idx = processed_data[config.redundant_idx_name]
-        self.image_by_type = processed_data["image_by_type"]
-        self.categories = processed_data["categories"]
         self.add_info = processed_data[config.add_info_name]
 
         database_file = os.path.join(self.data_root, "database.db")
@@ -174,7 +195,8 @@ class Data(object):
         # load image width and height
         self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
             "width_height.json"))
-        self.set_helper = SetHelper(self.image_by_type, self.width_height, self.conn, self.class_name)
+        self.set_helper = SetHelper(self.train_idx, self.width_height,\
+            self.conn, self.data_all_step_root, self.class_name)
 
         logger.info("end loading data from processed data!")
 
@@ -308,6 +330,7 @@ class Data(object):
             match_percent = pred.sum(axis=0) / pred.shape[0]                
             types.append({
                 "type": t,
+                "num": len(image_list),
                 "match_percent": match_percent.tolist(),
                 "selected_image": self.set_helper.get_image_list_by_type(t, \
                     scope="selected", with_wh=True)
@@ -340,6 +363,7 @@ class Data(object):
                 preds.append((image_output + pred).astype(float))
             preds = np.array(preds)
         elif data_type == "image":
+            raise ValueError("some problem") # TODO
             for idx in idxs:
                 detection = self.database_fetch_by_idx(idx, ["detection"])
                 detection = np.array(json.loads(detection))[:,-1].astype(int)

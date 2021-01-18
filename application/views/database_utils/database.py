@@ -78,8 +78,8 @@ class DataBase(object):
         mat[config.valid_idx_name] = self.val_idx
         mat[config.test_idx_name] = self.test_idx
         mat[config.redundant_idx_name] = self.redundant_idx
-        mat["image_by_type"] = self.image_by_type
-        mat["categories"] = self.categories
+        # mat["image_by_type"] = self.image_by_type
+        # mat["categories"] = self.categories
         mat["labeled_idx"] = self.labeled_idx
         mat[config.add_info_name] = self.add_info
         save_method(filename, mat)

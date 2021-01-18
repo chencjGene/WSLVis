@@ -4,6 +4,7 @@ from application.views.database_utils import Data
 from application.views.database_utils.utils import multiclass_precision_and_recall
 from application.views.utils.config_utils import config
 
+
 class DataTest(unittest.TestCase):
 
     def test_data_database_get_category_pred_image(self):
@@ -31,6 +32,10 @@ class DataTest(unittest.TestCase):
     def test_data_database_get_set(self):
         d = Data(config.coco17)
         d.get_set()
+
+    
+    def test_get_image_by_type(self):
+        d = Data(config.coco17, suffix="step1")
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

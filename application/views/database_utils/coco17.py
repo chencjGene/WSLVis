@@ -230,19 +230,19 @@ class DataCOCO17(DataBase):
             for idx in range(train_num):
                 bboxes = train_detection[category][idx]
                 for bbox in bboxes:
-                    bbox = bbox + [category]
+                    bbox = bbox + [category - 1]
                     self.detection[idx]["bbox"].append(bbox)
         
-        self.image_by_type = {}
-        self.categories = [[] for i in range(len(self.train_idx) + len(self.val_idx))]
-        for idx in self.train_idx:
-            det = self.detection[idx]
-            category = [d[-1] for d in det["bbox"]]
-            self.categories[idx] = category
-            cat_str = encoding_categories(category)
-            if cat_str not in self.image_by_type:
-                self.image_by_type[cat_str] = []
-            self.image_by_type[cat_str].append(int(idx))
+        # self.image_by_type = {}
+        # self.categories = [[] for i in range(len(self.train_idx) + len(self.val_idx))]
+        # for idx in self.train_idx:
+        #     det = self.detection[idx]
+        #     category = [d[-1] for d in det["bbox"]]
+        #     self.categories[idx] = category
+        #     cat_str = encoding_categories(category)
+        #     if cat_str not in self.image_by_type:
+        #         self.image_by_type[cat_str] = []
+        #     self.image_by_type[cat_str].append(int(idx))
 
         # processing extracted labels
         for i, idx in tqdm(enumerate(self.train_idx)):
