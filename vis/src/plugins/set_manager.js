@@ -1,17 +1,30 @@
 import {getTextWidth} from "../plugins/global"
 
-function unique(arr){
-    return Array.from(new Set(arr));
+// function unique(arr){
+//     return Array.from(new Set(arr));
+// }
+
+function set_unique(arr){
+    let res = [];
+    let keys = [];
+    for (let i = 0; i < arr.length; i++){
+        if (keys.indexOf(arr[i].type) == -1){
+            keys.push(arr[i].type);
+            res.push(arr[i]);
+        }
+    }
+    return res;
 }
 
-const SetManager = function (){
+const SetManager = function (text_width){
     let that = this;
+    that.text_width = text_width;
 
-    that.leaf_nodes = [];
+    that.selected_nodes = [];
 
-    this.update_leaf_nodes = function(leaf_nodes){
-        that.leaf_nodes = leaf_nodes;
-        let right_max = leaf_nodes.map(d => 
+    this.update_selected_nodes = function(selected_nodes){
+        that.selected_nodes = selected_nodes;
+        let right_max = selected_nodes.map(d => 
             d.y + getTextWidth(d.data.name, "16px Roboto, sans-serif"));
         that.right_max = Math.max(...right_max);
     }
@@ -23,54 +36,45 @@ const SetManager = function (){
         that.set_width = mat.set_width;
         that.set_margin = mat.set_margin;
         that.set_height = mat.set_height;
+        that.image_height = mat.image_height;
+        that.image_margin = mat.image_margin;
     }
 
-    // this.update_tree_root = function(x, y){
-    //     that.tree_x = x;
-    //     that.tree_y = y;
-    //     console.log("update tree root", that.tree_x, that.tree_y);
-    // }
+    this.update_tree_node_position = function(tree_node_position){
+        that.tree_node_group_x = tree_node_position.x;
+        that.tree_node_group_y = tree_node_position.y;
+    }
+
 
     this.get_sets = function(){
-        let arr = that.leaf_nodes.map(d => d.data.sets);
+        that.all_arr = {}
+        // get map
+        that.selected_nodes.forEach(d => {
+            d.data.sets.forEach(n => that.all_arr[n.type] = []);
+        })
+        that.selected_nodes.forEach(d => {
+            d.data.sets.forEach(n => that.all_arr[n.type].push(d));
+        })
+
+        let arr = that.selected_nodes.map(d => d.data.sets);
+        // let arr = Object.values(all_arr);
         arr = Array.prototype.concat.call(...arr);
-        that.arr = unique(arr);
-        // console.log("arr in get_sets", arr);
-        // TODO: filtering or sorting
-        let num_to_display = 
-            Math.floor(that.layout_height / that.set_height);
-        that.set_to_display = [];
-        that.set_map = [];
-        for (let i = 0; i < num_to_display; i++){
-            that.set_to_display.push({
-                "name": that.arr[i]
-            });
-            that.set_map[that.arr[i]] = that.set_to_display[i];
-        }
-        that.set_to_display.forEach(function(d, i){
-            d.x = that.set_left;
-            d.y = i * that.set_height + that.set_margin / 2;
-            d.y_center = d.y + (that.set_height - that.set_margin) / 2;
-            d.width = that.set_width - that.set_margin;
-            d.height = that.set_height - that.set_margin;
-        });
+        that.arr = set_unique(arr);
+        console.log("arr in get_sets", that.arr);
+        that.filter_and_sort();
 
         that.get_set_links();
-        return {
-            "sets": that.set_to_display,
-            "set_links": that.set_links
-        };
+        return [that.set_to_display, that.set_links]
     }
 
     this.get_set_links = function(){
         that.set_links = [];
-        for (let i = 0; i < that.leaf_nodes.length; i++){
-            let node = that.leaf_nodes[i];
-            let text_width = getTextWidth(node.data.name, "16px Roboto, sans-serif");
+        for (let i = 0; i < that.selected_nodes.length; i++){
+            let node = that.selected_nodes[i];
 
             let source = {
-                "x": node.x + text_width + 15,
-                "y": node.y 
+                "x": node.x + that.text_width + that.tree_node_group_x,
+                "y": node.y + that.tree_node_group_y
             };
 
             let turn_point = {
@@ -80,7 +84,7 @@ const SetManager = function (){
 
             // console.log("node:", node);
             for (let j = 0; j < node.data.sets.length; j++){
-                let set_name = node.data.sets[j];
+                let set_name = node.data.sets[j]["type"];
                 let set_node = that.set_map[set_name];
                 if (!set_node) continue;
                 let target = {
@@ -92,6 +96,57 @@ const SetManager = function (){
                 });
             }
         }
+    }
+
+    this.filter_and_sort = function(){
+        // TODO: filtering or sorting
+        let num_to_display = 
+            Math.floor(that.layout_height / that.set_height);
+        that.set_to_display = [];
+        that.set_map = [];
+        that.arr.sort((a,b) => (Math.min(...a.match_percent) - Math.min(...b.match_percent)));
+        for (let i = 0; i < num_to_display; i++){
+            that.set_to_display.push(that.arr[i]);
+            that.set_map[that.arr[i]["type"]] = that.set_to_display[i];
+        }
+        let mean = function(arr){
+            let sum = 0;
+            for(let i = 0; i < arr.length; i++){
+                sum += arr[i];
+            }
+            return sum / arr.length;
+        };
+        that.set_to_display.forEach(d => {
+            let nodes = that.all_arr[d.type];
+            let ys = nodes.map(n => n.y);
+            d.order = mean(ys);
+        })
+        that.set_to_display.sort((a,b) => a.order - b.order);
+        
+        that.set_to_display.forEach(function(d, i){
+            d.x = that.set_left;
+            d.y = i * that.set_height + that.set_margin / 2;
+            d.y_center = d.y + (that.set_height - that.set_margin) / 2;
+            d.width = that.set_width - that.set_margin;
+            d.height = that.set_height - that.set_margin;
+            d.vis_image = [];
+            let x = that.image_margin;
+            for (let j = 0; j < d.selected_image.length; j++){
+                let img = d.selected_image[j];
+                let height = that.image_height;
+                let width = img.w / img.h * height;
+                img.vis_w = width;
+                img.vis_h = height;
+                if ((x + width + that.image_margin) < that.set_width){
+                    img.x = x;
+                    x = x + width + that.image_margin;
+                    d.vis_image.push(img);
+                }
+                else{
+                    break;
+                }
+            }
+        });
     }
 }
 

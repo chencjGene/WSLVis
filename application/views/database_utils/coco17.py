@@ -54,7 +54,6 @@ def process_extracted_result(result):
             "activations": activations,
             "string": string,
         }
-    # import IPython; IPython.embed(); exit()
     return map
 
 def jsonify(detection_result):
@@ -68,10 +67,11 @@ def jsonify(detection_result):
     return detection_result
 
 class DataCOCO17(DataBase):
-    def __init__(self, suffix=""):
+    def __init__(self, suffix="step0"):
         dataname = config.coco17
         super(DataCOCO17, self).__init__(dataname, suffix)
-        self.label_map, self.class_name = get_label_map(os.path.join(self.data_dir, "label_map.txt"))
+        self.label_map, self.class_name = get_label_map(os.path.join(\
+            self.data_all_step_dir, "label_map.txt"))
         
     def preprocessing_data(self):
         logger.info("begin preprocessing_data")
@@ -94,47 +94,46 @@ class DataCOCO17(DataBase):
 
         logger.info("loading groundtruth")
         # val groundtruth
-        val_instance = json_load_data(os.path.join(config.raw_data_root, "coco17_raw_data", \
-            "annotations", "shrink_instances_val2017.json"))
+        val_instance = json_load_data(os.path.join(self.raw_data_all_step_dir, \
+            "shrink_instances_val2017.json"))
         val_images = val_instance["images"]
         val_annos = val_instance["annotations"]
 
         # train groundtruth
-        train_instance = json_load_data(os.path.join(config.raw_data_root, "coco17_raw_data", \
-            "annotations", "shrink_instances_train2017.json"))
+        train_instance = json_load_data(os.path.join(self.raw_data_all_step_dir, \
+            "shrink_instances_train2017.json"))
         train_images = train_instance["images"]
         train_annos = train_instance["annotations"]
 
         # train id in order
-        train_ids = open(os.path.join(config.raw_data_root, "coco17_raw_data", \
-            "annotations", "shrink_train2017_random_list.txt"), \
-            "r").read().strip("\n").split("\n")
+        train_ids = open(os.path.join(self.raw_data_all_step_dir, \
+            "shrink_train2017_random_list.txt"), "r").read().strip("\n").split("\n")
 
         logger.info("loading captions")
         # val text
-        val_captions = json_load_data(os.path.join(config.raw_data_root, "coco17_raw_data", \
-            "annotations", "captions_val2017.json"))
+        val_captions = json_load_data(os.path.join(self.raw_data_all_step_dir, \
+            "captions_val2017.json"))
         val_captions = val_captions["annotations"]
         # train text
-        train_captions = json_load_data(os.path.join(config.raw_data_root, "coco17_raw_data", \
-            "annotations", "captions_train2017.json"))
+        train_captions = json_load_data(os.path.join(self.raw_data_all_step_dir, \
+            "captions_train2017.json"))
         train_captions = train_captions["annotations"]
 
         logger.info("processing extracted labels")
         # train extracted labels
-        train_extracted_labels = pickle_load_data(os.path.join(config.raw_data_root,
-            "COCO17", "train_result_text{}.pkl".format(self.suffix)))
+        train_extracted_labels = pickle_load_data(os.path.join(self.raw_data_dir, \
+            "train_result_text.pkl"))
         train_extracted_labels = process_extracted_result(train_extracted_labels)
 
         # val extracted labels
-        val_extracted_labels = pickle_load_data(os.path.join(config.raw_data_root,
-            "COCO17", "val_result_text{}.pkl".format(self.suffix)))
+        val_extracted_labels = pickle_load_data(os.path.join(self.raw_data_dir,
+            "val_result_text.pkl"))
         val_extracted_labels = process_extracted_result(val_extracted_labels)
 
-        train_image_output = np.load(os.path.join(config.raw_data_root,
-            "COCO17", "train_image_output.npy")).tolist()
-        val_image_output = np.load(os.path.join(config.raw_data_root,
-            "COCO17", "val_image_output.npy")).tolist()
+        train_image_output = np.load(os.path.join(self.raw_data_dir,
+            "train_image_output.npy")).tolist()
+        val_image_output = np.load(os.path.join(self.raw_data_dir,
+            "val_image_output.npy")).tolist()
 
         self.all_data = {
             "train_detections": train_detection_result,
@@ -231,19 +230,19 @@ class DataCOCO17(DataBase):
             for idx in range(train_num):
                 bboxes = train_detection[category][idx]
                 for bbox in bboxes:
-                    bbox = bbox + [category]
+                    bbox = bbox + [category - 1]
                     self.detection[idx]["bbox"].append(bbox)
         
-        self.image_by_type = {}
-        self.categories = [[] for i in range(len(self.train_idx) + len(self.val_idx))]
-        for idx in self.train_idx:
-            det = self.detection[idx]
-            category = [d[-1] for d in det["bbox"]]
-            self.categories[idx] = category
-            cat_str = encoding_categories(category)
-            if cat_str not in self.image_by_type:
-                self.image_by_type[cat_str] = []
-            self.image_by_type[cat_str].append(int(idx))
+        # self.image_by_type = {}
+        # self.categories = [[] for i in range(len(self.train_idx) + len(self.val_idx))]
+        # for idx in self.train_idx:
+        #     det = self.detection[idx]
+        #     category = [d[-1] for d in det["bbox"]]
+        #     self.categories[idx] = category
+        #     cat_str = encoding_categories(category)
+        #     if cat_str not in self.image_by_type:
+        #         self.image_by_type[cat_str] = []
+        #     self.image_by_type[cat_str].append(int(idx))
 
         # processing extracted labels
         for i, idx in tqdm(enumerate(self.train_idx)):

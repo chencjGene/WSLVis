@@ -18,12 +18,13 @@ class MMModel(object):
         self._init()
     
     def _init(self):
-        self.data = Data(self.dataname)
+        self.data = Data(self.dataname, self.step)
         self.case_util = get_case_util(self.dataname)
         self.case_util.connect_data(self.data)
 
-    def init(self, dataname):
+    def init(self, dataname, step):
         self.dataname = dataname
+        self.step = step
         self._init()
     
     def get_tree(self):

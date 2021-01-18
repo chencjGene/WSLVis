@@ -9,11 +9,13 @@ from ..utils.helper_utils import json_load_data, json_save_data
 from ..utils.log_utils import logger 
 
 class DataBase(object):
-    def __init__(self, dataname, suffix=""):
+    def __init__(self, dataname, suffix="step0"):
         self.dataname = dataname
-        self.data_dir = os.path.join(config.data_root, dataname)
+        self.data_all_step_dir = os.path.join(config.data_root, dataname)
+        self.data_dir = os.path.join(config.data_root, dataname, suffix)
         check_dir(self.data_dir)
-        self.raw_data_dir = os.path.join(config.raw_data_root, dataname)
+        self.raw_data_all_step_dir = os.path.join(config.raw_data_root, dataname)
+        self.raw_data_dir = os.path.join(config.raw_data_root, dataname, suffix)
         self.all_data = {}
         self.suffix = suffix
 
@@ -43,12 +45,12 @@ class DataBase(object):
         :return:
         """
         logger.warn("begin saving unprocessed cache of {}".format(self.dataname))
-        all_data_name = os.path.join(self.raw_data_dir, config.all_data_cache_name.format(self.suffix))
+        all_data_name = os.path.join(self.raw_data_dir, config.all_data_cache_name.format(""))
         save_method(all_data_name, self.all_data)
         logger.info("cache saving done!")
 
     def load_cache(self, loading_from_buffer=False, load_method=pickle_load_data):
-        all_data_name = os.path.join(self.raw_data_dir, config.all_data_cache_name.format(self.suffix))
+        all_data_name = os.path.join(self.raw_data_dir, config.all_data_cache_name.format(""))
         if os.path.exists(all_data_name) and loading_from_buffer:
             logger.warn("all data cache exists. load data from cache ... ...".format(all_data_name))
             self.all_data = load_method(all_data_name)
@@ -62,7 +64,7 @@ class DataBase(object):
                     "you should not see this message.")
 
     def save_processed_data(self, save_method=pickle_save_data):
-        filename = os.path.join(self.data_dir, "processed_data{}{}".format(self.suffix, config.pkl_ext))
+        filename = os.path.join(self.data_dir, "processed_data{}{}".format("", config.pkl_ext))
         # TODO: add time information and warn users when loading
         logger.warn("save processed data in {}".format(filename))
         mat = {}
@@ -76,8 +78,8 @@ class DataBase(object):
         mat[config.valid_idx_name] = self.val_idx
         mat[config.test_idx_name] = self.test_idx
         mat[config.redundant_idx_name] = self.redundant_idx
-        mat["image_by_type"] = self.image_by_type
-        mat["categories"] = self.categories
+        # mat["image_by_type"] = self.image_by_type
+        # mat["categories"] = self.categories
         mat["labeled_idx"] = self.labeled_idx
         mat[config.add_info_name] = self.add_info
         save_method(filename, mat)
@@ -86,7 +88,7 @@ class DataBase(object):
     def load_processed_data(self):
         logger.info("begin loading data from processed data!")
         processed_data_filename = os.path.join(self.data_dir, \
-            config.processed_dataname.format(self.suffix))
+            config.processed_dataname.format(""))
         processed_data = pickle_load_data(processed_data_filename)
         self.class_name = processed_data[config.class_name]
         self.X = processed_data[config.X_name]

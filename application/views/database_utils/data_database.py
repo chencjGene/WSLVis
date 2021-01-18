@@ -3,6 +3,7 @@ import os
 import cv2
 import sqlite3
 import json
+from tqdm import tqdm
 
 from ..utils.config_utils import config
 from ..utils.log_utils import logger
@@ -67,11 +68,77 @@ class TreeHelper(object):
             visit_node.extend(node["children"])
         return leaf_node
 
+class SetHelper(object):
+    def __init__(self, train_idx, width_height, conn, data_all_step_root, class_name):
+        self.train_idx = train_idx
+        self.width_height = width_height
+        self.conn = conn
+        self.data_all_step_root = data_all_step_root
+        self.class_name = class_name
+        self.conf_thresh = 0.5
+        self._get_image_by_type()
+
+    def _get_image_by_type(self):
+        filename = os.path.join(self.data_all_step_root, "image_by_type.json")
+        if os.path.exists(filename):
+            logger.info("using image_by_type.json buffer")
+            self.image_by_type = json_load_data(filename)
+            return 
+
+        self.image_by_type = {}
+        for idx in tqdm(self.train_idx):
+            det = self.get_detection_result(idx)
+            category = [d[-1] for d in det if d[-2] > self.conf_thresh]
+            cat_str = encoding_categories(category)
+            if cat_str not in self.image_by_type:
+                self.image_by_type[cat_str] = []
+            self.image_by_type[cat_str].append(int(idx))
+        json_save_data(filename, self.image_by_type)
+
+    def get_all_set_name(self):
+        all_types = self.image_by_type.keys()
+        types = []
+        for t in all_types:
+            if len(self.image_by_type[t]) > 50 and len(t) > 0:
+                types.append(t)
+        return types
+
+    def get_detection_result(self, idx):
+        cursor = self.conn.cursor()
+        sql = "select detection from annos where id = ?"
+        cursor.execute(sql, (idx,))
+        res = cursor.fetchall()[0][0]
+        res = json.loads(res)
+        return res
+
+    def get_image_list_by_type(self, t, scope="selected", with_wh = False):
+        def add_width_height(idx):
+            w, h = self.width_height[idx]
+            detection = self.get_detection_result(idx)
+            detection = np.array(detection)
+            conf_detection = detection[detection[:, -2] > self.conf_thresh].astype(np.float32)
+            conf_detection[:, 0] /= w
+            conf_detection[:, 2] /= w
+            conf_detection[:, 1] /= h
+            conf_detection[:, 3] /= h
+            conf_detection = np.round(conf_detection, 3)
+            return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist()}
+        if scope == "all":
+            if with_wh:
+                return [add_width_height(i) for i in self.image_by_type[t]]
+            else:
+                return self.image_by_type[t]
+        elif scope == "selected":
+            if with_wh:
+                return [add_width_height(i) for i in self.image_by_type[t][-10:]]
+            else:
+                return self.image_by_type[t][-10:]
 
 class Data(object):
-    def __init__(self, dataname, suffix=""):
+    def __init__(self, dataname, suffix="step0"):
         self.dataname = dataname 
-        self.data_root = os.path.join(config.data_root, self.dataname)
+        self.data_all_step_root = os.path.join(config.data_root, self.dataname)
+        self.data_root = os.path.join(config.data_root, self.dataname, suffix)
         self.suffix = suffix
     
         self.class_name = []
@@ -93,8 +160,8 @@ class Data(object):
     def _load_data(self):
         logger.info("begin loading data from processed data!")
         filename = config.debug_processed_dataname
-        processed_data_filename = os.path.join(self.data_root, \
-            filename.format(self.suffix))
+        processed_data_filename = os.path.join(self.data_all_step_root, \
+            filename.format(""))
         processed_data = json_load_data(processed_data_filename)
         logger.info("finishing load!")
         self.processed_data = processed_data
@@ -110,12 +177,10 @@ class Data(object):
             tmp_map[idx] = 0
         for idx in self.labeled_idx:
             tmp_map[idx] = 1
-        self.unlabeled_idx = [i for i in self.train_idx if tmp_map[i]]
+        self.unlabeled_idx = [i for i in self.train_idx if not tmp_map[i]]
         self.val_idx = processed_data[config.valid_idx_name]
         self.test_idx = processed_data[config.test_idx_name]
         self.redundant_idx = processed_data[config.redundant_idx_name]
-        self.image_by_type = processed_data["image_by_type"]
-        self.categories = processed_data["categories"]
         self.add_info = processed_data[config.add_info_name]
 
         database_file = os.path.join(self.data_root, "database.db")
@@ -123,12 +188,19 @@ class Data(object):
         # self.cursor = self.conn.cursor()
 
         # load hierarchy
-        tree = json_load_data(os.path.join(self.data_root, "hierarchy-abbr.json"))
+        tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
         self.tree_helper = TreeHelper(tree, self.class_name)
+
+        # load image width and height
+        self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
+            "width_height.json"))
+        self.set_helper = SetHelper(self.train_idx, self.width_height,\
+            self.conn, self.data_all_step_root, self.class_name)
 
         logger.info("end loading data from processed data!")
 
     def database_fetch_by_idx(self, idx, keys):
+        # id, cap, bbox, logits, labels, activations, string, detection, image_output
         cursor = self.conn.cursor()
         keys = "".join([k + ", " for k in keys]).strip(", ")
         sql = "select {} from annos where id = ?".format(keys)
@@ -157,6 +229,7 @@ class Data(object):
         self.labeled_p, self.precision, self.recall = get_precision_and_recall(labels)
 
     def get_captions_by_word_and_cat(self, word, cat):
+        # this function is deprecated and will be removed in the future
         ids = self.labeled_extracted_labels_by_cat[cat][word]
         ids = [i["id"] for i in ids]
         ids = list(set(ids))
@@ -203,7 +276,6 @@ class Data(object):
         else:
             raise ValueError("unsupported match type")
 
-
     def get_important_labels(self, idxs, _cats):
         res = {}
         for idx in idxs:
@@ -221,47 +293,13 @@ class Data(object):
             res[text] = list(set(res[text]))
         return res
 
-    def get_labeled_importance(self):
-        '''
-            This function is deprecated and will be removed in the future
-        '''
-        # labels statistic
-        cursor = self.conn.cursor()
-        sql = "select (activations) from annos where id = ?"
-        extracted_labels_by_cat = {}
-        labeled_extracted_labels_by_cat = {}
-        for i in range(len(self.class_name)):
-            extracted_labels_by_cat[i] = {}
-            labeled_extracted_labels_by_cat[i] = {}
-        for idx in self.labeled_idx:
-            by_cat = labeled_extracted_labels_by_cat
-            # extracted_labels = self.annos[idx]["extracted_labels"]
-            cursor.execute(sql, (idx,))
-            result = cursor.fetchall()[0]
-            activations = json.loads(result[0])
-            for act in activations:
-                text = act["text"]
-                cats = act["cats"]
-                probs = act["probs"]
-                for i, c in enumerate(cats):
-                    if text not in by_cat[c]:
-                        by_cat[c][text] = []
-                    by_cat[c][text].append({
-                        "id": idx,
-                        "prob": probs[i]
-                    })
-        self.extracted_labels_by_cat = extracted_labels_by_cat
-        self.labeled_extracted_labels_by_cat = labeled_extracted_labels_by_cat
-
     def get_hypergraph(self):
-
         set_list = self.get_set()
         for s in set_list:
-            categories = decoding_categories(s)
+            categories = decoding_categories(s["type"])
             for c in categories:
                 self.tree_helper.get_node_by_cat_id(c)["sets"].append(s)
 
-        self.get_labeled_importance()
 
         if DEBUG:
             for i in range(len(self.class_name)):
@@ -274,29 +312,98 @@ class Data(object):
                 leaf = self.tree_helper.get_node_by_cat_id(i)
                 leaf["precision"] = self.precision[i]
                 leaf["recall"] = self.recall[i]
-                leaf["words"] = [[k, len(self.labeled_extracted_labels_by_cat[i][k])] 
-                    for k in self.labeled_extracted_labels_by_cat[i].keys()]
+                # leaf["words"] = [[k, len(self.labeled_extracted_labels_by_cat[i][k])] 
+                #     for k in self.labeled_extracted_labels_by_cat[i].keys()]
 
         return self.tree_helper.get_tree(), set_list
 
 
     def get_set(self):
-        all_types = self.image_by_type.keys()
+        all_types = self.set_helper.get_all_set_name()
         types = []
         for t in all_types:
-            if len(self.image_by_type[t]) > 50 and len(t) > 0:
-                types.append(t)
-        return types        
+            cats = decoding_categories(t)
+            image_list = self.set_helper.get_image_list_by_type(t, scope="all")
+            pred = self.get_category_pred(image_list, data_type="text")
+            pred = pred[:, cats]
+            match_percent = pred.sum(axis=0) / pred.shape[0]                
+            types.append({
+                "type": t,
+                "num": len(image_list),
+                "match_percent": match_percent.tolist(),
+                "selected_image": self.set_helper.get_image_list_by_type(t, \
+                    scope="selected", with_wh=True)
+            })
+
+        return types   
+
+    def get_category_pred(self, label_type="unlabeled", data_type="text"):
+        if not isinstance(label_type, str) and isinstance(label_type, list):
+            idxs = label_type
+            label_type_text = "idx"
+        elif label_type == "all":
+            idxs = self.train_idx
+            label_type_text = label_type
+        elif label_type == "labeled":
+            idxs = self.labeled_idx
+            label_type_text = label_type
+        elif label_type == "unlabeled":
+            idxs = self.unlabeled_idx
+            label_type_text = label_type
+        else:
+            raise ValueError("unsupported label type")
+        logger.debug("begin get category pred with {} in {}".format(label_type_text, data_type))
+        preds = []
+        if data_type == "text":
+            for idx in idxs:
+                logit, image_output = self.database_fetch_by_idx(idx, ["logits", "image_output"])
+                pred = sigmoid(np.array(json.loads(logit))) > 0.5
+                image_output = np.array(json.loads(image_output)) > 0.5
+                preds.append((image_output + pred).astype(float))
+            preds = np.array(preds)
+        elif data_type == "image":
+            raise ValueError("some problem") # TODO
+            for idx in idxs:
+                detection = self.database_fetch_by_idx(idx, ["detection"])
+                detection = np.array(json.loads(detection))[:,-1].astype(int)
+                cats = np.array(list(set(detection))).astype(int) - 1
+                pred = np.zeros(len(self.class_name))
+                pred[cats] = 1
+                preds.append(pred)
+            preds = np.array(preds)
+        else:
+            raise ValueError("unsupported data type")
+        logger.debug("finish get category pred with {} in {}".format(label_type_text, data_type))
+        return preds
+    
+    def get_groundtruth_labels(self, label_type="unlabeled"):
+        logger.debug("begin get groundtruth category with {}".format(label_type))
+        if label_type == "all":
+            idxs = self.train_idx
+        elif label_type == "labeled":
+            idxs = self.labeled_idx
+        elif label_type == "unlabeled":
+            idxs = self.unlabeled_idx
+        else:
+            raise ValueError("unsupported label type")
+        gt = []
+        for idx in idxs:
+            label = self.database_fetch_by_idx(idx, ["labels"])
+            label = np.array(json.loads(label))
+            gt.append(label)
+        gt = np.array(gt)
+        logger.debug("finish get groundtruth category pred with {}".format(label_type))
+        return gt.astype(int)
 
     def get_image(self, idx):
-        gt = self.annos[idx]["bbox"]
-        det = self.detections[idx]["bbox"]
+        # gt = self.annos[idx]["bbox"]
+        # det = self.detections[idx]["bbox"]
         image_id = self.ids[idx]
         phase = "train2017"
         if idx in self.val_idx:
             phase = "val2017"
-        img_path = os.path.join(self.data_root, phase, "%012d.jpg" %(image_id))
-        return img_path, gt, det
+        img_path = os.path.join(self.data_all_step_root, phase, "%012d.jpg" %(image_id))
+        return img_path #, gt, det
     
     def get_text(self, query):
         cursor = self.conn.cursor()

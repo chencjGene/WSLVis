@@ -8,8 +8,8 @@ def get_manifest():
     manifest = {"image_num": 1}
     return jsonify(manifest)
 
-def init_model(dataname):
-    model.init(dataname)
+def init_model(dataname, step):
+    model.init(dataname, step)
 
 def get_current_hypergraph():
     # tree = model.get_tree()
@@ -24,7 +24,7 @@ def get_current_hypergraph():
 
 
 def get_image(idx):
-    None
+    return model.data.get_image(idx)
 
 def get_text(query):
     text_result = model.data.get_text(query)

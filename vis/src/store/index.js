@@ -88,19 +88,6 @@ const store = new Vuex.Store({
                     if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
                 }
                 element.api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
-                // if (!element.data.words){
-                //     let arr = element.children.map(d => d.data.words);
-                //     element.data.words = unique(Array.prototype.concat.call(...arr));
-                // }
-                // element.words = element.data.words.map(d => {
-                //     let res = {};
-                //     res.text = d[0];
-                //     res.value = d[1];
-                //     res.cat_id = element.data.cat_id;
-                //     res.id = element.data.id;
-                //     return res;
-                // });
-                // element.words = element.words.slice(0, 20);
             });
 
             state.tree.eachBefore((d, i) => d.order = i);
@@ -166,7 +153,7 @@ const store = new Vuex.Store({
     actions:{
         async fetch_manifest({commit, state}, key){
             console.log("fetch_manifest");
-            const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, {"dataset": key}, 
+            const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, key, 
                 {headers: {
                     "Content-Type":"application/json",
                     "Access-Control-Allow-Origin": "*",
@@ -198,13 +185,13 @@ const store = new Vuex.Store({
         },
         async fetch_word({commit, state}, query){
             console.log("fetch_word", query);
-            // let query = {
-            //     "tree_node_id": key.cat_id,
-            //     "match_type": key.text
-            // }
             const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_words", JSON.parse(JSON.stringify(resp.data)));
-        }
+        },
+        // async fetch_image_by_set_id({commit, state}, query){
+        //     console.log("fetch_image_by_set_id", query);
+
+        // }
     },
     modules:{
         // empty

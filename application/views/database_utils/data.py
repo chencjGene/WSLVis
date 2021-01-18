@@ -13,9 +13,10 @@ from ..database_utils.utils import TFIDFTransform, rule_based_processing, get_pr
 DEBUG = False
 
 class Data(object):
-    def __init__(self, dataname, suffix=""):
+    def __init__(self, dataname, suffix="step0"):
         self.dataname = dataname 
-        self.data_root = os.path.join(config.data_root, self.dataname)
+        self.data_all_step_root = os.path.join(config.data_root, self.dataname)
+        self.data_root = os.path.join(config.data_root, self.dataname, suffix)
         self.suffix = suffix
     
         self.class_name = []
@@ -40,7 +41,7 @@ class Data(object):
         if DEBUG:
             filename = config.debug_processed_dataname
         processed_data_filename = os.path.join(self.data_root, \
-            filename.format(self.suffix))
+            filename.format(""))
         processed_data = json_load_data(processed_data_filename)
         self.processed_data = processed_data
         self.class_name = processed_data[config.class_name]
@@ -60,12 +61,12 @@ class Data(object):
         self.val_idx = processed_data[config.valid_idx_name]
         self.test_idx = processed_data[config.test_idx_name]
         self.redundant_idx = processed_data[config.redundant_idx_name]
-        self.image_by_type = processed_data["image_by_type"]
-        self.categories = processed_data["categories"]
+        # self.image_by_type = processed_data["image_by_type"]
+        # self.categories = processed_data["categories"]
         self.add_info = processed_data[config.add_info_name]
 
         # load hierarchy
-        self.tree = json_load_data(os.path.join(self.data_root, "hierarchy-abbr.json"))
+        self.tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
 
         logger.info("end loading data from processed data!")
 

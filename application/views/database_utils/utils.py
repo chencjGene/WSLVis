@@ -156,6 +156,25 @@ def get_precision_and_recall(part):
         rec.append(recall_score(labels[:,i], preds[:, i]))
     return p, pre, rec
 
+def multiclass_precision(y_true, y_pred):
+    pre = []
+    for i in range(y_pred.shape[1]):
+        pre.append(precision_score(y_true[:, i], y_pred[:, i]))
+    pre = np.array(pre)
+    return pre
+
+def multiclass_recall(y_true, y_pred):
+    recall = []
+    for i in range(y_pred.shape[1]):
+        recall.append(recall_score(y_true[:, i], y_pred[:, i]))
+    recall = np.array(recall)
+    return recall
+
+def multiclass_precision_and_recall(y_true, y_pred):
+    precision = multiclass_precision(y_true, y_pred)
+    recall = multiclass_recall(y_true, y_pred)
+    return precision, recall
+
 
 
 # encoding set names
