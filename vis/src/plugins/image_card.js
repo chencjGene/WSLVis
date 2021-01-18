@@ -60,7 +60,8 @@ const ImageCards = function(parent){
         
         that.image_groups = set_groups.selectAll("g.detection-result")
             .data(d => d.vis_image);
-        let e_image_groups = that.image_groups.enter()
+        // let e_image_groups = 
+        that.image_groups.enter()
             .append("g")
             .attr("class", "detection-result")
             .attr(
