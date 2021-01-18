@@ -107,14 +107,7 @@ export default {
             this.leaf_nodes = this.nodes.filter((d) => d.children.length === 0);
             this.selected_nodes = this.leaf_nodes; // TODO: selected_nodes can be specified by users
             console.log("selected_nodes", this.selected_nodes);
-            // this.set_manager.update_selected_nodes(this.selected_nodes);
-            // this.set_manager.update_tree_node_position({
-            //     x: this.tree_node_group_x,
-            //     y: this.tree_node_group_y - this.text_height,
-            // });
             [this.sets, this.set_links] = this.set_manager.get_sets();
-            // this.sets = result.sets;
-            // this.set_links = result.set_links;
         },
         update_view() {
             console.log("detection update view");

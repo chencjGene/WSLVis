@@ -33,18 +33,6 @@ const SetManager = function (parent){
 
     that.selected_nodes = [];
 
-    // this.update_selected_nodes = function(selected_nodes){
-    //     that.selected_nodes = selected_nodes;
-    //     let right_max = selected_nodes.map(d => 
-    //         d.y + getTextWidth(d.data.name, "16px Roboto, sans-serif"));
-    //     that.right_max = Math.max(...right_max);
-    // }
-
-    // this.update_tree_node_position = function(tree_node_position){
-    //     that.tree_node_group_x = tree_node_position.x;
-    //     that.tree_node_group_y = tree_node_position.y;
-    // }
-
     this.update_data_from_parent = function(){
         that.sets = that.parent.sets;
         that.selected_nodes = that.parent.selected_nodes;
