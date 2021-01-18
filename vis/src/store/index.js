@@ -154,7 +154,7 @@ const store = new Vuex.Store({
     actions:{
         async fetch_manifest({commit, state}, key){
             console.log("fetch_manifest");
-            const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, {"dataset": key}, 
+            const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, key, 
                 {headers: {
                     "Content-Type":"application/json",
                     "Access-Control-Allow-Origin": "*",

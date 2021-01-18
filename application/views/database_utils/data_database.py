@@ -75,6 +75,7 @@ class SetHelper(object):
         self.conn = conn
         self.data_all_step_root = data_all_step_root
         self.class_name = class_name
+        self.conf_thresh = 0.5
         self._get_image_by_type()
 
     def _get_image_by_type(self):
@@ -85,11 +86,9 @@ class SetHelper(object):
             return 
 
         self.image_by_type = {}
-        cat_min = 100
-        cat_max = 0
         for idx in tqdm(self.train_idx):
             det = self.get_detection_result(idx)
-            category = [d[-1] for d in det if d[-2] > 0.5]
+            category = [d[-1] for d in det if d[-2] > self.conf_thresh]
             cat_str = encoding_categories(category)
             if cat_str not in self.image_by_type:
                 self.image_by_type[cat_str] = []
@@ -117,7 +116,7 @@ class SetHelper(object):
             w, h = self.width_height[idx]
             detection = self.get_detection_result(idx)
             detection = np.array(detection)
-            conf_detection = detection[detection[:, -2] > 0.1].astype(np.float32)
+            conf_detection = detection[detection[:, -2] > self.conf_thresh].astype(np.float32)
             conf_detection[:, 0] /= w
             conf_detection[:, 2] /= w
             conf_detection[:, 1] /= h

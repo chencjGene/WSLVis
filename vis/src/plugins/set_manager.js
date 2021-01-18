@@ -94,7 +94,7 @@ const SetManager = function (text_width){
             Math.floor(that.layout_height / that.set_height);
         that.set_to_display = [];
         that.set_map = [];
-        that.arr.sort((a,b) => (b.num - a.num));
+        that.arr.sort((a,b) => (Math.min(...a.match_percent) - Math.min(...b.match_percent)));
         for (let i = 0; i < num_to_display; i++){
             that.set_to_display.push(that.arr[i]);
             that.set_map[that.arr[i]["type"]] = that.set_to_display[i];

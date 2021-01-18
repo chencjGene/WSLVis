@@ -29,6 +29,17 @@ class DataTest(unittest.TestCase):
         pred = d.get_category_pred(label_type="all", data_type="text")
         self.assertEqual(pred.shape, (112297, 65))
 
+    def test_data_database_get_category_pred_step1(self):
+        d = Data(config.coco17, suffix="step1")
+        pred = d.get_category_pred(label_type="labeled", data_type="text")
+        self.assertEqual(pred.shape, (5000, 65))
+        gt = d.get_groundtruth_labels(label_type="labeled")
+        precision, recall = multiclass_precision_and_recall(gt, pred)
+        print(precision[33], recall[33])
+        self.assertAlmostEqual(precision[33], 0.850, delta=0.001)
+        self.assertAlmostEqual(recall[33], 0.971, delta=0.001)
+
+
     def test_data_database_get_set(self):
         d = Data(config.coco17)
         d.get_set()
