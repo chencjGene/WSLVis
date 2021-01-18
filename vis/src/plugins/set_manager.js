@@ -47,7 +47,17 @@ const SetManager = function (text_width){
 
 
     this.get_sets = function(){
+        that.all_arr = {}
+        // get map
+        that.selected_nodes.forEach(d => {
+            d.data.sets.forEach(n => that.all_arr[n.type] = []);
+        })
+        that.selected_nodes.forEach(d => {
+            d.data.sets.forEach(n => that.all_arr[n.type].push(d));
+        })
+
         let arr = that.selected_nodes.map(d => d.data.sets);
+        // let arr = Object.values(all_arr);
         arr = Array.prototype.concat.call(...arr);
         that.arr = set_unique(arr);
         console.log("arr in get_sets", that.arr);
@@ -99,6 +109,19 @@ const SetManager = function (text_width){
             that.set_to_display.push(that.arr[i]);
             that.set_map[that.arr[i]["type"]] = that.set_to_display[i];
         }
+        let mean = function(arr){
+            let sum = 0;
+            for(let i = 0; i < arr.length; i++){
+                sum += arr[i];
+            }
+            return sum / arr.length;
+        };
+        that.set_to_display.forEach(d => {
+            let nodes = that.all_arr[d.type];
+            let ys = nodes.map(n => n.y);
+            d.order = mean(ys);
+        })
+        that.set_to_display.sort((a,b) => a.order - b.order);
         
         that.set_to_display.forEach(function(d, i){
             d.x = that.set_left;
