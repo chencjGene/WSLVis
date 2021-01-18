@@ -41,7 +41,7 @@ const SetManager = function (parent){
         that.right_max = Math.max(...right_max);
 
         that.tree_node_group_x = that.parent.tree_node_group_x;
-        that.tree_node_group_y = that.parent.tree_node_group_y;
+        that.tree_node_group_y = that.parent.tree_node_group_y - that.parent.text_height;
 
     };
 
