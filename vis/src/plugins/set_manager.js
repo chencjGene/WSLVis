@@ -16,37 +16,49 @@ function set_unique(arr){
     return res;
 }
 
-const SetManager = function (text_width){
+const SetManager = function (parent){
     let that = this;
-    that.text_width = text_width;
+    that.parent = parent;
+
+
+    that.text_width = that.parent.max_text_width + that.parent.layer_height / 4;
+    that.layout_width = that.parent.layout_width;
+    that.layout_height = that.parent.layout_height;
+    that.set_left = that.parent.set_left;
+    that.set_width = that.parent.set_width;
+    that.set_margin = that.parent.set_margin;
+    that.set_height = that.parent.set_height;
+    that.image_height = that.parent.image_height;
+    that.image_margin = that.parent.image_margin;
 
     that.selected_nodes = [];
 
-    this.update_selected_nodes = function(selected_nodes){
-        that.selected_nodes = selected_nodes;
-        let right_max = selected_nodes.map(d => 
+    // this.update_selected_nodes = function(selected_nodes){
+    //     that.selected_nodes = selected_nodes;
+    //     let right_max = selected_nodes.map(d => 
+    //         d.y + getTextWidth(d.data.name, "16px Roboto, sans-serif"));
+    //     that.right_max = Math.max(...right_max);
+    // }
+
+    // this.update_tree_node_position = function(tree_node_position){
+    //     that.tree_node_group_x = tree_node_position.x;
+    //     that.tree_node_group_y = tree_node_position.y;
+    // }
+
+    this.update_data_from_parent = function(){
+        that.sets = that.parent.sets;
+        that.selected_nodes = that.parent.selected_nodes;
+        let right_max = that.selected_nodes.map(d => 
             d.y + getTextWidth(d.data.name, "16px Roboto, sans-serif"));
         that.right_max = Math.max(...right_max);
-    }
 
-    this.update_layout = function(mat){
-        that.layout_width = mat.layout_width;
-        that.layout_height = mat.layout_height;
-        that.set_left = mat.set_left;
-        that.set_width = mat.set_width;
-        that.set_margin = mat.set_margin;
-        that.set_height = mat.set_height;
-        that.image_height = mat.image_height;
-        that.image_margin = mat.image_margin;
-    }
+        that.tree_node_group_x = that.parent.tree_node_group_x;
+        that.tree_node_group_y = that.parent.tree_node_group_y;
 
-    this.update_tree_node_position = function(tree_node_position){
-        that.tree_node_group_x = tree_node_position.x;
-        that.tree_node_group_y = tree_node_position.y;
-    }
-
+    };
 
     this.get_sets = function(){
+        this.update_data_from_parent();
         that.all_arr = {}
         // get map
         that.selected_nodes.forEach(d => {

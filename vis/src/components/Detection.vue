@@ -44,7 +44,7 @@ export default {
     computed: {
         ...mapState([
             "tree",
-            "set_list",
+            "all_sets",
             "focus_node",
             "expand_tree",
             "tooltip",
@@ -84,7 +84,7 @@ export default {
         },
         update_data() {
             console.log("detection update data");
-            console.log(this.tree);
+            console.log(this.tree, this.sets);
 
             // tree layout
             this.nodes = this.tree_layout.layout_with_rest_node(
@@ -107,11 +107,11 @@ export default {
             this.leaf_nodes = this.nodes.filter((d) => d.children.length === 0);
             this.selected_nodes = this.leaf_nodes; // TODO: selected_nodes can be specified by users
             console.log("selected_nodes", this.selected_nodes);
-            this.set_manager.update_selected_nodes(this.selected_nodes);
-            this.set_manager.update_tree_node_position({
-                x: this.tree_node_group_x,
-                y: this.tree_node_group_y - this.text_height,
-            });
+            // this.set_manager.update_selected_nodes(this.selected_nodes);
+            // this.set_manager.update_tree_node_position({
+            //     x: this.tree_node_group_x,
+            //     y: this.tree_node_group_y - this.text_height,
+            // });
             [this.sets, this.set_links] = this.set_manager.get_sets();
             // this.sets = result.sets;
             // this.set_links = result.set_links;
@@ -441,19 +441,7 @@ export default {
             this.layer_height
         );
 
-        this.set_manager = new SetManager(
-            this.max_text_width + this.layer_height / 4
-        );
-        this.set_manager.update_layout({
-            layout_width: this.layout_width,
-            layout_height: this.layout_height,
-            set_left: this.set_left,
-            set_width: this.set_width,
-            set_margin: this.set_margin,
-            set_height: this.set_height,
-            image_height: this.image_height,
-            image_margin: this.image_margin,
-        });
+        this.set_manager = new SetManager(this);
 
         this.text_tree_view = new TextTree(this);
         this.connection_view = new TextImageConnection(this);
