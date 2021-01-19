@@ -48,12 +48,17 @@ export default {
             "focus_node",
             "expand_tree",
             "tooltip",
-            "server_url"
+            "server_url",
+            "selected_flag"
         ]),
+        // selected_flag(){
+        //     return this.tree.all_descendants.map(d => !! d.selected_flag);
+        // }
     },
     methods: {
         ...mapActions(["fetch_hypergraph", "fetch_word"]),
         ...mapMutations([
+            "set_selected_flag",
             "set_focus_node",
             "set_expand_tree",
             "showTooltip",
@@ -105,7 +110,10 @@ export default {
 
             // set layout
             this.leaf_nodes = this.nodes.filter((d) => d.children.length === 0);
-            this.selected_nodes = this.leaf_nodes; // TODO: selected_nodes can be specified by users
+            this.leaf_nodes.forEach(d => {
+                if (d.selected_flag===undefined) d.selected_flag = true;
+            })
+            this.selected_nodes = this.nodes.filter(d => d.selected_flag);
             console.log("selected_nodes", this.selected_nodes);
             [this.sets, this.set_links] = this.set_manager.get_sets();
         },
@@ -246,8 +254,7 @@ export default {
                 .delay(this.remove_ani)
                 .attr(
                     "d",
-                    d3
-                        .linkHorizontal()
+                    d3.linkHorizontal()
                         .x((d) => d.mini_y)
                         .y((d) => d.mini_x)
                 );
@@ -292,6 +299,11 @@ export default {
             console.log("tree update");
             this.treecut();
             console.log("offset", this.offset);
+            this.update_data();
+            this.update_view();
+        },
+        selected_flag(){
+            console.log("selected flag update");
             this.update_data();
             this.update_view();
         },

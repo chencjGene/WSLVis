@@ -26,6 +26,7 @@ const store = new Vuex.Store({
         text_list: [],
         focus_text: null,
         image_list: [],
+        selected_flag: [],
         tooltip: {
           top: 0,
           left: 0,
@@ -44,6 +45,11 @@ const store = new Vuex.Store({
         set_manifest_data(state, manifest_data){
             console.log("set manifest data");
             state.image_num = manifest_data.image_num;
+        },
+        set_selected_flag(state, tree){
+            console.log("set tree");
+            state.tree = tree;
+            state.selected_flag = state.tree.all_descendants.map(d => d.selected_flag);
         },
         set_hypergraph_data(state, hypergraph_data){
             console.log("set hypergraph data");
@@ -196,6 +202,11 @@ const store = new Vuex.Store({
 
         // }
     },
+    // computed: {
+    //     selected_flag(){
+    //         return this.$store.state.tree.all_descendants.map(d => !! d.selected_flag);
+    //     }
+    // },
     modules:{
         // empty
     }

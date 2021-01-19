@@ -26,12 +26,25 @@ const TextTree = function (parent) {
     that.bar_height = that.parent.bar_height;
     that.rounded_r = that.parent.rounded_r;
 
-    // animation
-    that.create_ani = that.parent.create_ani;
-    that.update_ani = that.parent.update_ani;
-    that.remove_ani = that.parent.remove_ani;
 
-    
+    that.change_selected_flag = function(d, flag){
+        console.log("change selected flag", d.selected_flag, flag);
+        that.create_ani = 0;
+        that.remove_ani = 0;
+        that.update_ani /= 2;
+        d.selected_flag = flag;
+        that.parent.set_selected_flag(that.parent.tree);
+        // that.parent.$forceUpdate();
+        console.log("change selected flag after", d.selected_flag, flag)
+    }
+
+    that.set_animation_time = function(){
+        // animation
+        that.create_ani = that.parent.create_ani;
+        that.update_ani = that.parent.update_ani;
+        that.remove_ani = that.parent.remove_ani;
+    };
+    that.set_animation_time();
 
     that.set_focus_node = function (nodes) {
         that.parent.set_focus_node(nodes);
@@ -59,6 +72,8 @@ const TextTree = function (parent) {
         that.create();
         that.update();
         that.remove();
+
+        that.set_animation_time();
     };
 
     that.create = function () {
@@ -94,7 +109,7 @@ const TextTree = function (parent) {
             .attr("width", () => {
                 return that.max_text_width;
             })
-            .style("fill", "#EBEBF3")
+            .style("fill", d => d.selected_flag ? Global.DarkGray : "#EBEBF3")
             .style("fill-opacity", 0)
             .on("mouseover", (ev, d) => {
                 that.highlight(ev, d);
@@ -105,12 +120,14 @@ const TextTree = function (parent) {
             })
             .on("click", (ev, d) => {
                 console.log("on click tree node");
-                let query = {
-                    tree_node_id: d.id,
-                    match_type: "p",
-                };
-                that.fetch_word(query);
-                // that.set_words(d.words);
+                that.change_selected_flag(d, !d.selected_flag);
+
+                // TODO: double click
+                // let query = {
+                //     tree_node_id: d.id,
+                //     match_type: "p",
+                // };
+                // that.fetch_word(query);
             })
             .transition()
             .duration(that.create_ani)
@@ -188,7 +205,7 @@ const TextTree = function (parent) {
             .attr("d", function (d) {
                 return Global.node_icon(0, 0, d.type);
             })
-            .style("fill", d => d.type > 0 ? "rgb(227, 227, 227)" : Global.GrayColor)
+            .style("fill", Global.GrayColor)
             .style("opacity", 0)
             .transition()
             .duration(that.create_ani)
@@ -215,7 +232,7 @@ const TextTree = function (parent) {
                 if (!that.expand_tree) return;
                 if (d.type > 0) return;
                 console.log("click tree node", d.name);
-                that.highlight(ev, d, "rgb(211, 211, 229)");
+                // that.highlight(ev, d, "rgb(211, 211, 229)");
                 that.set_focus_node([d]);
             });
 
@@ -354,7 +371,8 @@ const TextTree = function (parent) {
             .attr("width", () => {
                 // return Global.getTextWidth(d.data.name, "16px Roboto, sans-serif") + that.layer_height / 2;
                 return that.max_text_width;
-            });
+            })
+            .style("fill", d => d.selected_flag ? Global.DarkGray : "#EBEBF3");
 
         if (that.focus_node) {
             that.tree_node_group
@@ -375,7 +393,7 @@ const TextTree = function (parent) {
                 return Global.node_icon(0, 0, d.type);
             })
             .style("opacity", () => (that.expand_tree ? 1 : 0))
-            .style("fill", d => d.type > 0 ? "rgb(227, 227, 227)" : Global.GrayColor)
+            .style("fill", Global.GrayColor)
         that.e_nodes
             .select("rect.icon-background")
             .attr("class", d => "icon-background icon-bg-" + d.type);
@@ -528,20 +546,22 @@ const TextTree = function (parent) {
             .remove();
     };
 
-    that.highlight = function(ev, d, color) {
+    // that.highlight = function(ev, d, color) {
+    that.highlight = function() {
         // console.log("highlight in tree");
-        color = color || "#E0E0EC";
-        that.tree_node_group
-            .select("#id-" + d.id)
-            .select("rect.background")
-            .style("fill", color);
+        // color = color || "#E0E0EC";
+        // that.tree_node_group
+        //     .select("#id-" + d.id)
+        //     .select("rect.background")
+        //     .style("fill", color);
     };
     
-    that.dehighlight = function(ev, d) {
-        that.tree_node_group
-            .select("#id-" + d.id)
-            .select("rect.background")
-            .style("fill", "#EBEBF3");
+    // that.dehighlight = function(ev, d) {
+    that.dehighlight = function() {
+        // that.tree_node_group
+        //     .select("#id-" + d.id)
+        //     .select("rect.background")
+        //     .style("fill", d => d.selected_flag ? Global.DarkGray : "#EBEBF3");
     };
 
     that.icon_highlight = function(ev, d) {
@@ -557,8 +577,7 @@ const TextTree = function (parent) {
         that.tree_node_group
             .select("#id-" + d.id)
             .select("path.icon")
-            .style("fill", (d) =>
-                d.type > 0 ? "rgb(227, 227, 227)" : Global.GrayColor
+            .style("fill", Global.GrayColor
             );
     };
 
