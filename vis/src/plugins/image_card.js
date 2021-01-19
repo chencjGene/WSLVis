@@ -103,7 +103,14 @@ const ImageCards = function(parent){
     };
 
     this.update = function(){
-
+        this.e_sets
+        .transition()
+        .duration(that.update_ani)
+        .delay(that.remove_ani)
+        .attr(
+            "transform",
+            (d) => "translate(" + d.x + ", " + d.y + ")"
+        );
     };
 
     this.remove = function(){
