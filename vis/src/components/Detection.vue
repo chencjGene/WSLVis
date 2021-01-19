@@ -116,6 +116,7 @@ export default {
             this.selected_nodes = this.nodes.filter(d => d.selected_flag);
             console.log("selected_nodes", this.selected_nodes);
             [this.sets, this.set_links] = this.set_manager.get_sets();
+            console.log("sets and set_links", this.sets, this.set_links);
         },
         update_view() {
             console.log("detection update view");

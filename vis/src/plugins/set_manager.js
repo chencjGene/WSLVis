@@ -74,7 +74,8 @@ const SetManager = function (parent){
 
             let source = {
                 "x": node.x + that.text_width + that.tree_node_group_x,
-                "y": node.y + that.tree_node_group_y
+                "y": node.y + that.tree_node_group_y,
+                "id": node.id
             };
 
             let turn_point = {
@@ -89,7 +90,8 @@ const SetManager = function (parent){
                 if (!set_node) continue;
                 let target = {
                     "x": set_node.x,
-                    "y": set_node.y_center
+                    "y": set_node.y_center,
+                    "id": set_node.id
                 }
                 that.set_links.push({
                     source, target, turn_point
