@@ -14,7 +14,6 @@ const ImageCards = function(parent){
     that.image_height = that.parent.image_height;
     that.image_margin = that.parent.image_margin;
 
-
     // animation
     that.create_ani = that.parent.create_ani;
     that.update_ani = that.parent.update_ani;
@@ -25,7 +24,7 @@ const ImageCards = function(parent){
         console.log("image card sub component update", sets);
 
         // update view
-        this.e_sets = this.set_group.selectAll(".set").data(sets, d => d.type); //TODO: id map
+        this.e_sets = this.set_group.selectAll(".set").data(sets, d => d.type); 
 
         this.remove();
         this.update();

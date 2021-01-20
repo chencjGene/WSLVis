@@ -34,7 +34,6 @@ const TextTree = function (parent) {
         that.update_ani /= 2;
         d.selected_flag = flag;
         that.parent.set_selected_flag(that.parent.tree);
-        // that.parent.$forceUpdate();
         console.log("change selected flag after", d.selected_flag, flag)
     }
 

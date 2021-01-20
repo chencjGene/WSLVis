@@ -73,7 +73,7 @@ export default {
     update_data() {
       this.min_value = Math.min(...this.words.map((d) => d.value));
       this.max_value = Math.max(...this.words.map((d) => d.value));
-      this.sizeScale = d3.scaleSqrt([this.min_value, this.max_value], [10, 30]);
+      this.sizeScale = d3.scaleSqrt([this.min_value, this.max_value], [10, 50]);
       this.wordclouds = wordcloud()
         .size([this.wordcloud_width, this.wordcloud_height])
         .data(Global.deepCopy(this.words))

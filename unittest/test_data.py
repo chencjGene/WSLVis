@@ -47,6 +47,7 @@ class DataTest(unittest.TestCase):
     
     def test_get_image_by_type(self):
         d = Data(config.coco17, suffix="step1")
+        a = 1
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
