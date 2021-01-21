@@ -41,13 +41,13 @@ class DataTest(unittest.TestCase):
 
 
     def test_data_database_get_set(self):
-        d = Data(config.coco17)
+        d = Data(config.coco17, suffix="step1")
         d.get_set()
 
     
     def test_get_image_by_type(self):
         d = Data(config.coco17, suffix="step1")
-        a = 1
+        d = d 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

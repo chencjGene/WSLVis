@@ -12,6 +12,7 @@ from ..utils.helper_utils import json_load_data, json_save_data, sigmoid
 from ..utils.helper_utils import draw_box,check_dir
 from ..database_utils.utils import decoding_categories, encoding_categories
 from ..database_utils.utils import TFIDFTransform, rule_based_processing, get_precision_and_recall
+from .set_helper import SetHelper
 
 DEBUG = False
 
@@ -68,71 +69,6 @@ class TreeHelper(object):
             visit_node.extend(node["children"])
         return leaf_node
 
-class SetHelper(object):
-    def __init__(self, train_idx, width_height, conn, data_root, class_name):
-        self.train_idx = train_idx
-        self.width_height = width_height
-        self.conn = conn
-        self.data_root = data_root
-        self.class_name = class_name
-        self.conf_thresh = 0.5
-        self._get_image_by_type()
-
-    def _get_image_by_type(self):
-        filename = os.path.join(self.data_root, "image_by_type.json")
-        if os.path.exists(filename):
-            logger.info("using image_by_type.json buffer")
-            self.image_by_type = json_load_data(filename)
-            return 
-
-        self.image_by_type = {}
-        for idx in tqdm(self.train_idx):
-            det = self.get_detection_result(idx)
-            category = [d[-1] for d in det if d[-2] > self.conf_thresh]
-            cat_str = encoding_categories(category)
-            if cat_str not in self.image_by_type:
-                self.image_by_type[cat_str] = []
-            self.image_by_type[cat_str].append(int(idx))
-        json_save_data(filename, self.image_by_type)
-
-    def get_all_set_name(self):
-        all_types = self.image_by_type.keys()
-        types = []
-        for t in all_types:
-            if len(self.image_by_type[t]) > 50 and len(t) > 0:
-                types.append(t)
-        return types
-
-    def get_detection_result(self, idx):
-        cursor = self.conn.cursor()
-        sql = "select detection from annos where id = ?"
-        cursor.execute(sql, (idx,))
-        res = cursor.fetchall()[0][0]
-        res = json.loads(res)
-        return res
-
-    def get_image_list_by_type(self, t, scope="selected", with_wh = False):
-        def add_width_height(idx):
-            w, h = self.width_height[idx]
-            detection = self.get_detection_result(idx)
-            detection = np.array(detection)
-            conf_detection = detection[detection[:, -2] > self.conf_thresh].astype(np.float32)
-            conf_detection[:, 0] /= w
-            conf_detection[:, 2] /= w
-            conf_detection[:, 1] /= h
-            conf_detection[:, 3] /= h
-            conf_detection = np.round(conf_detection, 3)
-            return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist()}
-        if scope == "all":
-            if with_wh:
-                return [add_width_height(i) for i in self.image_by_type[t]]
-            else:
-                return self.image_by_type[t]
-        elif scope == "selected":
-            if with_wh:
-                return [add_width_height(i) for i in self.image_by_type[t][-10:]]
-            else:
-                return self.image_by_type[t][-10:]
 
 class Data(object):
     def __init__(self, dataname, suffix="step0"):
@@ -228,13 +164,13 @@ class Data(object):
             labels.append(el)
         self.labeled_p, self.precision, self.recall = get_precision_and_recall(labels)
 
-    def get_captions_by_word_and_cat(self, word, cat):
-        # this function is deprecated and will be removed in the future
-        ids = self.labeled_extracted_labels_by_cat[cat][word]
-        ids = [i["id"] for i in ids]
-        ids = list(set(ids))
-        caps = [self.annos[i]["caption"] for i in ids]
-        return caps
+    # def get_captions_by_word_and_cat(self, word, cat):
+    #     # this function is deprecated and will be removed in the future
+    #     ids = self.labeled_extracted_labels_by_cat[cat][word]
+    #     ids = [i["id"] for i in ids]
+    #     ids = list(set(ids))
+    #     caps = [self.annos[i]["caption"] for i in ids]
+    #     return caps
 
     def get_labeled_id_by_type(self, cats: list, match_type: str) -> list:
         cursor = self.conn.cursor()
@@ -319,23 +255,15 @@ class Data(object):
 
 
     def get_set(self):
-        all_types = self.set_helper.get_all_set_name()
-        types = {}
-        for t in all_types:
+        sets = self.set_helper.get_set()
+        for t in sets:
             cats = decoding_categories(t)
-            image_list = self.set_helper.get_image_list_by_type(t, scope="all")
-            pred = self.get_category_pred(image_list, data_type="text")
-            pred = pred[:, cats]
-            match_percent = pred.sum(axis=0) / pred.shape[0]                
-            types[t] = {
-                "type": t,
-                "num": len(image_list),
-                "match_percent": match_percent.tolist(),
-                "selected_image": self.set_helper.get_image_list_by_type(t, \
-                    scope="selected", with_wh=True)
-            }
-
-        return types   
+            # image_list = self.set_helper.get_image_list_by_type(t, scope="all")
+            # pred = self.get_category_pred(image_list, data_type="text")
+            # pred = pred[:, cats]
+            # match_percent = pred.sum(axis=0) / pred.shape[0]                
+            # types[t]["match_percent"] = match_percent.tolist()
+        return sets   
 
     def get_category_pred(self, label_type="unlabeled", data_type="text"):
         if not isinstance(label_type, str) and isinstance(label_type, list):
