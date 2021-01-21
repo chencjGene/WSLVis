@@ -28,6 +28,7 @@ const SetManager = function (parent){
     that.set_width = that.parent.set_width;
     that.set_margin = that.parent.set_margin;
     that.set_height = that.parent.set_height;
+    that.set_num = that.parent.set_num;
     that.image_height = that.parent.image_height;
     that.image_margin = that.parent.image_margin;
 
@@ -102,8 +103,8 @@ const SetManager = function (parent){
 
     this.filter_and_sort = function(){
         // TODO: filtering or sorting
-        let num_to_display = 
-            Math.floor(that.layout_height / that.set_height);
+        let num_to_display = that.set_num;
+            // Math.floor(that.layout_height / that.set_height);
         that.set_to_display = [];
         that.set_map = [];
         // that.arr.sort((a,b) => (Math.min(...a.match_percent) - Math.min(...b.match_percent)));

@@ -354,7 +354,8 @@ export default {
         this.rounded_r = 1.5;
 
         // set
-        this.set_height = 30;
+        this.set_num = 10;
+        this.set_height = this.layout_height / this.set_num - 2;
         this.set_left = this.layer_height * 3 + 200;
         this.set_width = this.layout_width - this.set_left;
         this.set_margin = 6;
