@@ -10,21 +10,29 @@ from ..utils.log_utils import logger
 from ..utils.helper_utils import json_load_data, json_save_data 
 
 class SetHelper(object):
-    def __init__(self, train_idx, width_height, conn, data_root, class_name):
-        self.train_idx = train_idx
-        self.width_height = width_height
-        self.conn = conn
-        self.data_root = data_root
-        self.class_name = class_name
+    def __init__(self, parent):
+        self.parent = parent
+        self.train_idx = self.parent.train_idx
+        self.conn = self.parent.conn
+        self.data_root = self.parent.data_root
+        self.data_all_step_root = self.parent.data_all_step_root
+        self.class_name = self.parent.class_name
         self.conf_thresh = 0.5
         self.sets = {}
         self.sampled_sets = {}
         
+        self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
+            "width_height.json"))
         
         self._get_image_by_type()
         self._graph_construction()
+        
+        self.image_feature = np.load(os.path.join(self.data_root, "feature_train.npy"))
 
+        a = 1
 
+    def get_image_type_feature(self, t):
+        None
 
     def _get_image_by_type(self):
         filename = os.path.join(self.data_root, "image_by_type.json")
@@ -127,6 +135,8 @@ class SetHelper(object):
         self.sampled_sets = self._graph_sampling()
         return self.sampled_sets
 
+    def get_image_type_feature(self, image_type):
+        None
 
     def get_all_set_name(self):
         all_types = self.image_by_type.keys()

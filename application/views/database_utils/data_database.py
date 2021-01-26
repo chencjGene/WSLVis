@@ -128,10 +128,7 @@ class Data(object):
         self.tree_helper = TreeHelper(tree, self.class_name)
 
         # load image width and height
-        self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
-            "width_height.json"))
-        self.set_helper = SetHelper(self.train_idx, self.width_height,\
-            self.conn, self.data_root, self.class_name)
+        self.set_helper = SetHelper(self)
 
         logger.info("end loading data from processed data!")
 
