@@ -26,6 +26,7 @@ if len(args.step) == 0:
 def convert(dataname):
     data = Data(dataname, args.step)
     database_file = os.path.join(data.data_root, "database.db")
+    print("database_file", database_file)
 
     if os.path.exists(database_file):
         os.remove(database_file)

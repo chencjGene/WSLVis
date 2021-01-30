@@ -3,11 +3,89 @@ import json
 import os
 from tqdm import tqdm
 from random import choice
+from sklearn.cluster import KMeans
+from time import time
 
 from ..database_utils.utils import decoding_categories, encoding_categories
 from ..utils.config_utils import config
 from ..utils.log_utils import logger
 from ..utils.helper_utils import json_load_data, json_save_data 
+
+class CoClustering(object):
+    def __init__(self):
+        None
+
+    def kmeans(self, M, k):
+        kmeans = KMeans(n_clusters=k, random_state=12).fit(M)
+        cluster = kmeans.labels_
+        res = np.zeros(M.shape)
+        res[np.array(range(M.shape[0])), cluster] = 1
+        return res
+
+    def eigenvector(self, M, k):
+        eigenvalues, eigenvectors = np.linalg.eig(M)
+        idx = eigenvalues.argsort()[::-1]
+        eigenvalues = eigenvalues[idx]
+        eigenvectors = eigenvectors[:, idx]
+        real = eigenvectors.real
+        imag = eigenvectors.imag
+        # assert (imag ** 2).sum() < 1e-6
+        # print("image sum ", (imag ** 2).sum())
+        return eigenvectors[:, :k]
+
+    def random_orthonormal_matrix(self, n, k):
+        M = np.zeros((n, k))
+        cluster = np.random.randint(0, k, n)
+        M[np.array(range(n)), cluster] = 1
+        norm = M.sum(axis=0) ** 0.5
+        norm = norm.reshape(1,-1)
+        M = M / norm
+        return M
+
+    def fit(self, R, k1, k2):
+        # init 
+        w_t = 1
+        w_i = 1
+        w_r = 1
+        n1, n2 = R.shape
+        C1 = self.random_orthonormal_matrix(n1, k1)
+        C2 = self.random_orthonormal_matrix(n2, k2)
+        pre_C1 = C1.copy()
+        pre_C2 = C2.copy()
+        for i in range(100):
+            t0 = time()
+            tmp = np.dot(R, C2)
+            tmp = np.dot(tmp, C2.T)
+            M1 = np.dot(tmp, R.T)
+            C1 = self.eigenvector(M1, k1)
+            tmp = np.dot(R.T, C1)
+            tmp = np.dot(tmp, C1.T)
+            M2 = np.dot(tmp, R)
+            C2 = self.eigenvector(M2, k2)
+            err1 = ((C1 - pre_C1)**2).sum()
+            err2 = ((C2 - pre_C2)**2).sum()
+            print("iter {}, time cost: {}, err1: {}, err2: {}" \
+                .format(i, time() - t0, err1, err2))
+            pre_C1 = C1.copy()
+            pre_C2 = C2.copy()
+        print("C1 imag", (abs(C1.imag)).sum())
+        print("C2 imag", (abs(C2.imag)).sum())
+        C1 = self.kmeans(C1.real, k1)
+        C2 = self.kmeans(C2.real, k2)
+        return C1, C2
+        
+    def rearrange(self, R, C1, C2):
+        n1, k1 = C1.shape
+        n2, k2 = C2.shape
+        cls1 = np.array(range(k1)).reshape(1, -1).repeat(axis=0, repeats=n1)
+        cls2 = np.array(range(k2)).reshape(1, -1).repeat(axis=0, repeats=n2)
+        cls1 = (C1 * cls1).sum(axis=1)
+        cls2 = (C2 * cls2).sum(axis=1)
+        idx1 = cls1.argsort()
+        idx2 = cls2.argsort()
+        R = R[idx1, :]
+        R = R[:, idx2]
+        return R
 
 class SetHelper(object):
     def __init__(self, parent):
@@ -25,7 +103,7 @@ class SetHelper(object):
             "width_height.json"))
         
         self._get_image_by_type()
-        self._graph_construction()
+        # self._graph_construction()
         
         self.image_feature = np.load(os.path.join(self.data_root, "feature_train.npy"))
 
@@ -131,9 +209,53 @@ class SetHelper(object):
         print(self.selected_sets.keys())
         return self.selected_sets
 
+    def get_real_set(self):
+        image_by_type = {}
+        for idx in tqdm(self.train_idx):
+            det = self.get_anno_bbox_result(idx)
+            category = [d[-1] for d in det if d[-2] > self.conf_thresh]
+            cat_str = encoding_categories(category)
+            if cat_str not in image_by_type:
+                image_by_type[cat_str] = []
+            image_by_type[cat_str].append(int(idx))
+        
+        all_types = image_by_type.keys()
+        types = []
+        for t in all_types:
+            if len(image_by_type[t]) > 20 and len(t) > 0:
+                types.append(t)
+        return image_by_type, types
+
+    def get_real_image(self):
+        image_by_type = {}
+        for idx in tqdm(self.train_idx):
+            det = self.get_anno_bbox_result(idx)
+            category = [d[-1] for d in det if d[-2] > self.conf_thresh and d[-1] != 0]
+            cat_str = encoding_categories(category)
+            if cat_str not in image_by_type:
+                image_by_type[cat_str] = []
+            image_by_type[cat_str].append(int(idx))
+            
+        all_types = image_by_type.keys()
+        type_size = []
+        type_name = []
+        for t in all_types:
+            type_name.append(t)
+            type_len = len(image_by_type[t])
+            if len(t) == 0 or len(decoding_categories(t)) < 2:
+                type_len = 1
+            type_size.append(type_len)
+        type_size = np.array(type_size)
+        type_name = np.array(type_name)
+        idx = type_size.argsort()[::-1][:100]
+        type_name = type_name[idx]
+        return image_by_type, type_name
+
     def get_set(self):
-        self.sampled_sets = self._graph_sampling()
-        return self.sampled_sets
+        # self.sampled_sets = self._graph_sampling()
+        # return self.sampled_sets
+        self.sets = self.get_all_set_name()
+        return self.sets
 
     def get_image_type_feature(self, image_type):
         None
@@ -153,6 +275,15 @@ class SetHelper(object):
         res = cursor.fetchall()[0][0]
         res = json.loads(res)
         return res
+
+    def get_anno_bbox_result(self, idx):
+        cursor = self.conn.cursor()
+        sql = "select bbox from annos where id = ?"
+        cursor.execute(sql, (idx,))
+        res = cursor.fetchall()[0][0]
+        res = json.loads(res)
+        return res
+
 
     def get_image_list_by_type(self, t, scope="selected", with_wh = False):
         def add_width_height(idx):
