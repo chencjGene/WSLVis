@@ -1,0 +1,53 @@
+<html lang="en">
+<head>
+    <title>ScatterPlot</title>
+    <link rel="shortcut icon" type="image/x-ico" href="/static/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="/static/css/d3.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/bootstrap.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/loading-icon.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/overall-layout.css">
+    <link type="text/css" rel="stylesheet" href="/static/css/tree.css">
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<div class="self-col" id="self-col-1">
+
+    <div class="block-container" id="block-1-1">
+        <div class="my-panel" @*style="display: none" *@>
+            <div>
+                <span class="my-panel-heading"> ScatterPlot </span>
+                <!--<span class="save-button header-button" onclick="saveSVG('worker-svg')">Save</span>-->
+            </div>
+            <hr class="my-panel-seg"/>
+        </div>
+    </div>
+
+</div>
+
+<div class="self-col" id="self-col-2">
+
+    <div class="block-container" id="block-2-1">
+        <div class="my-panel" @*style="display: none" *@>
+            <div>
+                <span class="my-panel-heading"> Image </span>
+                <!--<span class="save-button header-button" onclick="saveSVG('worker-svg')">Save</span>-->
+            </div>
+            <hr class="my-panel-seg"/>
+        </div>
+    </div>
+
+</div>
+
+</body>
+<script src="/static/js/lib/d3.js"></script>
+<script src="/static/js/lib/request_dag.js"></script>
+<script src="/static/js/lib/jquery-3.2.1.min.js"></script>
+<script src="/static/js/lib/underscore-min.js"></script>
+<script src="/static/js/lib/d3-lasso.min.js"></script>
+
+<script src="/static/js/main.js"></script>
+<script src="/static/js/scatterplot.js"></script>
+<script src="/static/js/image.js"></script>
+
+</html>

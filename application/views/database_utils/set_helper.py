@@ -104,10 +104,18 @@ class SetHelper(object):
         
         self._get_image_by_type()
         # self._graph_construction()
+        self._load_image_feature()
         
         self.image_feature = np.load(os.path.join(self.data_root, "feature_train.npy"))
 
         a = 1
+
+    def _load_image_feature(self):
+        logger.info("begin load image feature")
+        feature_path = os.path.join(self.data_root, "feature_train.npy")
+        self.image_features = np.load(feature_path)
+        logger.info("end load image feature")
+
 
     def get_image_type_feature(self, t):
         None
