@@ -32,6 +32,7 @@ def app_get_embedding():
     features = features / features.max(axis=0).reshape(1,2)
     features = [[int(round(j, 3)* 1000) for j in i] for i in features]
     labels = np.load("test/feature/kmeans-3.npy")
+    # labels = np.load("test/mismatch/constrained-kmeans-3.npy")
     print(features[1:3])
     data = []
     # for i in range(100):

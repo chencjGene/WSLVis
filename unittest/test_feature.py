@@ -42,24 +42,48 @@ class FeatureTest(unittest.TestCase):
     
     def test_kmeans(self):
         d = Data(config.coco17, suffix="step1")
+        image_labels = d.get_category_pred(label_type="all", data_type="image")
+        text_label = d.get_category_pred(label_type="all", data_type="text")
         features = d.set_helper.image_feature
         print("feature shape", features.shape)
         sizes = [256, 256, 256, 512, 1024, 512]
         split_points = [0]
         sum = 0
+        feature_id = 3
         for i in sizes:
             sum = sum + i
             split_points.append(sum)
         print(split_points)
-        feature = features[:, split_points[4]: split_points[4+1]]
+        feature = features[:, split_points[feature_id]: split_points[feature_id+1]]
         model = KMeans(100, init="k-means++",
                         n_init=10, n_jobs="deprecated",
                         random_state=123)
         model.fit(feature)
         labels = model.labels_
-        np.save("test/feature/kmeans-4.npy", labels)
+        np.save("test/feature/kmeans-3.npy".format(feature_id), labels)
 
         a = 1
+    
+    def test_evaluate_kmeans(self):
+        # kmeans_result = "feature/kmeans-3.npy"
+        kmeans_result = "mismatch/constrained-kmeans-3.npy"
+        d = Data(config.coco17, suffix="step1")
+        image_labels = d.get_category_pred(label_type="all", data_type="image")
+        text_labels = d.get_category_pred(label_type="all", data_type="text")
+        kmeans = np.load("test/" + kmeans_result)
+        mismatch = []
+        for i in range(100):
+            idxs = np.array(range(len(kmeans)))[kmeans == i]
+            img = image_labels[idxs]
+            text = text_labels[idxs]
+            mm = (img!=text).sum()
+            mismatch.append(mm)
+        mismatch = np.array(mismatch)
+        plt.bar(x=list(range(len(mismatch))), height=mismatch)
+        plt.savefig("test/{}_mismatch.jpg".format(kmeans_result))
+        plt.close()
+        a = 1
+
 
     def test_cluster_performance(self):
         d = Data(config.coco17, suffix="step1")

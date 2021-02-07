@@ -279,25 +279,35 @@ class Data(object):
             raise ValueError("unsupported label type")
         logger.debug("begin get category pred with {} in {}".format(label_type_text, data_type))
         preds = []
+        buffer_file = os.path.join(self.data_root, \
+            "pred_buffer_{}_{}.npy".format(label_type_text, data_type))
+        if os.path.exists(buffer_file) and label_type_text != "idx":
+            logger.info("using pred buffer: {}".format(buffer_file))
+            preds = np.load(buffer_file)
+            return preds
         if data_type == "text":
-            for idx in idxs:
+            for idx in tqdm(idxs):
                 logit, image_output = self.database_fetch_by_idx(idx, ["logits", "image_output"])
                 pred = sigmoid(np.array(json.loads(logit))) > 0.5
                 image_output = np.array(json.loads(image_output)) > 0.5
                 preds.append((image_output + pred).astype(float))
             preds = np.array(preds)
         elif data_type == "image":
-            raise ValueError("some problem") # TODO
-            for idx in idxs:
+            for idx in tqdm(idxs):
                 detection = self.database_fetch_by_idx(idx, ["detection"])
-                detection = np.array(json.loads(detection))[:,-1].astype(int)
-                cats = np.array(list(set(detection))).astype(int) - 1
+                detection = np.array(json.loads(detection)) #[:,-1].astype(int)
+                conf_detection = detection[detection[:, -2] > 0.5].astype(np.float32)
+                cats = conf_detection[:, -1].astype(int)
+                cats = np.array(list(set(cats))).astype(int)
                 pred = np.zeros(len(self.class_name))
                 pred[cats] = 1
                 preds.append(pred)
             preds = np.array(preds)
         else:
             raise ValueError("unsupported data type")
+        
+        if label_type_text != "idx":
+            np.save(buffer_file, preds)
         logger.debug("finish get category pred with {} in {}".format(label_type_text, data_type))
         return preds
     
