@@ -12,7 +12,8 @@ from sklearn.datasets import fetch_openml
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans, MiniBatchKMeans
 
-from application.views.database_utils.k_means_constrained_ import KMeansConstrained
+# from application.views.database_utils.k_means_constrained_ import KMeansConstrained
+from application.views.constrained_kmeans.k_means_constrained_ import KMeansConstrained
 # from k_means_constrained import KMeansConstrained
 from application.views.database_utils import Data
 from application.views.database_utils.set_helper import CoClustering
@@ -28,7 +29,7 @@ class CKMeansTest(unittest.TestCase):
         # X = np.array([[1, 2], [1, 4], [1, 0],[4, 2], [4, 4], [4, 0]])
         X = np.array([[0, 0], [0, 1], [1, 0],[1, 1], 
             [2, 2], [2, 3]])
-        bi_cost = [2, 3, 1, 1, 0, 1]
+        bi_cost = [2, 1, 1, 1, 0, 1]
         clf = KMeansConstrained(
             n_init=1,
             n_clusters=2,

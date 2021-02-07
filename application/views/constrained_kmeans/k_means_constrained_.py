@@ -24,7 +24,7 @@ from ortools.graph.pywrapgraph import SimpleMinCostFlow
 from tqdm import tqdm
 
 # Internal scikit learn methods imported into this project
-from k_means_constrained import _centers_dense, _centers_sparse
+from ._k_means import _centers_dense, _centers_sparse
 from sklearn.cluster._kmeans import _validate_center_shape, _tolerance, \
     _init_centroids
 

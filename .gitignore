@@ -14,6 +14,10 @@ test/
 #config
 application/views/case_utils/case_config.json
 
+#pyx
+application/views/constrained_kmeans/build/
+application/views/constrained_kmeans/*.c
+application/views/constrained_kmeans/*.so
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
