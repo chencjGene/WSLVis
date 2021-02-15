@@ -12,8 +12,10 @@ from ..utils.log_utils import logger
 from ..utils.helper_utils import json_load_data, json_save_data 
 
 class CoClustering(object):
-    def __init__(self):
-        None
+    def __init__(self, k1, k2, w_t = 1):
+        self.w_t = w_t
+        self.k1 = k1
+        self.k2 = k2
 
     def kmeans(self, M, k):
         kmeans = KMeans(n_clusters=k, random_state=12).fit(M)
@@ -42,24 +44,31 @@ class CoClustering(object):
         M = M / norm
         return M
 
-    def fit(self, R, text_feature, k1, k2):
+    def fit(self, R, text_feature=None):
         # init 
-        w_t = 0
+        k1 = self.k1
+        k2 = self.k2
         n1, n2 = R.shape
         C1 = self.random_orthonormal_matrix(n1, k1)
         C2 = self.random_orthonormal_matrix(n2, k2)
         pre_C1 = C1.copy()
         pre_C2 = C2.copy()
+        if text_feature is not None:
+            text_part = self.w_t * np.dot(text_feature, text_feature.T)
+        else:
+            text_part = 0
         for i in range(100):
             t0 = time()
             tmp = np.dot(R, C2)
             tmp = np.dot(tmp, C2.T)
-            M1 = np.dot(tmp, R.T) + w_t * np.dot(text_feature, text_feature.T)
+            M1 = np.dot(tmp, R.T) + text_part
             C1 = self.eigenvector(M1, k1)
+
             tmp = np.dot(R.T, C1)
             tmp = np.dot(tmp, C1.T)
             M2 = np.dot(tmp, R)
             C2 = self.eigenvector(M2, k2)
+
             err1 = ((C1 - pre_C1)**2).sum()
             err2 = ((C2 - pre_C2)**2).sum()
             print("iter {}, time cost: {}, err1: {}, err2: {}" \

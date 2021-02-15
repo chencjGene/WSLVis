@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import networkx as nx
 import seaborn as sns
@@ -27,58 +28,28 @@ from application.views.database_utils.utils import decoding_categories, encoding
 from sklearn.manifold import TSNE, MDS
 from sklearn.decomposition import PCA
 
-class Embedder(object):
-    def __init__(self, method_name, *args, **kwargs):
-        self.projector = None
-        self.method_name = method_name
-        if method_name == "tsne":
-            self.projector = TSNE(*args, **kwargs)
-        elif method_name == "pca":
-            self.projector = PCA(*args, **kwargs)
-        elif method_name == "mds":
-            self.projector = MDS(n_jobs=-1, *args, **kwargs)
-        else:
-            print("the projection method is not supported now!!")
-
-    def fit(self, X, y):
-        t = time()
-        self.projector.fit(X, y)
-        print("{} fit function time cost: {}".format(self.method_name, time()-t))
-
-    def transform(self, X, y):
-        t = time()
-        self.projector.transform(X, y)
-        print("{} transform function time cost: {}".format(self.method_name, time()-t))
-
-    def fit_transform(self, X, y):
-        t = time()
-        res = self.projector.fit_transform(X, y)
-        print("{} fit_transform function time cost: {}".format(self.method_name, time()-t))
-        return res
+def load_R(class_name, kmeans):
+    R_path = "test/feature/cluster_R.npy"
+    R = np.zeros((len(class_name), len(np.unique(kmeans))))
+    if os.path.exists(R_path):
+        R = np.load(R_path)
+    else:
+        print("R.shape", R.shape)
+        for i in range(100):
+            r = R[:,i]
+            idxs = np.array(range(len(kmeans)))[kmeans == i]
+            for j in idxs:
+                res = d.set_helper.get_detection_result(int(j))
+                # res = d.set_helper.get_anno_bbox_result(int(j))
+                for det in res:
+                    if det[-2] > 0.5:
+                        r[det[-1]] += 1
+            R[:, i] = r
+        np.save("test/feature/cluster_R.npy", R)
+    return R
 
 
 class CoClusteringTest(unittest.TestCase):
-    def test_simplecase(self):
-        data = np.zeros((6,8))
-        data[:3,:3] = 1
-        data[3:, 3:] = 1
-        np.random.seed(123)
-        idx1 = np.array(range(6))
-        np.random.shuffle(idx1)
-        idx2 = np.array(range(8))
-        np.random.shuffle(idx2)
-        data = data[idx1]
-        data = data[:, idx2]
-
-        # model = CoClustering()
-        # C1, C2 = model.fit(data, 2, 2)
-        # R = model.rearrange(data, C1, C2)
-        model = SpectralBiclustering(n_clusters=[2,2,], method='log',
-                             random_state=0)
-        model.fit(data)
-        fit_data = data[np.argsort(model.row_labels_)]
-        fit_data = fit_data[:, np.argsort(model.column_labels_)]
-        a = 1
 
     def test_checkerboard(self):
         n_clusters = (4, 3)
@@ -148,40 +119,6 @@ class CoClusteringTest(unittest.TestCase):
 
         a = 1
 
-    def test_hypothese(self):
-        
-        mat = pickle_load_data("test/mismatch/network.pkl")
-        net = mat["gt"]
-        net[0,0] = 0
-        # net = net / net.max()
-        # R = np.power(net, 0.4)
-        R = net.astype(float)
-
-        # data = np.zeros((6,8))
-        # data[:3,:3] = 1
-        # data[3:, 3:] = 1
-        # C1 = [[1,0],[1,0],[1,0],[0,1],[0,1],[0,1]]
-        # C1 = np.array(C1)
-        # C2 = np.array([[1., 0.],
-        #                 [1., 0.],
-        #                 [1., 0.],
-        #                 [0., 1.],
-        #                 [0., 1.],
-        #                 [0., 1.],
-        #                 [0., 1.],
-        #                 [0., 1.]])
-
-        
-        # n_clusters = (3, 3)
-        # data, rows, columns = make_checkerboard(
-        #     shape=(300, 300), n_clusters=n_clusters, noise=1,
-        #     shuffle=False, random_state=0)
-        U, sigma, V = svds(R, k=2)
-        # U[U > 0.5] = 0
-        plt.scatter(U[:,0], U[:,1])
-        plt.savefig("test/test.jpg")
-        
-        a = 1 
 
     def test_label_label(self):
         d = Data(config.coco17, suffix="step1")
@@ -227,12 +164,6 @@ class CoClusteringTest(unittest.TestCase):
         print("R shape", R.shape)
         R = R[1:, :]
         class_name = class_name[1:]
-        k1, k2 = [5,5]
-        # model = CoClustering()
-        # C1, C2 = model.fit(R, k1, k2)
-        # RR = model.rearrange(R, C1, C2)
-        # for k1 in tqdm(range(4, 20)):
-        #     for k2 in range(4, 50):
         for k1 in [12]:
             for k2 in [15]:
                 model = SpectralBiclustering(n_clusters=[k1, k2], method='log',
@@ -264,6 +195,89 @@ class CoClusteringTest(unittest.TestCase):
         plt.savefig("test/mismatch/coclustering-tsne.jpg")
         plt.close() 
         a = 1
+
+    
+    def test_coclustering_by_clusters(self):
+        kmeans = np.load("test/feature/kmeans-3.npy")
+        d = Data(config.coco17, suffix="step1")
+
+        class_name = d.class_name
+        R = load_R(class_name, kmeans)
+        text_feature = np.load("test/word_embedding/word_feature.npy")
+        text_feature = text_feature[1:]
+        
+        # normalization
+        R = R[1:, :]
+        class_name = class_name[1:]
+        R = R / R.max()
+        R = np.power(R, 0.4)
+
+        k1, k2 = [12, 12]
+        clf = CoClustering(k1, k2, 1)
+        C1, C2 = clf.fit(R, text_feature)
+        row_labels = np.dot(C1, np.array(range(k1)).reshape(-1,1)).reshape(-1)
+        col_labels = np.dot(C2, np.array(range(k2)).reshape(-1,1)).reshape(-1)
+        for i in range(k1):
+            selected = row_labels==i
+            # print("total num of selected", sum(selected))
+            print(np.array(class_name)[selected])
+        a = 1
+        
+
+    def test_spectral_clustering_by_clusters(self):
+        kmeans = np.load("test/feature/kmeans-3.npy")
+        d = Data(config.coco17, suffix="step1")
+        image_labels = d.get_category_pred(label_type="all", data_type="image")
+        text_labels = d.get_category_pred(label_type="all", data_type="text")
+        single_mismatch = (image_labels!=text_labels).sum(axis=1)
+        cluster_mismatch = []
+        for i in range(100):
+            idxs = np.array(range(len(kmeans)))[kmeans == i]
+            cluster_mismatch.append(single_mismatch[idxs].sum())
+        cluster_mismatch = np.array(cluster_mismatch)
+        # sets = d.get_set()
+        # image_by_type, sets = d.set_helper.get_real_set()
+        class_name = d.class_name
+        R = load_R(class_name, kmeans)
+
+        # normalization
+        R = R[1:, :]
+        class_name = class_name[1:]
+        R = R / R.max()
+        R = np.power(R, 0.4)
+
+        # coclustering 
+        k1, k2 = [12, 12]
+        model = SpectralBiclustering(n_clusters=[k1, k2], method='log',
+                            random_state=0, n_components=12)
+        model.fit(R.copy())
+        idx1 = np.argsort(model.row_labels_)
+        fit_data = R[idx1]
+        RR = fit_data[:, np.argsort(model.column_labels_)]
+        
+        for i in range(k1):
+            selected = model.row_labels_==i
+            # print("total num of selected", sum(selected))
+            print(np.array(class_name)[selected])
+        
+        for i in range(k2):
+            selected = model.column_labels_ == i
+            # print("{}: total num of selected {}".format(i, sum(selected)))
+            # print(np.array(range(100))[selected])
+            print(cluster_mismatch[selected], "**", cluster_mismatch[selected].sum())
+
+        # Row = one_hot_encoder(model.row_labels_)
+        # Col = one_hot_encoder(model.column_labels_)
+        # S = np.dot(np.dot(Row.T, R), Col)
+
+        # visualization 
+        sns.set(font_scale=0.5)
+        sns.heatmap(RR, yticklabels=np.array(class_name)[idx1])
+        plt.savefig("test/feature/cluster_R.jpg")
+        plt.close()
+
+        a = 1
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
