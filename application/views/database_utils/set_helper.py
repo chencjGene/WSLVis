@@ -42,11 +42,9 @@ class CoClustering(object):
         M = M / norm
         return M
 
-    def fit(self, R, k1, k2):
+    def fit(self, R, text_feature, k1, k2):
         # init 
-        w_t = 1
-        w_i = 1
-        w_r = 1
+        w_t = 0
         n1, n2 = R.shape
         C1 = self.random_orthonormal_matrix(n1, k1)
         C2 = self.random_orthonormal_matrix(n2, k2)
@@ -56,7 +54,7 @@ class CoClustering(object):
             t0 = time()
             tmp = np.dot(R, C2)
             tmp = np.dot(tmp, C2.T)
-            M1 = np.dot(tmp, R.T)
+            M1 = np.dot(tmp, R.T) + w_t * np.dot(text_feature, text_feature.T)
             C1 = self.eigenvector(M1, k1)
             tmp = np.dot(R.T, C1)
             tmp = np.dot(tmp, C1.T)

@@ -66,24 +66,65 @@ class FeatureTest(unittest.TestCase):
     
     def test_evaluate_kmeans(self):
         # kmeans_result = "feature/kmeans-3.npy"
-        kmeans_result = "mismatch/constrained-kmeans-3.npy"
+        # kmeans_result = "mismatch/constrained-kmeans-3.npy"
+        kmeans_result = "mismatch/max-3000-constrained-kmeans-3.npy"
         d = Data(config.coco17, suffix="step1")
         image_labels = d.get_category_pred(label_type="all", data_type="image")
         text_labels = d.get_category_pred(label_type="all", data_type="text")
         kmeans = np.load("test/" + kmeans_result)
         mismatch = []
+        counts = []
         for i in range(100):
             idxs = np.array(range(len(kmeans)))[kmeans == i]
             img = image_labels[idxs]
             text = text_labels[idxs]
             mm = (img!=text).sum()
+            counts.append(len(idxs))
             mismatch.append(mm)
         mismatch = np.array(mismatch)
-        plt.bar(x=list(range(len(mismatch))), height=mismatch)
+        pos = np.array(range(len(mismatch)))
+        width = 0.25
+        plt.bar(pos, counts, width, color = '#FF0000')
+        plt.bar(pos + width, mismatch, width, color = '#6699CC')
         plt.savefig("test/{}_mismatch.jpg".format(kmeans_result))
         plt.close()
         a = 1
 
+    def test_check_large_cluster(self):
+        kmeans_result = "feature/kmeans-3.npy"
+        # kmeans_result = "mismatch/constrained-kmeans-3.npy"
+        d = Data(config.coco17, suffix="step1")
+        image_labels = d.get_category_pred(label_type="all", data_type="image")
+        text_labels = d.get_category_pred(label_type="all", data_type="text")
+        kmeans = np.load("test/" + kmeans_result)
+        features = d.set_helper.image_feature
+        print("feature shape", features.shape)
+        sizes = [256, 256, 256, 512, 1024, 512]
+        split_points = [0]
+        sum = 0
+        feature_id = 3
+        for i in sizes:
+            sum = sum + i
+            split_points.append(sum)
+        print(split_points)
+        feature = features[:, split_points[feature_id]: split_points[feature_id+1]]
+        mismatch = (image_labels!=text_labels).sum(axis=1)
+        idxs = np.array(range(len(kmeans)))[kmeans == 28]
+        feature = feature[idxs]
+        mismatch = mismatch[idxs]
+        
+        for i in range(2,10):
+            model = KMeans(i, init="k-means++",
+                            n_init=10, n_jobs="deprecated",
+                            random_state=123)
+            model.fit(feature)
+            labels = model.labels_
+            for j in range(i):
+                m = mismatch[labels==j].sum()
+                length = (labels==j).sum()
+                print(m, length, m / length)
+            print("***********************************")
+        a = 1
 
     def test_cluster_performance(self):
         d = Data(config.coco17, suffix="step1")
@@ -112,8 +153,60 @@ class FeatureTest(unittest.TestCase):
     def test_coclustering_by_clusters(self):
         kmeans = np.load("test/feature/kmeans-3.npy")
         d = Data(config.coco17, suffix="step1")
+
+        class_name = d.class_name
+        R_path = "test/feature/cluster_R.npy"
+        R = np.zeros((len(class_name), len(np.unique(kmeans))))
+        if os.path.exists(R_path):
+            R = np.load(R_path)
+        else:
+            print("R.shape", R.shape)
+            for i in range(100):
+                r = R[:,i]
+                idxs = np.array(range(len(kmeans)))[kmeans == i]
+                for j in idxs:
+                    res = d.set_helper.get_detection_result(int(j))
+                    # res = d.set_helper.get_anno_bbox_result(int(j))
+                    for det in res:
+                        if det[-2] > 0.5:
+                            r[det[-1]] += 1
+                R[:, i] = r
+            np.save("test/feature/cluster_R.npy", R)
+
+        text_feature = np.load("test/word_embedding/word_feature.npy")
+        text_feature = text_feature[1:]
+        
+        # normalization
+        R = R[1:, :]
+        class_name = class_name[1:]
+        R = R / R.max()
+        R = np.power(R, 0.4)
+
+        clf = CoClustering()
+        k1, k2 = [12, 12]
+        C1, C2 = clf.fit(R, text_feature, k1, k2)
+        row_labels = np.dot(C1, np.array(range(k1)).reshape(-1,1)).reshape(-1)
+        col_labels = np.dot(C2, np.array(range(k2)).reshape(-1,1)).reshape(-1)
+        for i in range(k1):
+            selected = row_labels==i
+            # print("total num of selected", sum(selected))
+            print(np.array(class_name)[selected])
+        a = 1
+        
+
+    def test_spectral_clustering_by_clusters(self):
+        kmeans = np.load("test/feature/kmeans-3.npy")
+        d = Data(config.coco17, suffix="step1")
+        image_labels = d.get_category_pred(label_type="all", data_type="image")
+        text_labels = d.get_category_pred(label_type="all", data_type="text")
+        single_mismatch = (image_labels!=text_labels).sum(axis=1)
+        cluster_mismatch = []
+        for i in range(100):
+            idxs = np.array(range(len(kmeans)))[kmeans == i]
+            cluster_mismatch.append(single_mismatch[idxs].sum())
+        cluster_mismatch = np.array(cluster_mismatch)
         # sets = d.get_set()
-        image_by_type, sets = d.set_helper.get_real_set()
+        # image_by_type, sets = d.set_helper.get_real_set()
         class_name = d.class_name
         R_path = "test/feature/cluster_R.npy"
         R = np.zeros((len(class_name), len(np.unique(kmeans))))
@@ -155,8 +248,9 @@ class FeatureTest(unittest.TestCase):
         
         for i in range(k2):
             selected = model.column_labels_ == i
-            print("{}: total num of selected {}".format(i, sum(selected)))
-            print(np.array(range(100))[selected])
+            # print("{}: total num of selected {}".format(i, sum(selected)))
+            # print(np.array(range(100))[selected])
+            print(cluster_mismatch[selected], "**", cluster_mismatch[selected].sum())
 
         Row = one_hot_encoder(model.row_labels_)
         Col = one_hot_encoder(model.column_labels_)

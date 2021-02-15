@@ -41,6 +41,23 @@ class CKMeansTest(unittest.TestCase):
         print(clf.labels_)
         a = 1
 
+    def test_compare_results(self):
+        d = Data(config.coco17, suffix="step1")
+        image_labels = d.get_category_pred(label_type="all", data_type="image")
+        text_labels = d.get_category_pred(label_type="all", data_type="text")
+        kmeans_result = "feature/kmeans-3.npy"
+        constrained_kmeans_result = "mismatch/max-3000-constrained-kmeans-3.npy"
+        kmeans = np.load("test/" + kmeans_result)
+        constrained_kmeans = np.load("test/" + constrained_kmeans_result)
+        mismatch = (image_labels!=text_labels).sum(axis=1)
+        idxs = np.array(range(len(kmeans)))[kmeans == 71]
+        selected_mm = mismatch[idxs]
+        new_labels = constrained_kmeans[idxs]
+        print(np.nonzero(np.bincount(new_labels)), np.bincount(new_labels)[np.nonzero(np.bincount(new_labels))])
+        # m1 = selected_mm[new_labels==13]
+
+        a = 1
+
     def test_real_data(self):
         kmeans_result = "kmeans-3.npy"
         d = Data(config.coco17, suffix="step1")
@@ -62,13 +79,13 @@ class CKMeansTest(unittest.TestCase):
             n_init=1,
             n_clusters=100,
             size_min=1,
-            size_max=2000,
+            size_max=3000,
             random_state=0
         )
         clf.fit_predict(feature, mismatch)
         # print(clf.labels_)
         labels = clf.labels_
-        np.save("test/mismatch/constrained-kmeans-3.npy", labels)
+        np.save("test/mismatch/max-3000-constrained-kmeans-3.npy", labels)
         a = 1
 
 
