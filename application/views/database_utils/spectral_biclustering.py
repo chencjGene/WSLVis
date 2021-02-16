@@ -486,7 +486,8 @@ class SpectralBiclustering(BaseSpectral):
     def _fit(self, X):
         n_sv = self.n_components
         if self.method == 'bistochastic':
-            normalized_data = _bistochastic_normalize(X)
+            # normalized_data = _bistochastic_normalize(X)
+            normalized_data = X
             n_sv += 1
         elif self.method == 'scale':
             normalized_data, _, _ = _scale_normalize(X)

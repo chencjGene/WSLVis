@@ -17,8 +17,10 @@ from sklearn.utils.extmath import (make_nonnegative, randomized_svd,
 from scipy.sparse.linalg import eigsh, svds
 
 from application.views.database_utils import Data
-from application.views.database_utils.set_helper import CoClustering
+from application.views.database_utils.set_helper import CoClustering, DTPP
 from application.views.database_utils.spectral_biclustering import SpectralBiclustering
+from application.views.database_utils.spectral_biclustering import \
+    _log_normalize, _bistochastic_normalize, _scale_normalize
 from application.views.database_utils.utils import multiclass_precision_and_recall
 from application.views.utils.config_utils import config
 from application.views.utils.helper_utils import pickle_load_data
@@ -62,22 +64,34 @@ class CoClusteringTest(unittest.TestCase):
         col_idx = rng.permutation(data.shape[1])
         R = data[row_idx][:, col_idx]
 
-        model = SpectralBiclustering(n_clusters=n_clusters, method='log',
-                            random_state=0, n_components=20)
-        model.fit(R.copy())
-        idx1 = np.argsort(model.row_labels_)
+        k1, k2 = n_clusters
+        # k1, k2 = [3,4]
+        # R = R.T
+        
+        clf = CoClustering(k1, k2, 0, 20)
+        C1, C2 = clf.fit(R)
+        row_labels = np.dot(C1, np.array(range(k1)).reshape(-1,1)).reshape(-1)
+        col_labels = np.dot(C2, np.array(range(k2)).reshape(-1,1)).reshape(-1)
+
+        # model = SpectralBiclustering(n_clusters=n_clusters, method='log',
+        #                     random_state=0, n_components=20)
+        # model.fit(R.copy())
+        # row_labels = model.row_labels_
+        # col_labels = model.column_labels_
+
+        idx1 = np.argsort(row_labels)
         fit_data = R[idx1]
-        RR = fit_data[:, np.argsort(model.column_labels_)]
+        RR = fit_data[:, np.argsort(col_labels)]
         sns.set(font_scale=0.5)
         sns.heatmap(RR)
         plt.savefig("test/mismatch/checkerboard.jpg")
         plt.close()
 
-        tsne = TSNE(n_components=2,random_state=15)
-        coor = tsne.fit_transform(R)
-        plt.scatter(coor[:,0], coor[:,1])
-        plt.savefig("test/mismatch/checkerboard-tsne.jpg")
-        plt.close()
+        # tsne = TSNE(n_components=2,random_state=15)
+        # coor = tsne.fit_transform(R)
+        # plt.scatter(coor[:,0], coor[:,1])
+        # plt.savefig("test/mismatch/checkerboard-tsne.jpg")
+        # plt.close()
 
         a = 1
         
@@ -196,6 +210,27 @@ class CoClusteringTest(unittest.TestCase):
         plt.close() 
         a = 1
 
+
+    def test_DTPP(self):
+        kmeans = np.load("test/feature/kmeans-3.npy")
+        d = Data(config.coco17, suffix="step1")
+
+        class_name = d.class_name
+        R = load_R(class_name, kmeans)
+        text_feature = np.load("test/word_embedding/word_feature.npy")
+        text_feature = text_feature[1:]
+        
+        # normalization
+        R = R[1:, :]
+        class_name = class_name[1:]
+        R = R / R.max()
+        R = np.power(R, 0.4)
+
+        k1, k2 = [12, 12]
+
+        DTPP(R, k1, k2)
+
+        a = 1
     
     def test_coclustering_by_clusters(self):
         kmeans = np.load("test/feature/kmeans-3.npy")
@@ -213,7 +248,8 @@ class CoClusteringTest(unittest.TestCase):
         R = np.power(R, 0.4)
 
         k1, k2 = [12, 12]
-        clf = CoClustering(k1, k2, 1)
+        clf = CoClustering(k1, k2, 0)
+        # R = _bistochastic_normalize(R) # normalization
         C1, C2 = clf.fit(R, text_feature)
         row_labels = np.dot(C1, np.array(range(k1)).reshape(-1,1)).reshape(-1)
         col_labels = np.dot(C2, np.array(range(k2)).reshape(-1,1)).reshape(-1)
@@ -248,8 +284,8 @@ class CoClusteringTest(unittest.TestCase):
 
         # coclustering 
         k1, k2 = [12, 12]
-        model = SpectralBiclustering(n_clusters=[k1, k2], method='log',
-                            random_state=0, n_components=12)
+        model = SpectralBiclustering(n_clusters=[k1, k2], method='bistochastic',
+                            random_state=0, n_components=14)
         model.fit(R.copy())
         idx1 = np.argsort(model.row_labels_)
         fit_data = R[idx1]
@@ -260,15 +296,12 @@ class CoClusteringTest(unittest.TestCase):
             # print("total num of selected", sum(selected))
             print(np.array(class_name)[selected])
         
-        for i in range(k2):
-            selected = model.column_labels_ == i
-            # print("{}: total num of selected {}".format(i, sum(selected)))
-            # print(np.array(range(100))[selected])
-            print(cluster_mismatch[selected], "**", cluster_mismatch[selected].sum())
+        # for i in range(k2):
+        #     selected = model.column_labels_ == i
+        #     # print("{}: total num of selected {}".format(i, sum(selected)))
+        #     # print(np.array(range(100))[selected])
+        #     print(cluster_mismatch[selected], "**", cluster_mismatch[selected].sum())
 
-        # Row = one_hot_encoder(model.row_labels_)
-        # Col = one_hot_encoder(model.column_labels_)
-        # S = np.dot(np.dot(Row.T, R), Col)
 
         # visualization 
         sns.set(font_scale=0.5)
