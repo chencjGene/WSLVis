@@ -33,7 +33,8 @@ class WSLModel(object):
         self.data_all_step_root = self.data.data_all_step_root
         self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
             size_min=1, size_max=3000, random_state=0)
-        self.coclustering = CoClustering(self.config["text_k"], self.config["image_k"])
+        self.coclustering = CoClustering(self.config["text_k"], \
+            self.config["image_k"], 0) # TODO: 
 
     def reset(self, dataname, step, config):
         self.dataname = dataname
@@ -90,7 +91,7 @@ class WSLModel(object):
         R = R[1:, :]
         class_name = self.data.class_name[1:]
         R = R / R.max()
-        R = np.power(R, 0.4)
+        R = np.power(R, 0.41)
         return R
 
     def _run_coclustering(self):
@@ -102,4 +103,3 @@ class WSLModel(object):
             np.array(range(self.config["text_k"])).reshape(-1,1)).reshape(-1)
         self.image_labels = np.dot(self.C2, \
             np.array(range(self.config["image_k"])).reshape(-1,1)).reshape(-1)
-

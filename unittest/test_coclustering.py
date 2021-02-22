@@ -25,7 +25,7 @@ from application.views.database_utils.utils import multiclass_precision_and_reca
 from application.views.utils.config_utils import config
 from application.views.utils.helper_utils import pickle_load_data
 from application.views.database_utils.utils import decoding_categories, encoding_categories
-
+from application.views.model_utils import WSLModel
 
 from sklearn.manifold import TSNE, MDS
 from sklearn.decomposition import PCA
@@ -94,7 +94,6 @@ class CoClusteringTest(unittest.TestCase):
         # plt.close()
 
         a = 1
-        
 
     def test_imagedata(self):
         d = Data(config.coco17, suffix="step1")
@@ -133,7 +132,6 @@ class CoClusteringTest(unittest.TestCase):
 
         a = 1
 
-
     def test_label_label(self):
         d = Data(config.coco17, suffix="step1")
         image_by_type, sets = d.set_helper.get_real_set()
@@ -159,7 +157,6 @@ class CoClusteringTest(unittest.TestCase):
             # print("total num of selected", sum(selected))
             print(np.array(class_name)[selected])
         a = 1
-
 
     def test_realdata(self):
         d = Data(config.coco17, suffix="step1")
@@ -210,7 +207,6 @@ class CoClusteringTest(unittest.TestCase):
         plt.close() 
         a = 1
 
-
     def test_DTPP(self):
         kmeans = np.load("test/feature/kmeans-3.npy")
         d = Data(config.coco17, suffix="step1")
@@ -232,9 +228,21 @@ class CoClusteringTest(unittest.TestCase):
 
         a = 1
     
+    def test_model(self):
+        m = WSLModel(dataname=config.coco17, step=1)
+        m.run()
+        class_name = m.data.class_name[1:]
+        row_labels = m.text_labels
+        col_labels = m.image_labels
+        for i in range(m.config["text_k"]):
+            selected = row_labels==i
+            # print("total num of selected", sum(selected))
+            print(np.array(class_name)[selected])
+        a = 1
+
     def test_coclustering_by_clusters(self):
         kmeans = np.load("test/feature/kmeans-3.npy")
-        d = Data(config.coco17, suffix="step1")
+        d = Data(config.coco17, step=1)
 
         class_name = d.class_name
         R = load_R(class_name, kmeans)
