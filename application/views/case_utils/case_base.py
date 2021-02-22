@@ -5,8 +5,9 @@ from ..utils.helper_utils import pickle_save_data, json_save_data
 from ..utils.config_utils import config
 
 class CaseBase():
-    def __init__(self, dataname):
+    def __init__(self, dataname, case_mode):
         self.dataname = dataname
+        self.case_mode = case_mode
         
         self.model = None
         self.base_config = None
@@ -16,18 +17,27 @@ class CaseBase():
 
         self._load_base_config()
         
-    def connect_data(self, model):
+    def connect_model(self, model):
         self.model = model
 
+    def create_model(self, model):
+        self.model = model(self.dataname, self.base_config["step"], self.base_config)
+        return self.model
+        
     def _load_base_config(self):
         json_data = json_load_data(os.path.join(config.case_util_root, "case_config.json"))
         try:
             self.base_config = json_data[self.dataname]
         except:
             self.base_config = {
-                "k": 6,
-                "step": 0
+                "step": 0,
+                "text_k": 12,
+                "image_k": 12,
+                "pre_k": 100
             }
+
+    def get_base_config(self):
+        return self.base_config
 
     def load_data(self, name):
         # TODO:

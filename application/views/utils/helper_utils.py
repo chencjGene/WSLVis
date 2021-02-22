@@ -29,7 +29,7 @@ def pickle_save_data(filename, data):
 def pickle_load_data(filename):
     try:
         mat = pickle.load(open(filename, "rb"))
-    except Exception as e:
+    except Exception:
         mat = pickle.load(open(filename, "rb"))
     return mat
 

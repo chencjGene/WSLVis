@@ -70,13 +70,67 @@ class TreeHelper(object):
         return leaf_node
 
 
-class Data(object):
-    def __init__(self, dataname, suffix="step0"):
+class DataBaseLoader(object):
+    def __init__(self, dataname, step=0):
         self.dataname = dataname 
+        self.suffix = "step" + str(step)
         self.data_all_step_root = os.path.join(config.data_root, self.dataname)
-        self.data_root = os.path.join(config.data_root, self.dataname, suffix)
-        self.suffix = suffix
+        self.data_root = os.path.join(config.data_root, self.dataname, self.suffix)
+
+        database_file = os.path.join(self.data_root, "database.db")
+        self.conn = sqlite3.connect(database_file, check_same_thread=False)
+
+    def database_fetch_by_idx(self, idx, keys):
+        # id, cap, bbox, logits, labels, activations, string, detection, image_output
+        cursor = self.conn.cursor()
+        keys = "".join([k + ", " for k in keys]).strip(", ")
+        sql = "select {} from annos where id = ?".format(keys)
+        cursor.execute(sql, (idx,))
+        res = cursor.fetchall()[0]
+        if len(res) == 1:
+            return res[0]
+        else:
+            return res
     
+    def get_detection_result(self, idx):
+        cursor = self.conn.cursor()
+        sql = "select detection from annos where id = ?"
+        cursor.execute(sql, (idx,))
+        res = cursor.fetchall()[0][0]
+        res = json.loads(res)
+        return res
+
+    def get_anno_bbox_result(self, idx):
+        cursor = self.conn.cursor()
+        sql = "select bbox from annos where id = ?"
+        cursor.execute(sql, (idx,))
+        res = cursor.fetchall()[0][0]
+        res = json.loads(res)
+        return res
+    
+    def get_text_feature(self):
+        text_feature_path = os.path.join(self.data_root, "word_feature.npy")
+        text_feature = np.load(text_feature_path)
+        return text_feature
+
+    def get_image_feature(self):
+        feature_path = os.path.join(self.data_root, "feature_train.npy")
+        features = np.load(feature_path)
+        print("feature shape", features.shape)
+        sizes = [256, 256, 256, 512, 1024, 512]
+        split_points = [0]
+        sum = 0
+        feature_id = 3
+        for i in sizes:
+            sum = sum + i
+            split_points.append(sum)
+        print(split_points)
+        feature = features[:, split_points[feature_id]: split_points[feature_id+1]]
+        return feature
+
+class Data(DataBaseLoader):
+    def __init__(self, dataname, step=0):
+        super(Data, self).__init__(dataname, step)
         self.class_name = []
         self.class_name_encoding = {}
         self.X = [] # contains image level features and patch level features
@@ -91,6 +145,8 @@ class Data(object):
         # additional information can be store here
         self.add_info = {}
         
+
+
         self._load_data()
 
     def _load_data(self):
@@ -119,30 +175,18 @@ class Data(object):
         self.redundant_idx = processed_data[config.redundant_idx_name]
         self.add_info = processed_data[config.add_info_name]
 
-        database_file = os.path.join(self.data_root, "database.db")
-        self.conn = sqlite3.connect(database_file, check_same_thread=False)
-        # self.cursor = self.conn.cursor()
 
         # load hierarchy
         tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
         self.tree_helper = TreeHelper(tree, self.class_name)
 
-        # load image width and height
-        self.set_helper = SetHelper(self)
+        # # load image width and height
+        # self.set_helper = SetHelper(self)
 
         logger.info("end loading data from processed data!")
 
-    def database_fetch_by_idx(self, idx, keys):
-        # id, cap, bbox, logits, labels, activations, string, detection, image_output
-        cursor = self.conn.cursor()
-        keys = "".join([k + ", " for k in keys]).strip(", ")
-        sql = "select {} from annos where id = ?".format(keys)
-        cursor.execute(sql, (idx,))
-        res = cursor.fetchall()[0]
-        if len(res) == 1:
-            return res[0]
-        else:
-            return res
+    def run(self):
+        None
 
     def get_precision_and_recall(self):
         labels = []

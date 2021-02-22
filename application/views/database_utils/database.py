@@ -52,7 +52,7 @@ class DataBase(object):
     def load_cache(self, loading_from_buffer=False, load_method=pickle_load_data):
         all_data_name = os.path.join(self.raw_data_dir, config.all_data_cache_name.format(""))
         if os.path.exists(all_data_name) and loading_from_buffer:
-            logger.warn("all data cache exists. load data from cache ... ...".format(all_data_name))
+            logger.warn("[{}] all data cache exists. load data from cache ... ...".format(all_data_name))
             self.all_data = load_method(all_data_name)
             logger.info("cache loading done!")
             return True
@@ -65,10 +65,8 @@ class DataBase(object):
 
     def save_processed_data(self, save_method=pickle_save_data):
         filename = os.path.join(self.data_dir, "processed_data{}{}".format("", config.pkl_ext))
-        # TODO: add time information and warn users when loading
         logger.warn("save processed data in {}".format(filename))
         mat = {}
-        # TODO: class_name
         mat[config.class_name] = self.class_name
         mat[config.X_name] = self.X
         mat[config.annos_name] = self.annos

@@ -5,7 +5,7 @@ from flask_session import Session
 from datetime import timedelta
 from .views.admin import admin
 from .views.history import history
-from .views.hybrid import hybrid
+from .views.detection import detection
 from .views.image import image
 from .views.text import text
 
@@ -21,7 +21,7 @@ def create_app():
 
     app.register_blueprint(admin)
     app.register_blueprint(history)
-    app.register_blueprint(hybrid)
+    app.register_blueprint(detection)
     app.register_blueprint(image)
     app.register_blueprint(text)
 

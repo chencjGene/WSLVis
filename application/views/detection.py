@@ -7,11 +7,11 @@ from .utils.config_utils import config
 import json
 import time
 
-from .model_utils import *
+from .port_utils import *
 
-hybrid = Blueprint("hybrid", __name__)
+detection = Blueprint("detection", __name__)
 
-@hybrid.route("/hybrid/GetManifest", methods=["GET", "POST"])
+@detection.route("/detection/GetManifest", methods=["GET", "POST"])
 def app_get_manifest():
     # extract info from request
     dataname = json.loads(request.data)["dataset"]
@@ -19,11 +19,12 @@ def app_get_manifest():
     init_model(dataname, step)
     return get_manifest()
     
-@hybrid.route("/hybrid/HyperGraph", methods=["GET", "POST"])
+@detection.route("/detection/HyperGraph", methods=["GET", "POST"])
 def app_get_hypergraph():
     return get_current_hypergraph()
 
-@hybrid.route("/hybrid/Embedding", methods=["GET", "POST"])
+# for debug
+@detection.route("/detection/Embedding", methods=["GET", "POST"])
 def app_get_embedding():
     embedding_path = "test/feature/tsne-embedding.npy"
     init_model("COCO17", "step1")

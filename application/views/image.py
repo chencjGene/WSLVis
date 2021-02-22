@@ -7,7 +7,7 @@ from .utils.config_utils import config
 import json
 import time
 
-from .model_utils import get_image
+from .port_utils import get_image
 
 image = Blueprint("image", __name__)
 

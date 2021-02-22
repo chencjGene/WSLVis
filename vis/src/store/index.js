@@ -162,7 +162,7 @@ const store = new Vuex.Store({
     actions:{
         async fetch_manifest({commit, state}, key){
             console.log("fetch_manifest");
-            const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, key, 
+            const resp = await axios.post(`${state.server_url}/detection/GetManifest`, key, 
                 {headers: {
                     "Content-Type":"application/json",
                     "Access-Control-Allow-Origin": "*",
@@ -172,7 +172,7 @@ const store = new Vuex.Store({
         },
         async fetch_hypergraph({commit, state}, key){
             console.log("fetch_hypergraph");
-            const resp = await axios.post(`${state.server_url}/hybrid/HyperGraph`, {word: key}, 
+            const resp = await axios.post(`${state.server_url}/detection/HyperGraph`, {word: key}, 
                 {headers: 
                     {"Access-Control-Allow-Origin": "*"}});
             commit("set_hypergraph_data", JSON.parse(JSON.stringify(resp.data)));
