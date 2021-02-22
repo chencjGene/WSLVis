@@ -245,7 +245,7 @@ class CoClusteringTest(unittest.TestCase):
         R = R[1:, :]
         class_name = class_name[1:]
         R = R / R.max()
-        R = np.power(R, 0.4)
+        R = np.power(R, 0.41)
 
         k1, k2 = [12, 12]
         clf = CoClustering(k1, k2, 0)

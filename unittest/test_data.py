@@ -43,7 +43,8 @@ class DataTest(unittest.TestCase):
 
     def test_data_database_get_set(self):
         d = Data(config.coco17, suffix="step1")
-        d.get_set()
+        image_by_type, sets = d.set_helper.get_real_set()
+        a = 1
 
     
     def test_get_image_by_type(self):
