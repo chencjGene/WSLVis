@@ -201,11 +201,12 @@ def DTPP(V, k1, k2):
 
 
 class CoClustering(object):
-    def __init__(self, k1, k2, w_t = 1, n_iter=100):
+    def __init__(self, k1, k2, w_t = 1, n_iter=100, verbose=1):
         self.w_t = w_t
         self.k1 = k1
         self.k2 = k2
         self.n_iter = n_iter
+        self.verbose = verbose
 
     def kmeans(self, M, k):
         kmeans = KMeans(n_clusters=k, random_state=12).fit(M)
@@ -234,11 +235,13 @@ class CoClustering(object):
         M = M / norm
         return M
 
-    def _fit(self, R, text_feature=None):
+    def _fit(self, R, text_feature=None, min_k=None):
         # init 
         k1 = self.k1
         k2 = self.k2
         k = min(k1, k2)
+        if min_k:
+            k = min_k
         n1, n2 = R.shape
         C1 = self.random_orthonormal_matrix(n1, k)
         C2 = self.random_orthonormal_matrix(n2, k)
@@ -264,19 +267,20 @@ class CoClustering(object):
             trr2 = C2.T.dot(R.T).dot(C1).dot(C1.T).dot(R).dot(C2).trace()
             err1 = ((C1 - pre_C1)**2).sum()
             err2 = ((C2 - pre_C2)**2).sum()
-            print("iter {}, time cost: {}, err1: {}, err2: {},\n trr1: {}, trr2: {}" \
-                .format(i, time() - t0, err1, err2, trr1, trr2))
+            if self.verbose:
+                print("iter {}, time cost: {}, err1: {}, err2: {},\n trr1: {}, trr2: {}" \
+                    .format(i, time() - t0, err1, err2, trr1, trr2))
             pre_C1 = C1.copy()
             pre_C2 = C2.copy()
             pre_M1 = M1.copy()
-        print("C1 imag", (abs(C1.imag)).sum())
-        print("C2 imag", (abs(C2.imag)).sum())
+        # print("C1 imag", (abs(C1.imag)).sum())
+        # print("C2 imag", (abs(C2.imag)).sum())
         W = C1.real
         H = C2.real.T
         return W, H
 
-    def fit(self, R, text_feature=None):
-        W, H = self._fit(R, text_feature)
+    def fit(self, R, text_feature=None, min_k=None):
+        W, H = self._fit(R, text_feature, min_k)
         S = W.T.dot(R).dot(H.T)
         err = R - W.dot(S).dot(H)
         err = (err**2).sum()
@@ -296,3 +300,75 @@ class CoClustering(object):
         R = R[idx1, :]
         R = R[:, idx2]
         return R
+
+def variance(R):
+    m, n = R.shape
+    mean = R.mean()
+    s = ((R-mean)**2).sum() / (m*n-1)
+    s = s ** 0.5
+    return s
+
+
+def CoefficientVariance(R):
+    mean = R.mean()
+    s = variance(R)
+    s = s  / mean 
+    return s
+
+
+def calculate_gradient(S):
+    m, n = S.shape
+    gradient = np.zeros((m, n))
+
+    def exist(position):
+        if position[0] >=0 and position[0] < m and position[1] >=0 and position[1] < n:
+            return True
+        return False 
+
+    for i in range(m):
+        for j in range(n):
+            T = [i, j-1]
+            B = [i, j+1]
+            L = [i-1, j]
+            R = [i+1, j]
+            LT = [i-1, j-1]
+            LB = [i-1, j+1]
+            RT = [i+1, j-1]
+            RB = [i+1, j+1]
+            candidate = []
+            for p in [T, B, L, R, LT, LB, RT, RB]:
+                if exist(p):
+                    delta_z = abs(S[i, j] - S[p[0], p[1]])
+                    delta_xy = sqrt((i - p[0])**2 + (j - p[1])**2)
+                    candidate.append(delta_z / delta_xy)
+            gradient[i,j] = max(candidate)
+    return gradient
+
+def find_turning_points(gradient, threshold=0.03):
+    def smaller(a, b):
+        if a[0] <= b[0] and a[1] <= b[1]:
+            return True
+        return False
+
+    zero_points = gradient < threshold
+    candidate = []
+    x, y = np.nonzero(zero_points)
+    for point in zip(x, y):
+        flag = True
+        for c in candidate:
+            if smaller(c, point):
+                flag = False
+                break
+        if flag:
+            tmp_candidate = candidate.copy()
+            candidate = []
+            for c in tmp_candidate:
+                if not smaller(point, c):
+                    candidate.append(c)
+            candidate.append(point)
+    if len(candidate):
+        return [d - 1 for d in candidate[0]]
+    else:
+        raise ValueError("multiple candidates")
+    a = 1
+

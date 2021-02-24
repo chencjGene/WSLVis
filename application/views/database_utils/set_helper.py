@@ -234,11 +234,13 @@ class CoClustering(object):
         M = M / norm
         return M
 
-    def _fit(self, R, text_feature=None):
+    def _fit(self, R, text_feature=None, min_k=None):
         # init 
         k1 = self.k1
         k2 = self.k2
         k = min(k1, k2)
+        if min_k:
+            k = min_k
         n1, n2 = R.shape
         C1 = self.random_orthonormal_matrix(n1, k)
         C2 = self.random_orthonormal_matrix(n2, k)
@@ -275,8 +277,8 @@ class CoClustering(object):
         H = C2.real.T
         return W, H
 
-    def fit(self, R, text_feature=None):
-        W, H = self._fit(R, text_feature)
+    def fit(self, R, text_feature=None, min_k=None):
+        W, H = self._fit(R, text_feature, min_k)
         S = W.T.dot(R).dot(H.T)
         err = R - W.dot(S).dot(H)
         err = (err**2).sum()

@@ -103,3 +103,7 @@ class WSLModel(object):
             np.array(range(self.config["text_k"])).reshape(-1,1)).reshape(-1)
         self.image_labels = np.dot(self.C2, \
             np.array(range(self.config["image_k"])).reshape(-1,1)).reshape(-1)
+
+    def _run_hierarchical_coclustering(self):
+        self.R = self.get_R()
+        text_feature = self.data.get_text_feature()[1:]
