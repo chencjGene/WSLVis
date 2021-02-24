@@ -71,7 +71,8 @@ class CoClusteringTest(unittest.TestCase):
         R = np.power(R, 0.41)
 
 
-        k1_range = list(range(2,20))
+        # k1_range = list(range(2,20))
+        k1_range = list(range(15,20))
         k2_range = list(range(2,20))
         v = []
         for k1 in k1_range:

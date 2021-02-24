@@ -5,6 +5,7 @@ import unittest
 import pickle
 import os 
 import seaborn as sns
+from tqdm import tqdm
 
 from sklearn.datasets import load_digits
 from sklearn.datasets import fetch_openml
@@ -21,26 +22,27 @@ from application.views.database_utils.utils import decoding_categories, encoding
 
 class FeatureTest(unittest.TestCase):
     def test_kmeans(self):
-        d = Data(config.coco17, suffix="step1")
+        d = Data(config.coco17, step=1)
         image_labels = d.get_category_pred(label_type="all", data_type="image")
         text_label = d.get_category_pred(label_type="all", data_type="text")
-        features = d.set_helper.image_feature
-        print("feature shape", features.shape)
-        sizes = [256, 256, 256, 512, 1024, 512]
-        split_points = [0]
-        sum = 0
-        feature_id = 3
-        for i in sizes:
-            sum = sum + i
-            split_points.append(sum)
-        print(split_points)
-        feature = features[:, split_points[feature_id]: split_points[feature_id+1]]
-        model = KMeans(100, init="k-means++",
-                        n_init=10, n_jobs="deprecated",
-                        random_state=123)
-        model.fit(feature)
-        labels = model.labels_
-        np.save("test/feature/kmeans-3.npy".format(feature_id), labels)
+        feature = d.get_image_feature()
+        # feature = feature[:100,:]
+        sse = {}
+        for k in tqdm(range(2, 300)):
+        # for k in tqdm(range(2, 10)):
+            model = KMeans(k, init="k-means++",
+                            n_init=10, n_jobs="deprecated",
+                            random_state=123)
+            model.fit(feature)
+            # labels = model.labels_
+            sse[k] = model.inertia_
+        plt.figure()
+        plt.plot(list(sse.keys()), list(sse.values()))
+        plt.xlabel("Number of cluster")
+        plt.ylabel("SSE")
+        plt.savefig("test/feature/sse_plot.jpg")
+        plt.close()
+        # np.save("test/feature/kmeans-3.npy".format(feature_id), labels)
 
         a = 1
     
@@ -151,4 +153,9 @@ class FeatureTest(unittest.TestCase):
             a = 1
 
 if __name__ == '__main__':
-    unittest.main()
+    suite = unittest.TestSuite()
+    suite.addTest(FeatureTest("test_kmeans"))
+    
+    # # test all cases
+    # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)
+    unittest.TextTestRunner(verbosity=2).run(suite)
