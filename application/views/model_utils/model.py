@@ -1,7 +1,10 @@
 import numpy as np
 import os
 
+from sklearn.cluster import KMeans, MiniBatchKMeans
+
 from ..utils.log_utils import logger
+from ..utils.helper_utils import json_load_data, json_save_data
 from ..database_utils.data_database import Data
 # from ..database_utils.data import Data
 try:
@@ -52,7 +55,10 @@ class WSLModel(object):
         self._run_pre_clustering()
         
         # coclustering
-        self._run_coclustering()
+        # self._run_coclustering()
+
+        # hierarchical coclustering
+        self._run_hierarchical_coclustering()
     
     def _run_pre_clustering(self):
         pre_clustering_result_file = os.path.join(self.data_root, "pre_clustering.npy")
@@ -68,34 +74,40 @@ class WSLModel(object):
         np.save(pre_clustering_result_file, self.pre_clustering_res)
         return
 
-    def get_R(self):
+    def get_R(self, exclude_person=True):
         # processing R
         class_name = self.data.class_name
         kmeans = self.pre_clustering_res
         R_path = os.path.join(self.data_root, "cluster_R.npy")
-        R = np.zeros((len(class_name), len(np.unique(kmeans))))
+        origin_R = np.zeros((len(class_name), len(np.unique(kmeans))))
         if os.path.exists(R_path):
-            R = np.load(R_path)
+            origin_R = np.load(R_path)
         else:
-            print("R.shape", R.shape)
+            print("R.shape", origin_R.shape)
             for i in range(self.config["pre_k"]):
-                r = R[:,i]
+                r = origin_R[:,i]
                 idxs = np.array(range(len(kmeans)))[kmeans == i]
                 for j in idxs:
                     res = self.data.get_detection_result(int(j)) 
                     for det in res:
                         if det[-2] > 0.5:
                             r[det[-1]] += 1
-                R[:, i] = r
-            np.save(R_path, R)
+                origin_R[:, i] = r
+            np.save(R_path, origin_R)
 
         
         # normalization
-        R = R[1:, :]
+        R = origin_R[1:, :].copy()
         class_name = self.data.class_name[1:]
         R = R / R.max()
         R = np.power(R, 0.41)
-        return R
+
+        if exclude_person:
+            return R
+        else:
+            origin_R = origin_R / R.max()
+            origin_R = np.power(origin_R, 0.41)
+            return origin_R
 
     def _run_coclustering(self):
         self.R = self.get_R()
@@ -107,6 +119,93 @@ class WSLModel(object):
         self.image_labels = np.dot(self.C2, \
             np.array(range(self.config["image_k"])).reshape(-1,1)).reshape(-1)
 
+    def _kmeans(self, X, k):
+        logger.info("performing kmeans with k is {}".format(k))
+        # model = KMeans(k, init="k-means++",
+        #                 n_init=10, n_jobs="deprecated",
+        #                 random_state=123)
+        model = KMeans(n_clusters=k, random_state=12)
+        model.fit(X)
+        labels = model.labels_
+        return labels
+
+    def _hierarchical_coclustering(self, tree, X):
+        visit_node = [tree]
+        while len(visit_node) > 0:
+            node = visit_node[-1]
+            visit_node = visit_node[:-1]
+            descendants_idx = node["descendants_idx"]
+            des_X = X[np.array(descendants_idx), :]
+            if len(descendants_idx) > 6:
+                if node["name"] == "root" and node["type"] == "text":
+                    k = 10
+                elif node["name"] == "root" and node["type"] == "image":
+                    k = 10
+                else:
+                    k = 3
+                # run clustering algorithm
+                labels = self._kmeans(des_X, k)
+                # create tree node for each cluster under this node
+                children = []
+                for i in range(k):
+                    internal_node = {
+                        "type": node["type"],
+                        "name": "internal",
+                        "descendants_idx": np.array(descendants_idx)[labels==i].tolist()
+                    }
+                    children.append(internal_node)
+                node["children"] = children
+            else:
+                node["children"] = []
+            visit_node.extend(node["children"])
+        return tree
+
+    def _post_processing_hierarchy(self, tree, name_list):
+        shift = 0
+        if tree["type"] == "text":
+            shift = 1
+            node = {
+                "type": "text",
+                "name": "person",
+                "children": []
+            }
+            tree["children"].append(node)
+        visit_node = [tree]
+        while len(visit_node) > 0:
+            node = visit_node[-1]
+            visit_node = visit_node[:-1]
+            if len(node["children"]) == 0 and "descendants_idx" in node:
+                descendants_idx = node["descendants_idx"]
+                descendants_idx = [i + shift for i in descendants_idx]
+                for idx in descendants_idx:
+                    name = name_list[idx]
+                    leaf_node = {
+                        "type": "text",
+                        "name": str(name),
+                        "children": []
+                    }
+                    node["children"].append(leaf_node)
+                del node["descendants_idx"]
+            visit_node.extend(node["children"])
+
     def _run_hierarchical_coclustering(self):
         self.R = self.get_R()
         text_feature = self.data.get_text_feature()[1:]
+        text_w, image_h = self.coclustering._fit(self.R, text_feature)
+        image_h = image_h.T
+        text_tree = {
+            "type": "text",
+            "name": "root",
+            "descendants_idx":list(range(text_w.shape[0])),
+        }
+        image_tree = {
+            "type": "image",
+            "name": "root",
+            "descendants_idx": list(range(image_h.shape[0]))
+        }
+        text_tree = self._hierarchical_coclustering(text_tree, text_w)
+        image_tree = self._hierarchical_coclustering(image_tree, image_h)
+        self.text_tree = self._post_processing_hierarchy(text_tree, self.data.class_name)
+        self.image_tree = self._post_processing_hierarchy(image_tree, list(range(image_h.shape[0])))
+
+        a = 1
