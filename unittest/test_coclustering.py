@@ -71,20 +71,23 @@ class CoClusteringTest(unittest.TestCase):
         R = np.power(R, 0.41)
 
 
-        k1_range = list(range(2,15))
+        k1_range = list(range(2,20))
         k2_range = list(range(2,20))
         v = []
         for k1 in k1_range:
             for k2 in k2_range:
-                clf = CoClustering(k1, k2, 0, verbose=0)
-                C1, C2 = clf.fit(R)
-                norm_C1 = C1 / C1.sum(axis=0)
-                norm_C2 = C2 / C2.sum(axis=0)
-                S = norm_C1.T.dot(R).dot(norm_C2)
-                c = CoefficientVariance(S)
-                # pair.append([k2, c])
-                v.append(c)
-                print("k1: {}, k2: {}, c: {}".format(k1, k2, c))
+                try:
+                    clf = CoClustering(k1, k2, 0, verbose=0)
+                    C1, C2 = clf.fit(R)
+                    norm_C1 = C1 / C1.sum(axis=0)
+                    norm_C2 = C2 / C2.sum(axis=0)
+                    S = norm_C1.T.dot(R).dot(norm_C2)
+                    c = CoefficientVariance(S)
+                    # pair.append([k2, c])
+                    v.append(c)
+                    print("k1: {}, k2: {}, c: {}".format(k1, k2, c))
+                except:
+                    import IPython; IPython.embed(); exit()
         # for k2, c in pair:
         #     print("k2: {}, c: {}".format(k2, c))
         
@@ -99,18 +102,18 @@ class CoClusteringTest(unittest.TestCase):
         ax.bar3d(xpos, ypos, 0, dx, dy, dz, zsort="average")
         plt.savefig("test/mismatch/3d.jpg")
         plt.close()
-        import IPython; IPython.embed(); exit()
         exit()
 
     def test_view_point(self):
-        k1_range = list(range(2,7))
-        k2_range = list(range(2,7))
-        xpos, ypos, dx, dy, dz = pickle_load_data("test/mismatch/3d.pkl")
+        k1_range = list(range(2,15))
+        k2_range = list(range(2,20))
+        xpos, ypos, dx, dy, dz = pickle_load_data("test/mismatch/3d_real_data.pkl")
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
         ax.bar3d(xpos, ypos, 0, dx, dy, dz, zsort="average")
         # ax.view_init(elev=10, azim=190)
         plt.savefig("test/mismatch/3d.jpg")
+        plt.show()
         plt.close()
         dz = dz.reshape(5,5)
         gradient = calculate_gradient(dz)
@@ -186,5 +189,6 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(CoClusteringTest("test_cv"))
     
-    suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)
+    # # test all cases
+    # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)
     unittest.TextTestRunner(verbosity=2).run(suite)

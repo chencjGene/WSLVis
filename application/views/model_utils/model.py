@@ -4,8 +4,11 @@ import os
 from ..utils.log_utils import logger
 from ..database_utils.data_database import Data
 # from ..database_utils.data import Data
-from ..constrained_kmeans.k_means_constrained_ import KMeansConstrained
-
+try:
+    from ..constrained_kmeans.k_means_constrained_ import KMeansConstrained
+except:
+    None
+    
 from .coclustering import CoClustering
 
 
