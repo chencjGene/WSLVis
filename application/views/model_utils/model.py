@@ -14,7 +14,7 @@ except:
     None
     
 from .coclustering import CoClustering
-from .tree_helper import TextTreeHelper, TreeHelper
+from .tree_helper import TextTreeHelper, TreeHelper, ImageTreeHelper
 
 
 class WSLModel(object):
@@ -42,10 +42,12 @@ class WSLModel(object):
         self.buffer_path = os.path.join(self.data_root, "model.pkl")
         self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
             size_min=1, size_max=3000, random_state=0)
+        self.cluster_name = ["img_cluster_"+ str(i) for i in range(self.config["pre_k"])]
         self.coclustering = CoClustering(self.config["text_k"], \
             self.config["image_k"], 0, verbose=0) # TODO: 
         self.text_tree_helper = TextTreeHelper()
-        self.image_tree_helper = TreeHelper()
+        self.image_tree_helper = ImageTreeHelper()
+        
 
     def _init_data(self):
         self.data = Data(self.dataname, self.step)
@@ -179,9 +181,10 @@ class WSLModel(object):
         text_tree = self._hierarchical_coclustering(text_tree, text_w)
         image_tree = self._hierarchical_coclustering(image_tree, image_h)
         self.text_tree = self._post_processing_hierarchy(text_tree, self.data.class_name)
-        self.image_tree = self._post_processing_hierarchy(image_tree, list(range(image_h.shape[0])))
+        self.image_tree = self._post_processing_hierarchy(image_tree, self.cluster_name)
 
         self.text_tree_helper.update(self.text_tree, self.data.class_name)
+        self.image_tree_helper.update(self.image_tree, self.cluster_name)
         self.data.get_precision_and_recall()
         self.text_tree_helper.assign_precision_and_recall(\
             self.data.precision, self.data.recall)
