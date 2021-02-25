@@ -57,16 +57,16 @@ const ImageCards = function(parent){
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
         
-        that.image_groups = set_groups.selectAll("g.detection-result")
-            .data(d => d.vis_image);
-        // let e_image_groups = 
-        that.image_groups.enter()
-            .append("g")
-            .attr("class", "detection-result")
-            .attr(
-                "transform",
-                (d) => "translate(" + d.x + ", " + that.image_margin / 2 + ")"
-            );
+        // that.image_groups = set_groups.selectAll("g.detection-result")
+        //     .data(d => d.vis_image);
+        // that.image_groups.enter()
+        //     .append("g")
+        //     .attr("class", "detection-result")
+        //     .attr(
+        //         "transform",
+        //         (d) => "translate(" + d.x + ", " + that.image_margin / 2 + ")"
+        //     );
+        
         // e_image_groups.append("image")
         //     .attr("x", 0)
         //     .attr("y", 0)

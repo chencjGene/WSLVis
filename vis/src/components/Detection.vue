@@ -464,9 +464,7 @@ export default {
             this.layer_height
         );
 
-        this.image_layout = new image_tree_layout(
-            [this.node_width, this.layer_height],
-            this.layout_height);
+        this.image_layout = new image_tree_layout(this);
 
         // this.set_manager = new SetManager(this);
 
