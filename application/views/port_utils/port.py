@@ -34,6 +34,9 @@ class Port(object):
     def run_model(self):
         self.case_util.run(use_buffer=False)
 
+    def get_current_hypergraph(self):
+        return self.model.get_current_hypergraph()
+
     # def get_tree(self):
     #     return self.data.tree
 

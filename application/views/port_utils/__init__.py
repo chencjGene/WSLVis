@@ -13,7 +13,10 @@ def init_model(dataname, step):
 
 def get_current_hypergraph():
     port.run_model()
-    return jsonify({"test": 1})
+    # return jsonify({"test": 1})
+    hypergraph = port.get_current_hypergraph()
+    # import IPython; IPython.embed(); exit()
+    return jsonify(hypergraph)
 
 
 def get_image(idx):

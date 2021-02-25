@@ -40,7 +40,7 @@ class WSLModel(object):
         self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
             size_min=1, size_max=3000, random_state=0)
         self.coclustering = CoClustering(self.config["text_k"], \
-            self.config["image_k"], 0) # TODO: 
+            self.config["image_k"], 0, verbose=0) # TODO: 
 
     def reset(self, dataname, step, config):
         self.dataname = dataname
@@ -73,41 +73,6 @@ class WSLModel(object):
         self.pre_clustering_res = self.pre_clustering.labels_
         np.save(pre_clustering_result_file, self.pre_clustering_res)
         return
-
-    def get_R(self, exclude_person=True):
-        # processing R
-        class_name = self.data.class_name
-        kmeans = self.pre_clustering_res
-        R_path = os.path.join(self.data_root, "cluster_R.npy")
-        origin_R = np.zeros((len(class_name), len(np.unique(kmeans))))
-        if os.path.exists(R_path):
-            origin_R = np.load(R_path)
-        else:
-            print("R.shape", origin_R.shape)
-            for i in range(self.config["pre_k"]):
-                r = origin_R[:,i]
-                idxs = np.array(range(len(kmeans)))[kmeans == i]
-                for j in idxs:
-                    res = self.data.get_detection_result(int(j)) 
-                    for det in res:
-                        if det[-2] > 0.5:
-                            r[det[-1]] += 1
-                origin_R[:, i] = r
-            np.save(R_path, origin_R)
-
-        
-        # normalization
-        R = origin_R[1:, :].copy()
-        class_name = self.data.class_name[1:]
-        R = R / R.max()
-        R = np.power(R, 0.41)
-
-        if exclude_person:
-            return R
-        else:
-            origin_R = origin_R / R.max()
-            origin_R = np.power(origin_R, 0.41)
-            return origin_R
 
     def _run_coclustering(self):
         self.R = self.get_R()
@@ -187,6 +152,7 @@ class WSLModel(object):
                     node["children"].append(leaf_node)
                 del node["descendants_idx"]
             visit_node.extend(node["children"])
+        return tree
 
     def _run_hierarchical_coclustering(self):
         self.R = self.get_R()
@@ -209,3 +175,46 @@ class WSLModel(object):
         self.image_tree = self._post_processing_hierarchy(image_tree, list(range(image_h.shape[0])))
 
         a = 1
+
+    def get_R(self, exclude_person=True):
+        # processing R
+        class_name = self.data.class_name
+        kmeans = self.pre_clustering_res
+        R_path = os.path.join(self.data_root, "cluster_R.npy")
+        origin_R = np.zeros((len(class_name), len(np.unique(kmeans))))
+        if os.path.exists(R_path):
+            origin_R = np.load(R_path)
+        else:
+            print("R.shape", origin_R.shape)
+            for i in range(self.config["pre_k"]):
+                r = origin_R[:,i]
+                idxs = np.array(range(len(kmeans)))[kmeans == i]
+                for j in idxs:
+                    res = self.data.get_detection_result(int(j)) 
+                    for det in res:
+                        if det[-2] > 0.5:
+                            r[det[-1]] += 1
+                origin_R[:, i] = r
+            np.save(R_path, origin_R)
+
+        
+        # normalization
+        R = origin_R[1:, :].copy()
+        class_name = self.data.class_name[1:]
+        R = R / R.max()
+        R = np.power(R, 0.41)
+
+        if exclude_person:
+            return R
+        else:
+            origin_R = origin_R / R.max()
+            origin_R = np.power(origin_R, 0.41)
+            return origin_R
+
+    def get_current_hypergraph(self):
+        mat = {
+            "text_tree": self.text_tree,
+            "image_tree": self.image_tree,
+            "co_matrix": self.get_R(False).tolist()
+        }
+        return mat
