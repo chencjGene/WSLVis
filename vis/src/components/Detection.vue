@@ -142,8 +142,8 @@ export default {
             console.log("detection update view");
 
             this.text_tree_view.sub_component_update(this.nodes, this.rest_nodes);
-            this.connection_view.sub_component_update(this.set_links);
             this.image_view.sub_component_update(this.sets);
+            this.connection_view.sub_component_update(this.set_links);
 
             this.e_mini_nodes = this.mini_tree_node_group
                 .selectAll(".mini-tree-node")

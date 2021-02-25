@@ -16,6 +16,7 @@ const image_tree_layout = function(parent){
             d.x = that.set_left;
             // d.x = (d.depth - 1) * that.x_delta;
             d.y = (i - 1) * that.set_height + that.set_margin / 2;
+            d.y_center = d.y + (that.set_height - that.set_margin) / 2;
             d.height = that.set_height - that.set_margin;
             d.width = that.set_width - that.set_margin;
         });
