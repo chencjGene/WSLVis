@@ -53,13 +53,11 @@ const store = new Vuex.Store({
         },
         set_hypergraph_data(state, hypergraph_data){
             console.log("set hypergraph data");
-
+            console.log("hypergraph_data", hypergraph_data);
             // process tree 
-            state.tree = d3.hierarchy(hypergraph_data.tree,
+            state.tree = d3.hierarchy(hypergraph_data.text_tree,
                 function(d){
                     let children = d.children;
-                    // console.log("children", children);
-                    // return children ? children : undefined;
                     return children
                 });
             function unique(arr){
@@ -70,10 +68,11 @@ const store = new Vuex.Store({
                 element.full_name = element.data.name;
                 element.name = element.full_name;
                 if (element.full_name.indexOf(" ") > 0){
-                    element.name = element.data.abbr_name;
+                    // element.name = element.data.abbr_name;
+                    element.name = element.name.slice(0, 7) + ".";
                 }
                 else if (element.name.length > 7){
-                    element.name = element.name.slice(0,7) + "."
+                    element.name = element.name.slice(0,7) + ".";
                 }
                 // all_children: all children
                 // children: children that are visible
@@ -82,10 +81,11 @@ const store = new Vuex.Store({
                 if(element.children) element.children.forEach((d,i) => d.siblings_id = i);
                 element._children = [];
                 element._total_width = 0;
-                if (!element.data.sets){
-                    let arr = element.children.map(d => d.data.sets);
-                    element.data.sets = unique(Array.prototype.concat.call(...arr));
-                }
+                // CHANGE: The connection of text and image are no longer store in text tree
+                // if (!element.data.sets){
+                //     let arr = element.children.map(d => d.data.sets);
+                //     element.data.sets = unique(Array.prototype.concat.call(...arr));
+                // }
                 if (!element.data.precision){
                     let s = element.all_children.map(d=>d.data.precision);
                     if (s) element.data.precision = s.reduce((a,c)=>{return a+c}, 0) / s.length;

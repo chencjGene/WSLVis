@@ -13,6 +13,13 @@
 </template>
 
 <script>
+/*
+* this components calls all computation components (treecut, set_managers, etc.)
+* to get elements positions and other attributions,
+* and call all rendering components (text_tree, image_card, etc.)
+* to render all elements.
+*/
+
 // import Vue from "vue"
 import { mapActions, mapState, mapMutations } from "vuex";
 import * as d3 from "d3";
