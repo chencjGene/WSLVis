@@ -31,6 +31,7 @@ import {
     TreeCut,
     tree_layout,
 } from "../plugins/layout_text";
+import {image_tree_layout} from "../plugins/layout_image";
 // import { SetManager } from "../plugins/set_manager";
 
 // render components
@@ -56,6 +57,7 @@ export default {
     computed: {
         ...mapState([
             "tree",
+            "image_tree",
             "all_sets",
             "focus_node",
             "expand_tree",
@@ -127,9 +129,9 @@ export default {
             });
             this.selected_nodes = this.nodes.filter(d => d.selected_flag);
             console.log("selected_nodes", this.selected_nodes);
+            this.sets = this.image_layout.layout(this.image_tree);
             // [this.sets, this.set_links] = this.set_manager.get_sets();
             // console.log("sets and set_links", this.sets, this.set_links);
-            this.sets = [];
             this.set_links = [];
         },
         update_view() {
@@ -461,6 +463,10 @@ export default {
             this.layout_height,
             this.layer_height
         );
+
+        this.image_layout = new image_tree_layout(
+            [this.node_width, this.layer_height],
+            this.layout_height);
 
         // this.set_manager = new SetManager(this);
 
