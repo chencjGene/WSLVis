@@ -68,9 +68,6 @@ const store = new Vuex.Store({
                     let children = d.children;
                     return children
                 });
-            // function unique(arr){
-            //     return Array.from(new Set(arr));
-            // }
             state.tree.eachAfter(element => {
                 element.id = element.data.id;
                 element.full_name = element.data.name;
@@ -89,11 +86,6 @@ const store = new Vuex.Store({
                 if(element.children) element.children.forEach((d,i) => d.siblings_id = i);
                 element._children = [];
                 element._total_width = 0;
-                // CHANGE: The connection of text and image are no longer store in text tree
-                // if (!element.data.sets){
-                //     let arr = element.children.map(d => d.data.sets);
-                //     element.data.sets = unique(Array.prototype.concat.call(...arr));
-                // }
                 if (!element.data.precision){
                     let s = element.all_children.map(d=>d.data.precision);
                     if (s) element.data.precision = s.reduce((a,c)=>{return a+c}, 0) / s.length;
@@ -110,16 +102,8 @@ const store = new Vuex.Store({
             state.tree.all_descendants = state.tree.descendants();
             state.tree.all_descendants.forEach(d => d.children = []);
             
-            // CHANGE: The connection of text and image are no longer store in text tree
-            // // process set
-            // state.all_sets = hypergraph_data.set_list
-            // state.tree.all_descendants.forEach(d => d.data.sets = 
-            //     d.data.sets.map(d => state.all_sets[d]));
 
             console.log("state.tree", state.tree)
-            // this.commit("set_focus_node", state.tree);
-            console.log("state.focus_node", state.focus_node);
-            // state.sets = hypergraph_data.set_list;
 
         },
         set_image_tree_data(state, image_tree){
