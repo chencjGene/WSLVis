@@ -32,6 +32,8 @@ import {
     tree_layout,
 } from "../plugins/layout_text";
 import {image_tree_layout} from "../plugins/layout_image";
+import {ConnectionLayout} from "../plugins/layout_connection";
+
 // import { SetManager } from "../plugins/set_manager";
 
 // render components
@@ -58,6 +60,7 @@ export default {
         ...mapState([
             "tree",
             "image_tree",
+            "cluster_association_mat",
             "all_sets",
             "focus_node",
             "expand_tree",
@@ -130,9 +133,10 @@ export default {
             this.selected_nodes = this.nodes.filter(d => d.selected_flag);
             console.log("selected_nodes", this.selected_nodes);
             this.sets = this.image_layout.layout(this.image_tree);
-            // [this.sets, this.set_links] = this.set_manager.get_sets();
-            // console.log("sets and set_links", this.sets, this.set_links);
-            this.set_links = [];
+
+            // update cut cluster association matrix
+            this.connection_layout.update(this.nodes, this.sets);
+            this.set_links = this.connection_layout.get_links();
         },
         update_view() {
             console.log("detection update view");
@@ -465,7 +469,7 @@ export default {
         );
 
         this.image_layout = new image_tree_layout(this);
-
+        this.connection_layout = new ConnectionLayout(this);
         // this.set_manager = new SetManager(this);
 
         this.text_tree_view = new TextTree(this);

@@ -128,8 +128,9 @@ const store = new Vuex.Store({
 
             console.log("state.image_tree", state.image_tree);
         },
-        set_cluster_association_mat(state, set_cluster_association_mat){
-            state.set_cluster_association_mat = set_cluster_association_mat;
+        set_cluster_association_mat(state, cluster_association_mat){
+            state.cluster_association_mat = cluster_association_mat;
+            console.log("cluster_association_mat:", state.cluster_association_mat);
         },
         set_history_data(state, history_data) {
             console.log("set history data");

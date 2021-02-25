@@ -144,22 +144,26 @@ class WSLModel(object):
                 "children": []
             }
             tree["children"].append(node)
+            tree["descendants_idx"] = [-1] + tree["descendants_idx"]
         visit_node = [tree]
         while len(visit_node) > 0:
             node = visit_node[-1]
             visit_node = visit_node[:-1]
-            if len(node["children"]) == 0 and "descendants_idx" in node:
+            if "descendants_idx" in node:
                 descendants_idx = node["descendants_idx"]
                 descendants_idx = [i + shift for i in descendants_idx]
+                node["descendants_idx"] = descendants_idx
+            if len(node["children"]) == 0 and "descendants_idx" in node:
+                descendants_idx = node["descendants_idx"]
                 for idx in descendants_idx:
                     name = name_list[idx]
                     leaf_node = {
                         "type": "text",
                         "name": str(name),
-                        "children": []
+                        "children": [],
                     }
                     node["children"].append(leaf_node)
-                del node["descendants_idx"]
+                # del node["descendants_idx"]
             visit_node.extend(node["children"])
         return tree
 
