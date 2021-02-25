@@ -17,6 +17,7 @@ from .set_helper import SetHelper
 DEBUG = False
 
 class TreeHelper(object):
+    # this class is deprecated and will be removed in the future.
     def __init__(self, tree, class_name):
         self.tree = tree
         self.class_name = class_name
@@ -271,6 +272,7 @@ class Data(DataBaseLoader):
         return res
 
     def get_hypergraph(self):
+        # this function is deprecated 
         set_list = self.get_set()
         for s in set_list:
             categories = decoding_categories(s)

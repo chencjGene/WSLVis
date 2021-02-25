@@ -5,6 +5,7 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 
 from ..utils.log_utils import logger
 from ..utils.helper_utils import json_load_data, json_save_data
+from ..utils.helper_utils import pickle_save_data, pickle_load_data
 from ..database_utils.data_database import Data
 # from ..database_utils.data import Data
 try:
@@ -13,6 +14,7 @@ except:
     None
     
 from .coclustering import CoClustering
+from .tree_helper import TextTreeHelper, TreeHelper
 
 
 class WSLModel(object):
@@ -34,19 +36,24 @@ class WSLModel(object):
     def _init(self):
         logger.info("current config of model: dataname-{}, step-{}, text_k-{}, image_k-{}, pre_k-{}".format(self.dataname, self.step,\
                 self.config["text_k"], self.config["image_k"], self.config["pre_k"]))
-        self.data = Data(self.dataname, self.step)
+        self._init_data()
         self.data_root = self.data.data_root
         self.data_all_step_root = self.data.data_all_step_root
+        self.buffer_path = os.path.join(self.data_root, "model.pkl")
         self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
             size_min=1, size_max=3000, random_state=0)
         self.coclustering = CoClustering(self.config["text_k"], \
             self.config["image_k"], 0, verbose=0) # TODO: 
+        self.text_tree_helper = TextTreeHelper()
+        self.image_tree_helper = TreeHelper()
+
+    def _init_data(self):
+        self.data = Data(self.dataname, self.step)
 
     def reset(self, dataname, step, config):
         self.dataname = dataname
         self.step = step
         self._init()
-
 
     def run(self):
         self.data.run()
@@ -174,6 +181,11 @@ class WSLModel(object):
         self.text_tree = self._post_processing_hierarchy(text_tree, self.data.class_name)
         self.image_tree = self._post_processing_hierarchy(image_tree, list(range(image_h.shape[0])))
 
+        self.text_tree_helper.update(self.text_tree, self.data.class_name)
+        self.data.get_precision_and_recall()
+        self.text_tree_helper.assign_precision_and_recall(\
+            self.data.precision, self.data.recall)
+
         a = 1
 
     def get_R(self, exclude_person=True):
@@ -215,6 +227,32 @@ class WSLModel(object):
         mat = {
             "text_tree": self.text_tree,
             "image_tree": self.image_tree,
-            "co_matrix": self.get_R(False).tolist()
+            "cluster_association_matrix": self.get_R(False).tolist()
         }
         return mat
+
+    def save_model(self, path=None):
+        buffer_path = self.buffer_path
+        if path:
+            buffer_path = path
+        tmp_data = self.data
+        self.data = None
+        pickle_save_data(buffer_path, self)
+        self.data = tmp_data
+
+    def load_model(self, path=None):
+        buffer_path = self.buffer_path
+        if path:
+            buffer_path = path
+        self = pickle_load_data(buffer_path)
+        self.data = Data(self.dataname, self.step)
+    
+    def buffer_exist(self, path=None):
+        buffer_path = self.buffer_path
+        if path:
+            buffer_path = path
+        if os.path.exists(buffer_path):
+            return True
+        else:
+            return False
+        

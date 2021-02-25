@@ -11,19 +11,25 @@ class CaseCOCO17(CaseBase):
     def __init__(self, case_mode):
         dataname = config.coco17
         super(CaseCOCO17, self).__init__(dataname, case_mode)
-        self.step = self.base_config
+        self.step = self.base_config["step"]
 
     def run(self, use_buffer=False):
         # if step and self.case_mode:
         #     raise ValueError("case_mode is set but step is provided")
-
         if self.step == 0:
             None
         elif self.step == 1:
             if use_buffer and self.model.buffer_exist():
-                None # TODO:
-                return 
-
+                logger.info("buffer exists. Loading model.")
+                # self.model.load_model()
+                self.model = pickle_load_data(self.model.buffer_path)
+                self.model._init_data()
+                return self.model
+        # logger.info("You do not intend to use the model buffer or the buffer does not exist")
+        if use_buffer:
+            logger.info("The model buffer does not exist. Run the model.")
+        else:
+            logger.info("You do not intend to use the model buffer. Rerun the model.")
         self.model.run()
-
-        return None
+        self.model.save_model()
+        return self.model
