@@ -24,15 +24,20 @@
 import { mapActions, mapState, mapMutations } from "vuex";
 import * as d3 from "d3";
 import * as Global from "../plugins/global";
+
+// computation components
 import {
     mini_tree_layout,
     TreeCut,
     tree_layout,
-} from "../plugins/treecut";
-import { SetManager } from "../plugins/set_manager";
-import TextTree from "../plugins/text_tree";
-import TextImageConnection from "../plugins/text_image_connection";
-import ImageCards from "../plugins/image_card";
+} from "../plugins/layout_text";
+// import { SetManager } from "../plugins/set_manager";
+
+// render components
+import TextTree from "../plugins/render_text_tree";
+import TextImageConnection from "../plugins/render_connection";
+import ImageCards from "../plugins/render_image_card";
+
 import InfoTooltip from "../components/infotooltip";
 export default {
     name: "Detection",
@@ -457,7 +462,7 @@ export default {
             this.layer_height
         );
 
-        this.set_manager = new SetManager(this);
+        // this.set_manager = new SetManager(this);
 
         this.text_tree_view = new TextTree(this);
         this.connection_view = new TextImageConnection(this);

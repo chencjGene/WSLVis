@@ -60,9 +60,9 @@ const store = new Vuex.Store({
                     let children = d.children;
                     return children
                 });
-            function unique(arr){
-                return Array.from(new Set(arr));
-            }
+            // function unique(arr){
+            //     return Array.from(new Set(arr));
+            // }
             state.tree.eachAfter(element => {
                 element.id = element.data.id;
                 element.full_name = element.data.name;
