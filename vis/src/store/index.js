@@ -102,10 +102,11 @@ const store = new Vuex.Store({
             state.tree.all_descendants = state.tree.descendants();
             state.tree.all_descendants.forEach(d => d.children = []);
             
-            // process set
-            state.all_sets = hypergraph_data.set_list
-            state.tree.all_descendants.forEach(d => d.data.sets = 
-                d.data.sets.map(d => state.all_sets[d]));
+            // CHANGE: The connection of text and image are no longer store in text tree
+            // // process set
+            // state.all_sets = hypergraph_data.set_list
+            // state.tree.all_descendants.forEach(d => d.data.sets = 
+            //     d.data.sets.map(d => state.all_sets[d]));
 
             console.log("state.tree", state.tree)
             // this.commit("set_focus_node", state.tree);
