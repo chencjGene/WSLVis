@@ -18,7 +18,9 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
+        image_tree: {},
         expand_tree: true,
+        cluster_association_mat: [],
         focus_node: null,
         all_sets: [],
         words: [],
@@ -54,8 +56,14 @@ const store = new Vuex.Store({
         set_hypergraph_data(state, hypergraph_data){
             console.log("set hypergraph data");
             console.log("hypergraph_data", hypergraph_data);
+            console.log("state", state);
+            this.commit("set_text_tree_data", hypergraph_data.text_tree);
+            this.commit("set_image_tree_data", hypergraph_data.image_tree);
+            this.commit("set_cluster_association_mat", hypergraph_data.cluster_association_matrix);
+        },
+        set_text_tree_data(state, text_tree){
             // process tree 
-            state.tree = d3.hierarchy(hypergraph_data.text_tree,
+            state.tree = d3.hierarchy(text_tree,
                 function(d){
                     let children = d.children;
                     return children
@@ -112,6 +120,32 @@ const store = new Vuex.Store({
             // this.commit("set_focus_node", state.tree);
             console.log("state.focus_node", state.focus_node);
             // state.sets = hypergraph_data.set_list;
+
+        },
+        set_image_tree_data(state, image_tree){
+            state.image_tree = d3.hierarchy(image_tree,
+                function(d){
+                    let children = d.children;
+                    return children
+                });
+            state.image_tree.eachAfter(element => {
+                element.id = element.data.id;
+                element.full_name = element.data.name;
+                element.name = element.full_name;
+                element.all_children = element.children;
+                if(element.children) element.children.forEach((d,i) => d.siblings_id = i);
+                element._children = [];
+                element._total_width = 0;
+            });
+            state.image_tree.eachBefore((d, i) => d.order = i);
+
+            state.image_tree.all_descendants = state.image_tree.descendants();
+            state.image_tree.all_descendants.forEach(d => d.children = []);
+
+            console.log("state.image_tree", state.image_tree);
+        },
+        set_cluster_association_mat(state, set_cluster_association_mat){
+            state.set_cluster_association_mat = set_cluster_association_mat;
         },
         set_history_data(state, history_data) {
             console.log("set history data");
