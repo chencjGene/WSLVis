@@ -117,7 +117,7 @@ class CoClusteringTest(unittest.TestCase):
             s = sse[k]
             dz[i] = dz[i] - s / 5000
         ax.bar3d(xpos, ypos, 0, dx, dy, dz, zsort="average")
-        # ax.view_init(elev=10, azim=190)
+        ax.view_init(elev=10, azim=240)
         plt.savefig("test/mismatch/3d.jpg")
         plt.show()
         plt.close()

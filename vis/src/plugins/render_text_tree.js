@@ -108,7 +108,9 @@ const TextTree = function (parent) {
             .attr("width", () => {
                 return that.max_text_width;
             })
-            .style("fill", d => d.selected_flag ? Global.DarkGray : "#EBEBF3")
+            // TODO: 
+            // .style("fill", d => d.selected_flag ? Global.DarkGray : "#EBEBF3")
+            .style("fill", "#EBEBF3")
             .style("fill-opacity", 0)
             .on("mouseover", (ev, d) => {
                 that.highlight(ev, d);
@@ -305,7 +307,7 @@ const TextTree = function (parent) {
             .attr("ry", that.layer_height / 12)
             .attr("x", (d) => that.layer_height / 4 + d.x_delta)
             .attr("y", (d) => d.y_delta)
-            .attr("height", that.layer_height * 0.4)
+            .attr("height", that.layer_height * 0.6)
             .attr("width", () => {
                 return that.max_text_width;
             })

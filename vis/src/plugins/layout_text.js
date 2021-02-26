@@ -227,8 +227,8 @@ const tree_layout = function(nodeSize, layout_height){
             d.rest_children.forEach(n => {n.x = d.x; n.y = d.y;})
             d.rest_children = d.rest_children.slice(0, 3); // show max 3 rest children
             let children_num = d.rest_children.length;
-            let single_height = that.y_delta * 0.4;
-            let max_delta = 6;
+            let single_height = that.y_delta * 0.6;
+            let max_delta = that.y_delta * 0.2;
             let total_height = single_height + max_delta * (children_num - 1);
             if (total_height > that.y_delta * 0.8){
                 let delta = (this.y_delta * 0.8 - single_height) / (children_num - 1);
