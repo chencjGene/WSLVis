@@ -108,15 +108,20 @@ class CoClusteringTest(unittest.TestCase):
     def test_view_point(self):
         k1_range = list(range(2,15))
         k2_range = list(range(2,20))
+        sse = pickle_load_data("test/feature/sse_text.pkl")
         xpos, ypos, dx, dy, dz = pickle_load_data("test/mismatch/3d_real_data.pkl")
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
+        for i in range(len(xpos)):
+            k = xpos[i]
+            s = sse[k]
+            dz[i] = dz[i] - s / 5000
         ax.bar3d(xpos, ypos, 0, dx, dy, dz, zsort="average")
         # ax.view_init(elev=10, azim=190)
         plt.savefig("test/mismatch/3d.jpg")
         plt.show()
         plt.close()
-        dz = dz.reshape(5,5)
+        dz = dz.reshape(13,18)
         gradient = calculate_gradient(dz)
         res = find_turning_points(gradient)
         a = 1 

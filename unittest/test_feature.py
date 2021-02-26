@@ -17,7 +17,7 @@ from application.views.database_utils.set_helper import CoClustering
 from application.views.database_utils.spectral_biclustering import SpectralBiclustering
 from application.views.database_utils.utils import multiclass_precision_and_recall
 from application.views.utils.config_utils import config
-from application.views.utils.helper_utils import pickle_load_data, one_hot_encoder
+from application.views.utils.helper_utils import pickle_load_data, one_hot_encoder, pickle_save_data
 from application.views.database_utils.utils import decoding_categories, encoding_categories
 
 class FeatureTest(unittest.TestCase):
@@ -45,6 +45,25 @@ class FeatureTest(unittest.TestCase):
         # np.save("test/feature/kmeans-3.npy".format(feature_id), labels)
 
         a = 1
+
+    def test_text_kmeans(self):
+        d = Data(config.coco17, step=1)
+        feature = d.get_text_feature()
+        sse = {}
+        for k in tqdm(range(2,20)):
+            model = KMeans(k, init="k-means++",
+                            n_init=10, n_jobs="deprecated",
+                            random_state=123)
+            model.fit(feature)
+            sse[k] = model.inertia_
+        plt.figure()
+        plt.plot(list(sse.keys()), list(sse.values()))
+        plt.xlabel("Number of cluster")
+        plt.ylabel("SSE")
+        plt.savefig("test/feature/sse_text_plot.jpg")
+        pickle_save_data("test/feature/sse_text.pkl", sse)
+        a = 1
+
     
     def test_evaluate_kmeans(self):
         # kmeans_result = "feature/kmeans-3.npy"

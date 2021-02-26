@@ -49,7 +49,7 @@ const ConnectionLayout = function(parent, cluster_association_mat){
     };
     this.get_links = function(){
         that.links = [];
-        let threshold = 50;
+        let threshold = 100;
         for (let i = 0; i < that.text_nodes.length; i++){
             for (let j = 0; j < that.image_nodes.length; j++){
                 let element = that.matrix[i][j];
