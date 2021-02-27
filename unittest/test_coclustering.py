@@ -19,7 +19,6 @@ from scipy.sparse.linalg import eigsh, svds
 from application.views.database_utils import Data
 from application.views.model_utils import CoClustering, DTPP, CoefficientVariance
 from application.views.model_utils import calculate_gradient, find_turning_points
-# from application.views.database_utils.set_helper import CoClustering, DTPP
 from application.views.database_utils.spectral_biclustering import SpectralBiclustering
 from application.views.database_utils.spectral_biclustering import \
     _log_normalize, _bistochastic_normalize, _scale_normalize
@@ -139,57 +138,38 @@ class CoClusteringTest(unittest.TestCase):
             print(np.array(class_name)[selected])
         a = 1
 
-    def test_spectral_clustering_by_clusters(self):
+
+    def test_coclustering_by_clusters(self):
         kmeans = np.load("test/feature/kmeans-3.npy")
-        d = Data(config.coco17, suffix="step1")
-        image_labels = d.get_category_pred(label_type="all", data_type="image")
-        text_labels = d.get_category_pred(label_type="all", data_type="text")
-        single_mismatch = (image_labels!=text_labels).sum(axis=1)
-        cluster_mismatch = []
-        for i in range(100):
-            idxs = np.array(range(len(kmeans)))[kmeans == i]
-            cluster_mismatch.append(single_mismatch[idxs].sum())
-        cluster_mismatch = np.array(cluster_mismatch)
-        # sets = d.get_set()
-        # image_by_type, sets = d.set_helper.get_real_set()
+        d = Data(config.coco17, step=1)
+
         class_name = d.class_name
         R = load_R(class_name, kmeans)
-
+        # text_feature = np.load("test/word_embedding/word_feature_finetune2_glove.npy")
+        text_feature = np.load("test/word_embedding/result/result_20000.npy")
+        norm = (text_feature**2).sum(axis=1)
+        norm = norm ** 0.5
+        text_feature = text_feature / norm.reshape(-1,1)
+        # text_feature[12] = text_feature[13]
+        text_feature = text_feature[1:]
+        
         # normalization
         R = R[1:, :]
         class_name = class_name[1:]
         R = R / R.max()
         R = np.power(R, 0.4)
 
-        # coclustering 
-        k1, k2 = [12, 12]
-        model = SpectralBiclustering(n_clusters=[k1, k2], method='bistochastic',
-                            random_state=0, n_components=14)
-        model.fit(R.copy())
-        idx1 = np.argsort(model.row_labels_)
-        fit_data = R[idx1]
-        RR = fit_data[:, np.argsort(model.column_labels_)]
-        
+        k1, k2 = [9, 9]
+        clf = CoClustering(k1, k2, 1.0)
+        # R = _bistochastic_normalize(R) # normalization
+        C1, C2 = clf.fit(R, text_feature)
+        row_labels = np.dot(C1, np.array(range(k1)).reshape(-1,1)).reshape(-1)
+        col_labels = np.dot(C2, np.array(range(k2)).reshape(-1,1)).reshape(-1)
         for i in range(k1):
-            selected = model.row_labels_==i
+            selected = row_labels==i
             # print("total num of selected", sum(selected))
             print(np.array(class_name)[selected])
-        
-        # for i in range(k2):
-        #     selected = model.column_labels_ == i
-        #     # print("{}: total num of selected {}".format(i, sum(selected)))
-        #     # print(np.array(range(100))[selected])
-        #     print(cluster_mismatch[selected], "**", cluster_mismatch[selected].sum())
-
-
-        # visualization 
-        sns.set(font_scale=0.5)
-        sns.heatmap(RR, yticklabels=np.array(class_name)[idx1])
-        plt.savefig("test/feature/cluster_R.jpg")
-        plt.close()
-
         a = 1
-
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

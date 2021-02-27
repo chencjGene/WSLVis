@@ -112,6 +112,9 @@ class DataBaseLoader(object):
     def get_text_feature(self):
         text_feature_path = os.path.join(self.data_root, "word_feature.npy")
         text_feature = np.load(text_feature_path)
+        norm = (text_feature**2).sum(axis=1)
+        norm = norm ** 0.5
+        text_feature = text_feature / norm.reshape(-1,1)
         return text_feature
 
     def get_image_feature(self):

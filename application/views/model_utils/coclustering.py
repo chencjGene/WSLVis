@@ -8,6 +8,7 @@ from time import time
 import warnings
 from math import sqrt
 
+from sklearn.metrics import pairwise_distances
 from sklearn.utils import check_random_state, check_array
 from sklearn.utils.extmath import randomized_svd, safe_sparse_dot, squared_norm
 from sklearn.utils.validation import check_is_fitted, check_non_negative
@@ -207,6 +208,7 @@ class CoClustering(object):
         self.k2 = k2
         self.n_iter = n_iter
         self.verbose = verbose
+        self.tol = 1e-5
 
     def kmeans(self, M, k):
         kmeans = KMeans(n_clusters=k, random_state=12).fit(M)
@@ -247,6 +249,7 @@ class CoClustering(object):
         C2 = self.random_orthonormal_matrix(n2, k)
         pre_C1 = C1.copy()
         pre_C2 = C2.copy()
+        pre_trr1 = 0
         if text_feature is not None:
             text_part = self.w_t * np.dot(text_feature, text_feature.T)
         else:
@@ -267,12 +270,16 @@ class CoClustering(object):
             trr2 = C2.T.dot(R.T).dot(C1).dot(C1.T).dot(R).dot(C2).trace()
             err1 = ((C1 - pre_C1)**2).sum()
             err2 = ((C2 - pre_C2)**2).sum()
+            if err1 < self.tol and err2 < self.tol:
+                break
+            if trr1 < pre_trr1:
+                break
             if self.verbose:
                 print("iter {}, time cost: {}, err1: {}, err2: {},\n trr1: {}, trr2: {}" \
                     .format(i, time() - t0, err1, err2, trr1, trr2))
             pre_C1 = C1.copy()
             pre_C2 = C2.copy()
-            pre_M1 = M1.copy()
+            pre_trr1 = trr1
         # print("C1 imag", (abs(C1.imag)).sum())
         # print("C2 imag", (abs(C2.imag)).sum())
         W = C1.real
