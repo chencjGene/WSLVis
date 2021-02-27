@@ -124,6 +124,9 @@ export default {
             let mat = this.mini_tree_layout.layout(this.tree);
             this.mini_nodes = mat.nodes;
             this.mini_links = mat.links;
+            
+            // update cut cluster association matrix
+            this.connection_layout.update(this.nodes, this.image_cluster_list);
 
             // set layout
             this.leaf_nodes = this.nodes.filter((d) => d.children.length === 0);
@@ -132,10 +135,9 @@ export default {
             });
             this.selected_nodes = this.nodes.filter(d => d.selected_flag);
             console.log("selected_nodes", this.selected_nodes);
+            // this.sets = this.connection_layout.reorder(this.image_cluster_list);
             this.sets = this.image_layout.layout(this.image_cluster_list);
 
-            // update cut cluster association matrix
-            this.connection_layout.update(this.nodes, this.sets);
             this.set_links = this.connection_layout.get_links();
         },
         update_view() {

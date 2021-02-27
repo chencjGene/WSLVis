@@ -2,6 +2,7 @@ const ConnectionLayout = function(parent, cluster_association_mat){
     let that = this;
     that.parent = parent;
     that.cluster_association_mat = cluster_association_mat;
+    this.threshold = 100;
 
     that.text_width = that.parent.max_text_width + that.parent.layer_height / 4;
     that.layout_width = that.parent.layout_width;
@@ -46,10 +47,21 @@ const ConnectionLayout = function(parent, cluster_association_mat){
                 that.matrix[i].push(element);
             }
         }
+
+        for (let j = 0; j < image_num; j++){
+            let connected_nodes = [];
+            for (let i = 0; i < text_num; i++){
+                let element = that.matrix[i][j];
+                if (element > this.threshold) connected_nodes.push(text_nodes[i]);
+            }
+            image_nodes[j].connected_nodes = connected_nodes;
+        }
     };
+
+
     this.get_links = function(){
         that.links = [];
-        let threshold = 100;
+        let threshold = this.threshold;
         for (let i = 0; i < that.text_nodes.length; i++){
             for (let j = 0; j < that.image_nodes.length; j++){
                 let element = that.matrix[i][j];

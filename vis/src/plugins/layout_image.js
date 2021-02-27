@@ -20,10 +20,30 @@ const image_cluster_list_layout = function(parent){
         that.parent.set_height = that.layout_height / that.parent.set_num - 2;
         that.parent.image_height = that.set_height * 0.9;
     };
+    
+    let mean = function(arr){
+        let sum = 0;
+        for(let i = 0; i < arr.length; i++){
+            sum += arr[i];
+        }
+        return sum / arr.length;
+    };
+
+    this.reorder = function(data){
+        data.forEach( d => {
+            let nodes = d.connected_nodes;
+            let ys = nodes.map(n => n.y);
+            d.order = mean(ys);
+        })
+        data.sort((a,b) => a.order - b.order);
+        return data;
+    }
 
     this.layout = function(data){
         this.update_parent_set_layout(data);
         this.get_set_layout_from_parent();
+
+        data = this.reorder(data);
 
         data.forEach((d, i) => {
             d.x = that.set_left;
