@@ -1,7 +1,7 @@
 // import * as d3 from "d3"
 // import {TreeCut} from "./treecut"
 
-const image_tree_layout = function(parent){
+const image_cluster_list_layout = function(parent){
     let that = this;
     that.parent = parent;
 
@@ -37,4 +37,4 @@ const image_tree_layout = function(parent){
     }
 }
 
-export {image_tree_layout}
+export {image_cluster_list_layout}

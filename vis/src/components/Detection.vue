@@ -31,7 +31,7 @@ import {
     TreeCut,
     tree_layout,
 } from "../plugins/layout_text";
-import {image_tree_layout} from "../plugins/layout_image";
+import {image_cluster_list_layout} from "../plugins/layout_image";
 import {ConnectionLayout} from "../plugins/layout_connection";
 
 // import { SetManager } from "../plugins/set_manager";
@@ -468,7 +468,7 @@ export default {
             this.layer_height
         );
 
-        this.image_layout = new image_tree_layout(this);
+        this.image_layout = new image_cluster_list_layout(this);
         this.connection_layout = new ConnectionLayout(this);
         // this.set_manager = new SetManager(this);
 
