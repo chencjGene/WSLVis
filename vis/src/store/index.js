@@ -18,7 +18,7 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
-        image_tree: {},
+        image_cluster_list: [],
         expand_tree: true,
         cluster_association_mat: [],
         focus_node: null,
@@ -58,7 +58,7 @@ const store = new Vuex.Store({
             console.log("hypergraph_data", hypergraph_data);
             console.log("state", state);
             this.commit("set_text_tree_data", hypergraph_data.text_tree);
-            this.commit("set_image_tree_data", hypergraph_data.image_tree);
+            this.commit("set_image_cluster_list_data", hypergraph_data.image_cluster_list);
             this.commit("set_cluster_association_mat", hypergraph_data.cluster_association_matrix);
         },
         set_text_tree_data(state, text_tree){
@@ -106,27 +106,9 @@ const store = new Vuex.Store({
             console.log("state.tree", state.tree)
 
         },
-        set_image_tree_data(state, image_tree){
-            state.image_tree = d3.hierarchy(image_tree,
-                function(d){
-                    let children = d.children;
-                    return children
-                });
-            state.image_tree.eachAfter(element => {
-                element.id = element.data.id;
-                element.full_name = element.data.name;
-                element.name = element.full_name;
-                element.all_children = element.children;
-                if(element.children) element.children.forEach((d,i) => d.siblings_id = i);
-                element._children = [];
-                element._total_width = 0;
-            });
-            state.image_tree.eachBefore((d, i) => d.order = i);
-
-            state.image_tree.all_descendants = state.image_tree.descendants();
-            state.image_tree.all_descendants.forEach(d => d.children = []);
-
-            console.log("state.image_tree", state.image_tree);
+        set_image_cluster_list_data(state, image_cluster_list){
+            state.image_cluster_list = image_cluster_list;
+            console.log("state.image_cluser_list", state.image_cluster_list);
         },
         set_cluster_association_mat(state, cluster_association_mat){
             state.cluster_association_mat = cluster_association_mat;

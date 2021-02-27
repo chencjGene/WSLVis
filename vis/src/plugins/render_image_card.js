@@ -6,20 +6,28 @@ const ImageCards = function(parent){
 
     that.server_url = that.parent.server_url;
 
-    // set
-    that.set_height = that.parent.set_height;
-    that.set_left = that.parent.set_left;
-    that.set_width = that.parent.set_width;
-    that.set_margin = that.parent.set_margin;
-    that.image_height = that.parent.image_height;
-    that.image_margin = that.parent.image_margin;
 
     // animation
     that.create_ani = that.parent.create_ani;
     that.update_ani = that.parent.update_ani;
     that.remove_ani = that.parent.remove_ani;
 
+    this.get_set_layout_from_parent = function(){
+        // set
+        that.layout_height = that.parent.layout_height;
+        that.set_height = that.parent.set_height;
+        that.set_left = that.parent.set_left;
+        that.set_width = that.parent.set_width;
+        that.set_margin = that.parent.set_margin;
+        that.image_height = that.parent.image_height;
+        that.image_margin = that.parent.image_margin;
+    };
+    this.get_set_layout_from_parent();
+
     this.sub_component_update = function(sets) {
+        // update layout config
+        this.get_set_layout_from_parent();
+
         // update state 
         console.log("image card sub component update", sets);
 

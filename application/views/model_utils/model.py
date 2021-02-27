@@ -42,9 +42,9 @@ class WSLModel(object):
         self.buffer_path = os.path.join(self.data_root, "model.pkl")
         self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
             size_min=1, size_max=3000, random_state=0)
-        self.cluster_name = ["img_cluster_"+ str(i) for i in range(self.config["pre_k"])]
+        self.image_cluster_name = ["img_cluster_"+ str(i) for i in range(self.config["pre_k"])]
         self.coclustering = CoClustering(self.config["text_k"], \
-            self.config["image_k"], 0, verbose=0) # TODO: 
+            self.config["image_k"], self.config["weight"], verbose=0) 
         self.text_tree_helper = TextTreeHelper()
         self.image_tree_helper = ImageTreeHelper()
         
@@ -103,6 +103,20 @@ class WSLModel(object):
         labels = model.labels_
         return labels
 
+    def _image_cluster(self, X, k):
+        logger.info("performing kmeans with k is {}".format(k))
+        model = KMeans(n_clusters=k, random_state=12)
+        model.fit(X)
+        labels = model.labels_
+        image_cluster_list = []
+        for i in range(k):
+            idxs = np.array(range(len(labels)))[labels==i]
+            image_cluster_list.append({
+                "cluster_idxs": idxs.tolist(),
+                "id": i
+            })
+        return image_cluster_list
+
     def _hierarchical_coclustering(self, tree, X):
         visit_node = [tree]
         while len(visit_node) > 0:
@@ -112,11 +126,11 @@ class WSLModel(object):
             des_X = X[np.array(descendants_idx), :]
             if len(descendants_idx) > 6:
                 if node["name"] == "root" and node["type"] == "text":
-                    k = 10
+                    k = self.config["text_k"]
                 elif node["name"] == "root" and node["type"] == "image":
-                    k = 10
+                    k = self.config["image_k"]
                 else:
-                    k = 3
+                    k = 2
                 # run clustering algorithm
                 labels = self._kmeans(des_X, k)
                 # create tree node for each cluster under this node
@@ -177,18 +191,11 @@ class WSLModel(object):
             "name": "root",
             "descendants_idx":list(range(text_w.shape[0])),
         }
-        image_tree = {
-            "type": "image",
-            "name": "root",
-            "descendants_idx": list(range(image_h.shape[0]))
-        }
         text_tree = self._hierarchical_coclustering(text_tree, text_w)
-        image_tree = self._hierarchical_coclustering(image_tree, image_h)
-        self.text_tree = self._post_processing_hierarchy(text_tree, self.data.class_name)
-        self.image_tree = self._post_processing_hierarchy(image_tree, self.cluster_name)
+        self.image_cluster_list = self._image_cluster(image_h, self.config["image_k"])
 
+        self.text_tree = self._post_processing_hierarchy(text_tree, self.data.class_name)
         self.text_tree_helper.update(self.text_tree, self.data.class_name)
-        self.image_tree_helper.update(self.image_tree, self.cluster_name)
         self.data.get_precision_and_recall()
         self.text_tree_helper.assign_precision_and_recall(\
             self.data.precision, self.data.recall)
@@ -233,7 +240,7 @@ class WSLModel(object):
     def get_current_hypergraph(self):
         mat = {
             "text_tree": self.text_tree,
-            "image_tree": self.image_tree,
+            "image_cluster_list": self.image_cluster_list,
             "cluster_association_matrix": self.get_R(False).tolist()
         }
         return mat

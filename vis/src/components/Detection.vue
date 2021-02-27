@@ -59,7 +59,7 @@ export default {
     computed: {
         ...mapState([
             "tree",
-            "image_tree",
+            "image_cluster_list",
             "cluster_association_mat",
             "all_sets",
             "focus_node",
@@ -106,7 +106,7 @@ export default {
         },
         update_data() {
             console.log("detection update data");
-            console.log(this.tree, this.sets);
+            console.log(this.tree, this.image_cluster_list);
 
             // tree layout
             this.nodes = this.tree_layout.layout_with_rest_node(
@@ -132,7 +132,7 @@ export default {
             });
             this.selected_nodes = this.nodes.filter(d => d.selected_flag);
             console.log("selected_nodes", this.selected_nodes);
-            this.sets = this.image_layout.layout(this.image_tree);
+            this.sets = this.image_layout.layout(this.image_cluster_list);
 
             // update cut cluster association matrix
             this.connection_layout.update(this.nodes, this.sets);
