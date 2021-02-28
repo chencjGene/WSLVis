@@ -26,6 +26,7 @@ const store = new Vuex.Store({
         all_sets: [],
         words: [],
         focus_word: null,
+        focus_image: null,
         text_list: [],
         focus_text: null,
         image_list: [],
