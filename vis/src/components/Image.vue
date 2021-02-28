@@ -7,7 +7,7 @@
 
 
 <script>
-  import {mapActions} from "vuex"
+  import {mapActions, mapState} from "vuex"
   import * as d3 from 'd3'
 export default {
   name: "DetImage",
@@ -19,9 +19,17 @@ export default {
       this.update_view();
     }
   },
+  computed: {
+    ...mapState(["server_url"])
+  },
   methods: {
-    ...mapActions(["focus_image"]),
+    ...mapActions([]),
     update_view() {
+      this.e_images = this.image_group.selectAll(".info-image")
+        .data([this.image_data]);
+      this.e_boxes = this.boxes_group.selectAll(".info-box")
+        .data(this.boxes);
+
       this.create();
       this.update();
       this.remove();
@@ -54,16 +62,22 @@ export default {
       let aspect_ratio = this.focus_image.h / this.focus_image.w;
       let width = 0;
       let height = 0;
+      let image_x = 0;
+      let image_y = 0;
       let boxes = [];
       let dets = this.focus_image.d;
       that.dets = dets;
       if (aspect_ratio > this.aspect_ratio){
         height = that.layout_height;
         width = that.layout_height * this.focus_image.w / this.focus_image.h;
+        image_x = (that.layout_width - width) / 2;
+        image_y = 0;
       }
       else{
         width = that.layout_width;
         height = width * this.focus_image.h / this.focus_image.w;
+        image_x = 0;
+        image_y = (that.layout_height - height) / 2;
       }
       for (let i = 0; i < dets.length; i++){
           let x = width * dets[i][0];
@@ -72,10 +86,30 @@ export default {
           let h = height * (dets[i][3] - dets[i][1]);
           boxes.push({x, y, w, h});
       }
-      this.image_data = {width, height, "idx":this.focus_image.idx};
+      this.image_data = {width, height, "idx":this.focus_image.idx, "x":image_x, "y": image_y};
       this.boxes = boxes;
     },
     create() {
+      this.e_images.enter()
+        .append("image")
+        .attr("class", "info-image")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y)
+        .attr("width", d => d.width)
+        .attr("height", d => d.height)
+        .attr("href", d => this.server_url + `/image/image?filename=${d.idx}.jpg`);
+
+      this.e_boxes.enter()
+        .append("rect")
+        .attr("class", "info-box")
+            .attr("x", d => d.x)
+            .attr("y", d => d.y)
+            .attr("width", d => d.w)
+            .attr("height", d => d.h)
+            .style("fill", "none")
+            .style("stroke", "green")
+            .style("stroke-width", 1);
+
 
     },
     update(){
@@ -103,6 +137,21 @@ export default {
       .attr("width", this.bbox_width)
       .attr("height", this.layout_height);
 
+    this.image_group = this.svg
+      .append("g")
+      .attr("id", "info-image-g")
+      .attr(
+        "transform",
+        "translate(" + 5 + ", " + 5 + ")"
+        );
+    this.boxes_group = this.svg
+      .append("g")
+      .attr("id", "info-boxes-g")
+      .attr(
+        "transform",
+        "translate(" + 5 + ", " + 5 + ")"
+        );
+    
     this.update_data();
     this.update_view();
   },
