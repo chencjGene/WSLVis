@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import * as Global from "../plugins/global";
+import * as Global from "./global";
 const TextImageConnection = function (parent) {
     let that = this;
     that.parent = parent;
@@ -17,7 +17,7 @@ const TextImageConnection = function (parent) {
         // update view
         that.e_set_links = that.set_link_group
             .selectAll(".set-link")
-            .data(set_links); // TODO: id map
+            .data(set_links, d => d.source.id + "-" + d.target.id); 
 
         that.create();
         that.update();
@@ -30,11 +30,11 @@ const TextImageConnection = function (parent) {
             .enter()
             .append("path")
             .attr("class", "set-link")
+            .attr("id", d => d.source.id + "-" + d.target.id)
             // .attr("d", Global.set_line)
             .attr(
                 "d",
-                d3
-                    .linkHorizontal()
+                d3.linkHorizontal()
                     .x((d) => d.x)
                     .y((d) => d.y)
             )
@@ -49,7 +49,14 @@ const TextImageConnection = function (parent) {
     };
 
     that.update = function () {
-
+        that.e_set_links
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            .attr("d", 
+            d3.linkHorizontal()
+                .x((d) => d.x)
+                .y((d) => d.y));
     };
 
     that.remove = function () {

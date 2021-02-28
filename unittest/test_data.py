@@ -1,4 +1,5 @@
 import unittest
+from tqdm import tqdm
 
 from application.views.database_utils import Data
 from application.views.database_utils.utils import multiclass_precision_and_recall
@@ -41,12 +42,18 @@ class DataTest(unittest.TestCase):
 
 
     def test_data_database_get_set(self):
-        d = Data(config.coco17)
-        d.get_set()
+        d = Data(config.coco17, suffix="step1")
+        image_by_type, sets = d.set_helper.get_real_set()
+        a = 1
 
     
     def test_get_image_by_type(self):
         d = Data(config.coco17, suffix="step1")
+        for idx in tqdm(d.train_idx):
+            det = d.set_helper.get_detection_result(idx)
+            for b in det:
+                if b[-1] >= 65:
+                    print("error")
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

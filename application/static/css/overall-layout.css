@@ -1,0 +1,122 @@
+body {
+    min-width: 1000px;
+    min-height: 600px;
+    margin: 0 0 0 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333333;
+    background-color: #fff;
+}
+
+/*h1,h2,h3,h4,h5,h6,p {*/
+    /*line-height: 1.45;*/
+/*}*/
+
+/*h1 { font-size: 4em; }*/
+/*h2 { font-size: 3em; }*/
+/*h3 { font-size: 3em; }*/
+/*h4 { font-size: 3em; }*/
+/*h5 { font-size: 3em; }*/
+/*h6 { font-size: 3em; }*/
+/*p { font-size: 3em; }*/
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.self-col{
+    display:inline-block;
+    vertical-align: top;
+    height: 98%;
+    margin: 0 0.5% 0 0.5%;
+}
+#self-row-0{
+    height: 10%;
+}
+#self-col-1{
+    width: 70%;
+}
+#self-col-2{
+    width: 27%;
+}
+
+.block-container {
+    margin-bottom: 0.1%;
+    /*border-top: 1px solid gray;*/
+}
+.vertical-container {
+    float:left;
+}
+#block-1-0 {
+    height: 4%;
+    border: none;
+    max-height: 28px;
+}
+#entry{
+    height:4%;
+}
+#block-1-1 {
+    height: 98%;
+    width: 99.5%
+    /*border: none;*/
+}
+
+#block-2-1 {
+    height: 98%;
+    width: 99.5%
+}
+
+#block-2-2 {
+    height:98%;
+    width:50%;
+    float: left;
+    /*border: none;*/
+}
+
+
+
+/*---------------- panel header ----------------------*/
+.my-panel {
+    /*margin-bottom: 20px;*/
+    /*border-bottom: 1px solid steelblue;*/
+}
+
+.my-panel-heading {
+    color: white;
+    background-color: gray;
+    padding: 2px;
+    display: inline-block;
+    -ms-border-radius: 8px 8px 0 0;
+    border-radius: 4px 4px 0 0;
+}
+
+.my-panel-seg {
+    margin: 0;
+    color: gray;
+    border: 0;
+    border-top: 1px solid gray;
+}
+/*---------------- panel header ----------------------*/
+
+
+.lasso path {
+    stroke: rgb(80,80,80);
+    stroke-width:2px;
+}
+
+.lasso .drawn {
+    fill-opacity:.05 ;
+}
+
+.lasso .loop_close {
+    fill:none;
+    stroke-dasharray: 4,4;
+}
+
+.lasso .origin {
+    fill:#3399FF;
+    fill-opacity:.5;
+}

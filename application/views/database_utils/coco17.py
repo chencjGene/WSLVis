@@ -158,7 +158,7 @@ class DataCOCO17(DataBase):
         self.load_cache(loading_from_buffer=True, load_method=json_load_data)
         train_detection = self.all_data["train_detections"]
         val_detection = self.all_data["val_detections"] # disable detection result for debug
-        train_images = self.all_data["train_images"]
+        # train_images = self.all_data["train_images"]
         val_images = self.all_data["val_images"]
         train_annos = self.all_data["train_annos"]
         val_annos = self.all_data["val_annos"]
@@ -201,13 +201,13 @@ class DataCOCO17(DataBase):
             try:
                 idx = img_id_2_idx[img_id]
             except Exception as e:
-                # logger.info(e)
+                logger.warn(e)
                 exclude.append(img_id)
             category_id = self.label_map[anno["category_id"]]
             bbox = anno["bbox"]
             bbox[2] += bbox[0]
             bbox[3] += bbox[1]
-            a = area(bbox)
+            # a = area(bbox)
             self.annos[idx]["bbox"].append(bbox + [1, category_id])
         logger.info("exclude {}".format(len(exclude)))
         

@@ -6,7 +6,7 @@ from .utils.config_utils import config
 import json
 import time
 
-from .model_utils import get_text, get_word
+from .port_utils import get_text, get_word
 
 text = Blueprint("text", __name__)
 

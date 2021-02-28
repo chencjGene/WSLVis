@@ -1,4 +1,5 @@
 const GrayColor = "#7f7f7f";
+const DarkGray = "rgb(211, 211, 229)";
 const Animation = 1000;
 
 const deepCopy = function(obj) {
@@ -121,6 +122,7 @@ function half_rounded_rect(x, y, w, h, r_left, r_right){
 
 export {
     GrayColor,
+    DarkGray,
     Animation,
     deepCopy,
     tree_line,

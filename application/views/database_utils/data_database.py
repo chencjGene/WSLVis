@@ -12,97 +12,32 @@ from ..utils.helper_utils import json_load_data, json_save_data, sigmoid
 from ..utils.helper_utils import draw_box,check_dir
 from ..database_utils.utils import decoding_categories, encoding_categories
 from ..database_utils.utils import TFIDFTransform, rule_based_processing, get_precision_and_recall
+from .set_helper import SetHelper
 
 DEBUG = False
 
-class TreeHelper(object):
-    def __init__(self, tree, class_name):
-        self.tree = tree
-        self.class_name = class_name
-        
-        # process
-        self.cat_id_2_node = {}
-        self.tree_node_id_2_node = {}
-        self.name_2_id = {}
+class DataBaseLoader(object):
+    def __init__(self, dataname, step=0):
+        self.dataname = dataname 
+        self.suffix = "step" + str(step)
+        self.data_all_step_root = os.path.join(config.data_root, self.dataname)
+        self.data_root = os.path.join(config.data_root, self.dataname, self.suffix)
 
-        # name to id map
-        for idx, name in enumerate(self.class_name):
-            self.name_2_id[name.strip("\n")] = idx
+        database_file = os.path.join(self.data_root, "database.db")
+        self.conn = sqlite3.connect(database_file, check_same_thread=False)
 
-        tree = self.get_tree()
-        leaf_node = []
-        visit_node = [tree]
-        while len(visit_node) > 0:
-            node = visit_node[-1]
-            self.tree_node_id_2_node[node["id"]] = node
-            visit_node = visit_node[:-1]
-            if len(node["children"]) == 0:
-                leaf_node.append(node)
-            visit_node.extend(node["children"])
-        
-        for node in leaf_node:
-            node["cat_id"] = self.name_2_id[node["name"]]
-            node["sets"] = []
-            self.cat_id_2_node[self.name_2_id[node["name"]]] = node
-
-    def get_tree(self):
-        return self.tree
+    def database_fetch_by_idx(self, idx, keys):
+        # id, cap, bbox, logits, labels, activations, string, detection, image_output
+        cursor = self.conn.cursor()
+        keys = "".join([k + ", " for k in keys]).strip(", ")
+        sql = "select {} from annos where id = ?".format(keys)
+        cursor.execute(sql, (idx,))
+        res = cursor.fetchall()[0]
+        if len(res) == 1:
+            return res[0]
+        else:
+            return res
     
-    def get_node_by_cat_id(self, cat_id):
-        return self.cat_id_2_node[cat_id]
-    
-    def get_node_by_tree_node_id(self, tree_node_id):
-        return self.tree_node_id_2_node[tree_node_id]
-    
-    def get_cat_id_by_name(self, name):
-        return self.name_2_id[name]
-
-    def get_all_leaf_descendants(self, node):
-        leaf_node = []
-        visit_node = [node]
-        while len(visit_node) > 0:
-            node = visit_node[-1]
-            visit_node = visit_node[:-1]
-            if len(node["children"]) == 0:
-                leaf_node.append(node)
-            visit_node.extend(node["children"])
-        return leaf_node
-
-class SetHelper(object):
-    def __init__(self, train_idx, width_height, conn, data_root, class_name):
-        self.train_idx = train_idx
-        self.width_height = width_height
-        self.conn = conn
-        self.data_root = data_root
-        self.class_name = class_name
-        self.conf_thresh = 0.5
-        self._get_image_by_type()
-
-    def _get_image_by_type(self):
-        filename = os.path.join(self.data_root, "image_by_type.json")
-        if os.path.exists(filename):
-            logger.info("using image_by_type.json buffer")
-            self.image_by_type = json_load_data(filename)
-            return 
-
-        self.image_by_type = {}
-        for idx in tqdm(self.train_idx):
-            det = self.get_detection_result(idx)
-            category = [d[-1] for d in det if d[-2] > self.conf_thresh]
-            cat_str = encoding_categories(category)
-            if cat_str not in self.image_by_type:
-                self.image_by_type[cat_str] = []
-            self.image_by_type[cat_str].append(int(idx))
-        json_save_data(filename, self.image_by_type)
-
-    def get_all_set_name(self):
-        all_types = self.image_by_type.keys()
-        types = []
-        for t in all_types:
-            if len(self.image_by_type[t]) > 50 and len(t) > 0:
-                types.append(t)
-        return types
-
     def get_detection_result(self, idx):
         cursor = self.conn.cursor()
         sql = "select detection from annos where id = ?"
@@ -111,36 +46,40 @@ class SetHelper(object):
         res = json.loads(res)
         return res
 
-    def get_image_list_by_type(self, t, scope="selected", with_wh = False):
-        def add_width_height(idx):
-            w, h = self.width_height[idx]
-            detection = self.get_detection_result(idx)
-            detection = np.array(detection)
-            conf_detection = detection[detection[:, -2] > self.conf_thresh].astype(np.float32)
-            conf_detection[:, 0] /= w
-            conf_detection[:, 2] /= w
-            conf_detection[:, 1] /= h
-            conf_detection[:, 3] /= h
-            conf_detection = np.round(conf_detection, 3)
-            return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist()}
-        if scope == "all":
-            if with_wh:
-                return [add_width_height(i) for i in self.image_by_type[t]]
-            else:
-                return self.image_by_type[t]
-        elif scope == "selected":
-            if with_wh:
-                return [add_width_height(i) for i in self.image_by_type[t][-10:]]
-            else:
-                return self.image_by_type[t][-10:]
-
-class Data(object):
-    def __init__(self, dataname, suffix="step0"):
-        self.dataname = dataname 
-        self.data_all_step_root = os.path.join(config.data_root, self.dataname)
-        self.data_root = os.path.join(config.data_root, self.dataname, suffix)
-        self.suffix = suffix
+    def get_anno_bbox_result(self, idx):
+        cursor = self.conn.cursor()
+        sql = "select bbox from annos where id = ?"
+        cursor.execute(sql, (idx,))
+        res = cursor.fetchall()[0][0]
+        res = json.loads(res)
+        return res
     
+    def get_text_feature(self):
+        text_feature_path = os.path.join(self.data_root, "word_feature.npy")
+        text_feature = np.load(text_feature_path)
+        norm = (text_feature**2).sum(axis=1)
+        norm = norm ** 0.5
+        text_feature = text_feature / norm.reshape(-1,1)
+        return text_feature
+
+    def get_image_feature(self):
+        feature_path = os.path.join(self.data_root, "feature_train.npy")
+        features = np.load(feature_path)
+        print("feature shape", features.shape)
+        sizes = [256, 256, 256, 512, 1024, 512]
+        split_points = [0]
+        sum = 0
+        feature_id = 3
+        for i in sizes:
+            sum = sum + i
+            split_points.append(sum)
+        print(split_points)
+        feature = features[:, split_points[feature_id]: split_points[feature_id+1]]
+        return feature
+
+class Data(DataBaseLoader):
+    def __init__(self, dataname, step=0):
+        super(Data, self).__init__(dataname, step)
         self.class_name = []
         self.class_name_encoding = {}
         self.X = [] # contains image level features and patch level features
@@ -155,6 +94,9 @@ class Data(object):
         # additional information can be store here
         self.add_info = {}
         
+        self.mismatch = None
+        self.mean_confidence = None
+
         self._load_data()
 
     def _load_data(self):
@@ -183,33 +125,10 @@ class Data(object):
         self.redundant_idx = processed_data[config.redundant_idx_name]
         self.add_info = processed_data[config.add_info_name]
 
-        database_file = os.path.join(self.data_root, "database.db")
-        self.conn = sqlite3.connect(database_file, check_same_thread=False)
-        # self.cursor = self.conn.cursor()
-
-        # load hierarchy
-        tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
-        self.tree_helper = TreeHelper(tree, self.class_name)
-
-        # load image width and height
-        self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
-            "width_height.json"))
-        self.set_helper = SetHelper(self.train_idx, self.width_height,\
-            self.conn, self.data_root, self.class_name)
-
         logger.info("end loading data from processed data!")
 
-    def database_fetch_by_idx(self, idx, keys):
-        # id, cap, bbox, logits, labels, activations, string, detection, image_output
-        cursor = self.conn.cursor()
-        keys = "".join([k + ", " for k in keys]).strip(", ")
-        sql = "select {} from annos where id = ?".format(keys)
-        cursor.execute(sql, (idx,))
-        res = cursor.fetchall()[0]
-        if len(res) == 1:
-            return res[0]
-        else:
-            return res
+    def run(self):
+        None
 
     def get_precision_and_recall(self):
         labels = []
@@ -227,14 +146,6 @@ class Data(object):
             el["rule_logit"] = rule_based_processing(el, self.suffix)
             labels.append(el)
         self.labeled_p, self.precision, self.recall = get_precision_and_recall(labels)
-
-    def get_captions_by_word_and_cat(self, word, cat):
-        # this function is deprecated and will be removed in the future
-        ids = self.labeled_extracted_labels_by_cat[cat][word]
-        ids = [i["id"] for i in ids]
-        ids = list(set(ids))
-        caps = [self.annos[i]["caption"] for i in ids]
-        return caps
 
     def get_labeled_id_by_type(self, cats: list, match_type: str) -> list:
         cursor = self.conn.cursor()
@@ -293,49 +204,36 @@ class Data(object):
             res[text] = list(set(res[text]))
         return res
 
-    def get_hypergraph(self):
-        set_list = self.get_set()
-        for s in set_list:
-            categories = decoding_categories(s)
-            for c in categories:
-                self.tree_helper.get_node_by_cat_id(c)["sets"].append(s)
 
-
-        if DEBUG:
-            for i in range(len(self.class_name)):
-                leaf = self.tree_helper.get_node_by_cat_id(i)
-                leaf["precision"] = 1
-                leaf["recall"] = 1
+    def get_mismatch(self):
+        if self.mismatch is not None:
+            return self.mismatch.copy()
+        mismatch_path = os.path.join(self.data_root, "mismatch.pkl")
+        if os.path.exists(mismatch_path):
+            logger.info("using mismatch buffer.")
+            self.mismatch = pickle_load_data(mismatch_path)
         else:
-            self.get_precision_and_recall()
-            for i in range(len(self.class_name)):
-                leaf = self.tree_helper.get_node_by_cat_id(i)
-                leaf["precision"] = self.precision[i]
-                leaf["recall"] = self.recall[i]
-                # leaf["words"] = [[k, len(self.labeled_extracted_labels_by_cat[i][k])] 
-                #     for k in self.labeled_extracted_labels_by_cat[i].keys()]
+            image_labels = self.get_category_pred(label_type="all", data_type="image")
+            text_labels = self.get_category_pred(label_type="all", data_type="text")
+            self.mismatch = (image_labels!=text_labels).sum(axis=1)
+            pickle_save_data(mismatch_path, self.mismatch)
+        return self.mismatch.copy()
 
-        return self.tree_helper.get_tree(), set_list
-
-
-    def get_set(self):
-        all_types = self.set_helper.get_all_set_name()
-        types = {}
-        for t in all_types:
-            cats = decoding_categories(t)
-            image_list = self.set_helper.get_image_list_by_type(t, scope="all")
-            pred = self.get_category_pred(image_list, data_type="text")
-            pred = pred[:, cats]
-            match_percent = pred.sum(axis=0) / pred.shape[0]                
-            types[t] = {
-                "type": t,
-                "num": len(image_list),
-                "match_percent": match_percent.tolist(),
-                "selected_image": self.set_helper.get_image_list_by_type(t, \
-                    scope="selected", with_wh=True)
-            }
-
-        return types   
+    def get_mean_confidence(self):
+        if self.mean_confidence is not None:
+            return self.mean_confidence.copy()
+        confidence_path = os.path.join(self.data_root, "confidence.pkl")
+        if os.path.exists(confidence_path):
+            logger.info("using confidence buffer.")
+            self.mean_confidence = pickle_load_data(confidence_path)
+        else:
+            self.mean_confidence = []
+            for i in range(len(self.train_idx)):
+                conf = np.array(self.get_detection_result(i))[:, -2].mean()
+                self.mean_confidence.append(conf)
+            self.mean_confidence = np.array(self.mean_confidence)
+            pickle_save_data(confidence_path, self.mean_confidence)
+        return self.mean_confidence.copy()
 
     def get_category_pred(self, label_type="unlabeled", data_type="text"):
         if not isinstance(label_type, str) and isinstance(label_type, list):
@@ -354,25 +252,35 @@ class Data(object):
             raise ValueError("unsupported label type")
         logger.debug("begin get category pred with {} in {}".format(label_type_text, data_type))
         preds = []
+        buffer_file = os.path.join(self.data_root, \
+            "pred_buffer_{}_{}.npy".format(label_type_text, data_type))
+        if os.path.exists(buffer_file) and label_type_text != "idx":
+            logger.info("using pred buffer: {}".format(buffer_file))
+            preds = np.load(buffer_file)
+            return preds
         if data_type == "text":
-            for idx in idxs:
+            for idx in tqdm(idxs):
                 logit, image_output = self.database_fetch_by_idx(idx, ["logits", "image_output"])
                 pred = sigmoid(np.array(json.loads(logit))) > 0.5
                 image_output = np.array(json.loads(image_output)) > 0.5
                 preds.append((image_output + pred).astype(float))
             preds = np.array(preds)
         elif data_type == "image":
-            raise ValueError("some problem") # TODO
-            for idx in idxs:
+            for idx in tqdm(idxs):
                 detection = self.database_fetch_by_idx(idx, ["detection"])
-                detection = np.array(json.loads(detection))[:,-1].astype(int)
-                cats = np.array(list(set(detection))).astype(int) - 1
+                detection = np.array(json.loads(detection)) #[:,-1].astype(int)
+                conf_detection = detection[detection[:, -2] > 0.5].astype(np.float32)
+                cats = conf_detection[:, -1].astype(int)
+                cats = np.array(list(set(cats))).astype(int)
                 pred = np.zeros(len(self.class_name))
                 pred[cats] = 1
                 preds.append(pred)
             preds = np.array(preds)
         else:
             raise ValueError("unsupported data type")
+        
+        if label_type_text != "idx":
+            np.save(buffer_file, preds)
         logger.debug("finish get category pred with {} in {}".format(label_type_text, data_type))
         return preds
     

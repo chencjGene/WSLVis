@@ -13,19 +13,34 @@
 </template>
 
 <script>
+/*
+* this components calls all computation components (treecut, set_managers, etc.)
+* to get elements positions and other attributions,
+* and call all rendering components (text_tree, image_card, etc.)
+* to render all elements.
+*/
+
 // import Vue from "vue"
 import { mapActions, mapState, mapMutations } from "vuex";
 import * as d3 from "d3";
 import * as Global from "../plugins/global";
+
+// computation components
 import {
     mini_tree_layout,
     TreeCut,
     tree_layout,
-} from "../plugins/treecut";
-import { SetManager } from "../plugins/set_manager";
-import TextTree from "../plugins/text_tree";
-import TextImageConnection from "../plugins/text_image_connection";
-import ImageCards from "../plugins/image_card";
+} from "../plugins/layout_text";
+import {image_cluster_list_layout} from "../plugins/layout_image";
+import {ConnectionLayout} from "../plugins/layout_connection";
+
+// import { SetManager } from "../plugins/set_manager";
+
+// render components
+import TextTree from "../plugins/render_text_tree";
+import TextImageConnection from "../plugins/render_connection";
+import ImageCards from "../plugins/render_image_card";
+
 import InfoTooltip from "../components/infotooltip";
 export default {
     name: "Detection",
@@ -44,16 +59,23 @@ export default {
     computed: {
         ...mapState([
             "tree",
-            "set_list",
+            "image_cluster_list",
+            "cluster_association_mat",
+            "all_sets",
             "focus_node",
             "expand_tree",
             "tooltip",
-            "server_url"
+            "server_url",
+            "selected_flag"
         ]),
+        // selected_flag(){
+        //     return this.tree.all_descendants.map(d => !! d.selected_flag);
+        // }
     },
     methods: {
         ...mapActions(["fetch_hypergraph", "fetch_word"]),
         ...mapMutations([
+            "set_selected_flag",
             "set_focus_node",
             "set_expand_tree",
             "showTooltip",
@@ -84,7 +106,7 @@ export default {
         },
         update_data() {
             console.log("detection update data");
-            console.log(this.tree);
+            console.log(this.tree, this.image_cluster_list);
 
             // tree layout
             this.nodes = this.tree_layout.layout_with_rest_node(
@@ -102,26 +124,28 @@ export default {
             let mat = this.mini_tree_layout.layout(this.tree);
             this.mini_nodes = mat.nodes;
             this.mini_links = mat.links;
+            
+            // update cut cluster association matrix
+            this.connection_layout.update(this.nodes, this.image_cluster_list);
 
             // set layout
             this.leaf_nodes = this.nodes.filter((d) => d.children.length === 0);
-            this.selected_nodes = this.leaf_nodes; // TODO: selected_nodes can be specified by users
-            console.log("selected_nodes", this.selected_nodes);
-            this.set_manager.update_selected_nodes(this.selected_nodes);
-            this.set_manager.update_tree_node_position({
-                x: this.tree_node_group_x,
-                y: this.tree_node_group_y - this.text_height,
+            this.leaf_nodes.forEach(d => {
+                if (d.selected_flag===undefined) d.selected_flag = true;
             });
-            [this.sets, this.set_links] = this.set_manager.get_sets();
-            // this.sets = result.sets;
-            // this.set_links = result.set_links;
+            this.selected_nodes = this.nodes.filter(d => d.selected_flag);
+            console.log("selected_nodes", this.selected_nodes);
+            // this.sets = this.connection_layout.reorder(this.image_cluster_list);
+            this.sets = this.image_layout.layout(this.image_cluster_list);
+
+            this.set_links = this.connection_layout.get_links();
         },
         update_view() {
             console.log("detection update view");
 
             this.text_tree_view.sub_component_update(this.nodes, this.rest_nodes);
-            this.connection_view.sub_component_update(this.set_links);
             this.image_view.sub_component_update(this.sets);
+            this.connection_view.sub_component_update(this.set_links);
 
             this.e_mini_nodes = this.mini_tree_node_group
                 .selectAll(".mini-tree-node")
@@ -253,8 +277,7 @@ export default {
                 .delay(this.remove_ani)
                 .attr(
                     "d",
-                    d3
-                        .linkHorizontal()
+                    d3.linkHorizontal()
                         .x((d) => d.mini_y)
                         .y((d) => d.mini_x)
                 );
@@ -299,6 +322,11 @@ export default {
             console.log("tree update");
             this.treecut();
             console.log("offset", this.offset);
+            this.update_data();
+            this.update_view();
+        },
+        selected_flag(){
+            console.log("selected flag update");
             this.update_data();
             this.update_view();
         },
@@ -348,7 +376,8 @@ export default {
         this.rounded_r = 1.5;
 
         // set
-        this.set_height = 30;
+        this.set_num = 10;
+        this.set_height = this.layout_height / this.set_num - 2;
         this.set_left = this.layer_height * 3 + 200;
         this.set_width = this.layout_width - this.set_left;
         this.set_margin = 6;
@@ -441,19 +470,9 @@ export default {
             this.layer_height
         );
 
-        this.set_manager = new SetManager(
-            this.max_text_width + this.layer_height / 4
-        );
-        this.set_manager.update_layout({
-            layout_width: this.layout_width,
-            layout_height: this.layout_height,
-            set_left: this.set_left,
-            set_width: this.set_width,
-            set_margin: this.set_margin,
-            set_height: this.set_height,
-            image_height: this.image_height,
-            image_margin: this.image_margin,
-        });
+        this.image_layout = new image_cluster_list_layout(this);
+        this.connection_layout = new ConnectionLayout(this);
+        // this.set_manager = new SetManager(this);
 
         this.text_tree_view = new TextTree(this);
         this.connection_view = new TextImageConnection(this);

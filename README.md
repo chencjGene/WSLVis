@@ -2,7 +2,7 @@
 
 ## Install
 
-1. This project uses [python 3.7](https://www.python.org/). Go check them out if you don't have them installed.
+1. This project uses [python 3.7](https://www.python.org/). Go check it out if you don't have it installed.
 
 2. install python package.
 ```sh

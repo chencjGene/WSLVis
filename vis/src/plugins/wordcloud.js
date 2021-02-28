@@ -1,4 +1,4 @@
-import * as d3 from "d3";
+// import * as d3 from "d3";
 
 function wordcloud() {
     let size = [256, 256],
@@ -36,54 +36,54 @@ function wordcloud() {
       rects.push(rect)
     }
   
-    function forceCollide() {
-      let nodes
+    // function forceCollide() {
+    //   let nodes
   
-      function force() {
-        const quad = d3.quadtree(nodes, d => d.x, d => d.y);
-        for (const d of nodes) {
-          quad.visit((q) => {
-            let updated = false;
-            if (q.data && q.data !== d) {
-              let x = d.x - q.data.x,
-                y = d.y - q.data.y,
-                xSpacing = padding + (q.data.width + d.width) / 2,
-                ySpacing = padding + (q.data.height + d.height) / 2,
-                absX = Math.abs(x),
-                absY = Math.abs(y),
-                l,
-                lx,
-                ly;
+    //   function force() {
+    //     const quad = d3.quadtree(nodes, d => d.x, d => d.y);
+    //     for (const d of nodes) {
+    //       quad.visit((q) => {
+    //         let updated = false;
+    //         if (q.data && q.data !== d) {
+    //           let x = d.x - q.data.x,
+    //             y = d.y - q.data.y,
+    //             xSpacing = padding + (q.data.width + d.width) / 2,
+    //             ySpacing = padding + (q.data.height + d.height) / 2,
+    //             absX = Math.abs(x),
+    //             absY = Math.abs(y),
+    //             l,
+    //             lx,
+    //             ly;
   
-              if (absX < xSpacing && absY < ySpacing) {
-                l = Math.sqrt(x * x + y * y);
+    //           if (absX < xSpacing && absY < ySpacing) {
+    //             l = Math.sqrt(x * x + y * y);
   
-                lx = (absX - xSpacing) / l;
-                ly = (absY - ySpacing) / l;
+    //             lx = (absX - xSpacing) / l;
+    //             ly = (absY - ySpacing) / l;
   
-                // the one that's barely within the bounds probably triggered the collision
-                if (Math.abs(lx) > Math.abs(ly)) {
-                  lx = 0;
-                } else {
-                  ly = 0;
-                }
-                d.x -= x *= lx;
-                d.y -= y *= ly;
-                q.data.x += x;
-                q.data.y += y;
+    //             // the one that's barely within the bounds probably triggered the collision
+    //             if (Math.abs(lx) > Math.abs(ly)) {
+    //               lx = 0;
+    //             } else {
+    //               ly = 0;
+    //             }
+    //             d.x -= x *= lx;
+    //             d.y -= y *= ly;
+    //             q.data.x += x;
+    //             q.data.y += y;
   
-                updated = true;
-              }
-            }
-            return updated;
-          });
-        }
-      }
+    //             updated = true;
+    //           }
+    //         }
+    //         return updated;
+    //       });
+    //     }
+    //   }
   
-      force.initialize = _ => nodes = _;
+    //   force.initialize = _ => nodes = _;
   
-      return force;
-    }
+    //   return force;
+    // }
   
     self.checkVectical = function (lines) {
       if (!Array.isArray(lines)) {
@@ -308,21 +308,21 @@ function wordcloud() {
       let previous_data = data
       data = data.filter(d => d.display)
   
-      const simulation = d3.forceSimulation(data)
-        .force("x", d3.forceX(center[0] / 2).strength(0.05))
-        .force("y", d3.forceY(center[1] / 2).strength(0.05))
-        .force("collide", forceCollide())
+      // const simulation = d3.forceSimulation(data)
+      //   .force("x", d3.forceX(center[0] / 2).strength(0.05))
+      //   .force("y", d3.forceY(center[1] / 2).strength(0.05))
+      //   .force("collide", forceCollide())
   
-      for (let i = 0; i < 5; ++i) {
-        // await simulation.tick()
-        simulation.tick()
-      }
+      // for (let i = 0; i < 5; ++i) {
+      //   // await simulation.tick()
+      //   simulation.tick()
+      // }
   
       data = previous_data
   
       for (let i = 0, j = nFixedRect; i < data.length; ++i) {
         if (data[i].display) {
-          data[i].x = rects[j][1] + data[i].expandx + data[i].width / 2
+          data[i].x = rects[j][1] + data[i].expandx // + data[i].width / 2
           data[i].y = rects[j][0] + data[i].height + data[i].expandy
           ++j
         } else {

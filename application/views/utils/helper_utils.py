@@ -8,6 +8,8 @@ import sys
 import ujson as json
 from sklearn.metrics import confusion_matrix, roc_auc_score, \
     precision_recall_curve, auc, roc_curve
+from sklearn.preprocessing import OneHotEncoder
+
 from threading import Thread
 from time import sleep
 
@@ -27,7 +29,7 @@ def pickle_save_data(filename, data):
 def pickle_load_data(filename):
     try:
         mat = pickle.load(open(filename, "rb"))
-    except Exception as e:
+    except Exception:
         mat = pickle.load(open(filename, "rb"))
     return mat
 
@@ -65,20 +67,11 @@ def unit_norm_for_each_col(X):
 def sigmoid(x):
     return 1/(1 + np.exp(-x))
 
-def flow_statistic(flow_in, flow_out, class_list):
-    assert len(flow_in) == len(flow_out)
-    class_num = len(class_list)
-    m = np.ones((class_num, class_num))
-    # _flow_in = np.array(flow_in)
-    # _flow_out = np.array(flow_out)
-    _flow_in = flow_in
-    _flow_out = flow_out
-    for i in range(class_num):
-        for j in range(class_num):
-            m[i, j] = sum(_flow_out[_flow_in == class_list[i]] == class_list[j])
-    # for i in range(len(flow_in)):
-    #     m[_flow_in[i], _flow_out[i]] += 1
-    return m
+def one_hot_encoder(List):
+    res = np.zeros((len(List), max(List) + 1))
+    res[np.array(range(len(List))), List] = 1
+    return res
+
 
 
 # metrics

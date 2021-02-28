@@ -6,26 +6,33 @@ const ImageCards = function(parent){
 
     that.server_url = that.parent.server_url;
 
-    // set
-    that.set_height = that.parent.set_height;
-    that.set_left = that.parent.set_left;
-    that.set_width = that.parent.set_width;
-    that.set_margin = that.parent.set_margin;
-    that.image_height = that.parent.image_height;
-    that.image_margin = that.parent.image_margin;
-
 
     // animation
     that.create_ani = that.parent.create_ani;
     that.update_ani = that.parent.update_ani;
     that.remove_ani = that.parent.remove_ani;
 
+    this.get_set_layout_from_parent = function(){
+        // set
+        that.layout_height = that.parent.layout_height;
+        that.set_height = that.parent.set_height;
+        that.set_left = that.parent.set_left;
+        that.set_width = that.parent.set_width;
+        that.set_margin = that.parent.set_margin;
+        that.image_height = that.parent.image_height;
+        that.image_margin = that.parent.image_margin;
+    };
+    this.get_set_layout_from_parent();
+
     this.sub_component_update = function(sets) {
+        // update layout config
+        this.get_set_layout_from_parent();
+
         // update state 
         console.log("image card sub component update", sets);
 
         // update view
-        this.e_sets = this.set_group.selectAll(".set").data(sets, d => d.type); //TODO: id map
+        this.e_sets = this.set_group.selectAll(".set").data(sets, d => d.type); 
 
         this.remove();
         this.update();
@@ -58,16 +65,16 @@ const ImageCards = function(parent){
             .delay(this.update_ani + this.remove_ani)
             .style("opacity", 1);
         
-        that.image_groups = set_groups.selectAll("g.detection-result")
-            .data(d => d.vis_image);
-        // let e_image_groups = 
-        that.image_groups.enter()
-            .append("g")
-            .attr("class", "detection-result")
-            .attr(
-                "transform",
-                (d) => "translate(" + d.x + ", " + that.image_margin / 2 + ")"
-            );
+        // that.image_groups = set_groups.selectAll("g.detection-result")
+        //     .data(d => d.vis_image);
+        // that.image_groups.enter()
+        //     .append("g")
+        //     .attr("class", "detection-result")
+        //     .attr(
+        //         "transform",
+        //         (d) => "translate(" + d.x + ", " + that.image_margin / 2 + ")"
+        //     );
+        
         // e_image_groups.append("image")
         //     .attr("x", 0)
         //     .attr("y", 0)
@@ -103,7 +110,14 @@ const ImageCards = function(parent){
     };
 
     this.update = function(){
-
+        this.e_sets
+        .transition()
+        .duration(that.update_ani)
+        .delay(that.remove_ani)
+        .attr(
+            "transform",
+            (d) => "translate(" + d.x + ", " + d.y + ")"
+        );
     };
 
     this.remove = function(){

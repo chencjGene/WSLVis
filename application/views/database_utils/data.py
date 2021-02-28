@@ -12,13 +12,14 @@ from ..database_utils.utils import TFIDFTransform, rule_based_processing, get_pr
 
 DEBUG = False
 
+# Mute
 class Data(object):
-    def __init__(self, dataname, suffix="step0"):
+    def __init__(self, dataname, step=0):
         self.dataname = dataname 
+        self.suffix = "step" + str(step)
         self.data_all_step_root = os.path.join(config.data_root, self.dataname)
-        self.data_root = os.path.join(config.data_root, self.dataname, suffix)
-        self.suffix = suffix
-    
+        self.data_root = os.path.join(config.data_root, self.dataname, self.suffix)
+
         self.class_name = []
         self.class_name_encoding = {}
         self.X = [] # contains image level features and patch level features
@@ -69,6 +70,9 @@ class Data(object):
         self.tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
 
         logger.info("end loading data from processed data!")
+
+    def run(self):
+        None
 
     def get_precision_and_recall(self):
         labels = []
@@ -164,13 +168,13 @@ class Data(object):
     def get_tree(self):
         return self.tree
 
-    def get_set(self):
-        all_types = self.image_by_type.keys()
-        types = []
-        for t in all_types:
-            if len(self.image_by_type[t]) > 50 and len(t) > 0:
-                types.append(t)
-        return types        
+    # def get_set(self):
+    #     all_types = self.image_by_type.keys()
+    #     types = []
+    #     for t in all_types:
+    #         if len(self.image_by_type[t]) > 50 and len(t) > 0:
+    #             types.append(t)
+    #     return types        
 
     def get_image(self, idx):
         gt = self.annos[idx]["bbox"]

@@ -17,14 +17,17 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
+        image_cluster_list: [],
         expand_tree: true,
+        cluster_association_mat: [],
         focus_node: null,
-        sets: [],
+        all_sets: [],
         words: [],
         focus_word: null,
         text_list: [],
         focus_text: null,
         image_list: [],
+        selected_flag: [],
         tooltip: {
           top: 0,
           left: 0,
@@ -44,29 +47,36 @@ const store = new Vuex.Store({
             console.log("set manifest data");
             state.image_num = manifest_data.image_num;
         },
+        set_selected_flag(state, tree){
+            console.log("set tree");
+            state.tree = tree;
+            state.selected_flag = state.tree.all_descendants.map(d => d.selected_flag);
+        },
         set_hypergraph_data(state, hypergraph_data){
             console.log("set hypergraph data");
-
+            console.log("hypergraph_data", hypergraph_data);
+            console.log("state", state);
+            this.commit("set_text_tree_data", hypergraph_data.text_tree);
+            this.commit("set_image_cluster_list_data", hypergraph_data.image_cluster_list);
+            this.commit("set_cluster_association_mat", hypergraph_data.cluster_association_matrix);
+        },
+        set_text_tree_data(state, text_tree){
             // process tree 
-            state.tree = d3.hierarchy(hypergraph_data.tree,
+            state.tree = d3.hierarchy(text_tree,
                 function(d){
                     let children = d.children;
-                    // console.log("children", children);
-                    // return children ? children : undefined;
                     return children
                 });
-            function unique(arr){
-                return Array.from(new Set(arr));
-            }
             state.tree.eachAfter(element => {
                 element.id = element.data.id;
                 element.full_name = element.data.name;
                 element.name = element.full_name;
                 if (element.full_name.indexOf(" ") > 0){
-                    element.name = element.data.abbr_name;
+                    // element.name = element.data.abbr_name;
+                    element.name = element.name.slice(0, 7) + ".";
                 }
                 else if (element.name.length > 7){
-                    element.name = element.name.slice(0,7) + "."
+                    element.name = element.name.slice(0,7) + ".";
                 }
                 // all_children: all children
                 // children: children that are visible
@@ -75,10 +85,6 @@ const store = new Vuex.Store({
                 if(element.children) element.children.forEach((d,i) => d.siblings_id = i);
                 element._children = [];
                 element._total_width = 0;
-                if (!element.data.sets){
-                    let arr = element.children.map(d => d.data.sets);
-                    element.data.sets = unique(Array.prototype.concat.call(...arr));
-                }
                 if (!element.data.precision){
                     let s = element.all_children.map(d=>d.data.precision);
                     if (s) element.data.precision = s.reduce((a,c)=>{return a+c}, 0) / s.length;
@@ -95,14 +101,17 @@ const store = new Vuex.Store({
             state.tree.all_descendants = state.tree.descendants();
             state.tree.all_descendants.forEach(d => d.children = []);
             
-            // process set
-            state.sets = hypergraph_data.set_list
-            state.tree.all_descendants.forEach(d => d.data.sets = d.data.sets.map(d => state.sets[d]));
 
             console.log("state.tree", state.tree)
-            // this.commit("set_focus_node", state.tree);
-            console.log("state.focus_node", state.focus_node);
-            // state.sets = hypergraph_data.set_list;
+
+        },
+        set_image_cluster_list_data(state, image_cluster_list){
+            state.image_cluster_list = image_cluster_list;
+            console.log("state.image_cluser_list", state.image_cluster_list);
+        },
+        set_cluster_association_mat(state, cluster_association_mat){
+            state.cluster_association_mat = cluster_association_mat;
+            console.log("cluster_association_mat:", state.cluster_association_mat);
         },
         set_history_data(state, history_data) {
             console.log("set history data");
@@ -154,7 +163,7 @@ const store = new Vuex.Store({
     actions:{
         async fetch_manifest({commit, state}, key){
             console.log("fetch_manifest");
-            const resp = await axios.post(`${state.server_url}/hybrid/GetManifest`, key, 
+            const resp = await axios.post(`${state.server_url}/detection/GetManifest`, key, 
                 {headers: {
                     "Content-Type":"application/json",
                     "Access-Control-Allow-Origin": "*",
@@ -164,7 +173,7 @@ const store = new Vuex.Store({
         },
         async fetch_hypergraph({commit, state}, key){
             console.log("fetch_hypergraph");
-            const resp = await axios.post(`${state.server_url}/hybrid/HyperGraph`, {word: key}, 
+            const resp = await axios.post(`${state.server_url}/detection/HyperGraph`, {word: key}, 
                 {headers: 
                     {"Access-Control-Allow-Origin": "*"}});
             commit("set_hypergraph_data", JSON.parse(JSON.stringify(resp.data)));
@@ -194,6 +203,11 @@ const store = new Vuex.Store({
 
         // }
     },
+    // computed: {
+    //     selected_flag(){
+    //         return this.$store.state.tree.all_descendants.map(d => !! d.selected_flag);
+    //     }
+    // },
     modules:{
         // empty
     }
