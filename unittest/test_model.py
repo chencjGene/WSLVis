@@ -44,3 +44,9 @@ class CoClusteringTest(unittest.TestCase):
             # print("total num of selected", sum(selected))
             print(np.array(class_name)[selected])
         a = 1
+
+    def test_rank(self):
+        m = WSLModel(dataname=config.coco17, step=1)
+        m.run()
+        m.get_rank(1)
+        a = 1

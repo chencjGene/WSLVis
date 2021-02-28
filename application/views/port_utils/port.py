@@ -37,11 +37,8 @@ class Port(object):
     def get_current_hypergraph(self):
         return self.model.get_current_hypergraph()
 
-    # def get_tree(self):
-    #     return self.data.tree
+    def get_rank(self, image_cluster_id):
+        return self.model.get_rank(image_cluster_id)
 
-    # def get_type(self):
-    #     return self.data.get_type()
-    
     def get_manifest(self):
         return self.case_util.get_base_config()

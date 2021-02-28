@@ -15,6 +15,7 @@ except:
     
 from .coclustering import CoClustering
 from .tree_helper import TextTreeHelper, TreeHelper, ImageTreeHelper
+from .ranker import ImageRanker
 
 
 class WSLModel(object):
@@ -25,9 +26,11 @@ class WSLModel(object):
             self.config = config
         else:
             self.config = {
-                "text_k": 12,
-                "image_k": 12,
-                "pre_k": 100
+                "step": 1,
+                "text_k": 9,
+                "image_k": 9,
+                "pre_k": 100,
+                "weight": 1
             }
         if dataname is None:
             return 
@@ -36,17 +39,22 @@ class WSLModel(object):
     def _init(self):
         logger.info("current config of model: dataname-{}, step-{}, text_k-{}, image_k-{}, pre_k-{}".format(self.dataname, self.step,\
                 self.config["text_k"], self.config["image_k"], self.config["pre_k"]))
+        # data 
         self._init_data()
         self.data_root = self.data.data_root
         self.data_all_step_root = self.data.data_all_step_root
         self.buffer_path = os.path.join(self.data_root, "model.pkl")
+
+        # clustering model
         self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
             size_min=1, size_max=3000, random_state=0)
         self.image_cluster_name = ["img_cluster_"+ str(i) for i in range(self.config["pre_k"])]
         self.coclustering = CoClustering(self.config["text_k"], \
             self.config["image_k"], self.config["weight"], verbose=0) 
         self.text_tree_helper = TextTreeHelper()
-        self.image_tree_helper = ImageTreeHelper()
+
+        # ranking model
+        self.ranker = ImageRanker()
         
 
     def _init_data(self):
@@ -76,9 +84,9 @@ class WSLModel(object):
             return
         image_labels = self.data.get_category_pred(label_type="all", data_type="image")
         text_labels = self.data.get_category_pred(label_type="all", data_type="text")
-        mismatch = (image_labels!=text_labels).sum(axis=1)
+        self.mismatch = (image_labels!=text_labels).sum(axis=1)
         features = self.data.get_image_feature()
-        self.pre_clustering.fit_predict(features, mismatch)
+        self.pre_clustering.fit_predict(features, self.mismatch)
         self.pre_clustering_res = self.pre_clustering.labels_
         np.save(pre_clustering_result_file, self.pre_clustering_res)
         return
@@ -177,7 +185,6 @@ class WSLModel(object):
                         "children": [],
                     }
                     node["children"].append(leaf_node)
-                # del node["descendants_idx"]
             visit_node.extend(node["children"])
         return tree
 
@@ -193,6 +200,7 @@ class WSLModel(object):
         }
         text_tree = self._hierarchical_coclustering(text_tree, text_w)
         self.image_cluster_list = self._image_cluster(image_h, self.config["image_k"])
+        self._get_image_ids_of_clusters()
 
         self.text_tree = self._post_processing_hierarchy(text_tree, self.data.class_name)
         self.text_tree_helper.update(self.text_tree, self.data.class_name)
@@ -201,6 +209,19 @@ class WSLModel(object):
             self.data.precision, self.data.recall)
 
         a = 1
+
+    def _get_image_ids_of_clusters(self):
+        logger.info("begin get_image_ids_of_clusters")
+        self.image_ids_of_clusters = {}
+        for i in range(len(self.image_cluster_list)):
+            pre_cluster_ids = self.image_cluster_list[i]["cluster_idxs"]
+            image_ids = []
+            for cluster_id in pre_cluster_ids:
+                ids = np.array(range(len(self.pre_clustering_res)))
+                ids = ids[self.pre_clustering_res==cluster_id]
+                image_ids = image_ids + ids.tolist()
+            self.image_ids_of_clusters[i] = image_ids
+        logger.info("end get_image_ids_of_clusters")
 
     def get_R(self, exclude_person=True):
         # processing R
@@ -245,6 +266,15 @@ class WSLModel(object):
         }
         return mat
 
+    def get_rank(self, image_cluster_id):
+        image_ids = self.image_ids_of_clusters[image_cluster_id]
+        mismatch = self.data.get_mismatch()[np.array(image_ids)]
+        confidence = self.data.get_mean_confidence()[np.array(image_ids)]
+        total_score = mismatch - confidence * 5
+        sorted_idxs = total_score.argsort()[::-1]
+        top_k = [image_ids[i] for i in sorted_idxs[:10]]
+        return None
+
     def save_model(self, path=None):
         buffer_path = self.buffer_path
         if path:
@@ -269,4 +299,5 @@ class WSLModel(object):
             return True
         else:
             return False
-        
+    
+    

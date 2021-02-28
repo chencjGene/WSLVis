@@ -16,61 +16,6 @@ from .set_helper import SetHelper
 
 DEBUG = False
 
-class TreeHelper(object):
-    # this class is deprecated and will be removed in the future.
-    def __init__(self, tree, class_name):
-        self.tree = tree
-        self.class_name = class_name
-        
-        # process
-        self.cat_id_2_node = {}
-        self.tree_node_id_2_node = {}
-        self.name_2_id = {}
-
-        # name to id map
-        for idx, name in enumerate(self.class_name):
-            self.name_2_id[name.strip("\n")] = idx
-
-        tree = self.get_tree()
-        leaf_node = []
-        visit_node = [tree]
-        while len(visit_node) > 0:
-            node = visit_node[-1]
-            self.tree_node_id_2_node[node["id"]] = node
-            visit_node = visit_node[:-1]
-            if len(node["children"]) == 0:
-                leaf_node.append(node)
-            visit_node.extend(node["children"])
-        
-        for node in leaf_node:
-            node["cat_id"] = self.name_2_id[node["name"]]
-            node["sets"] = []
-            self.cat_id_2_node[self.name_2_id[node["name"]]] = node
-
-    def get_tree(self):
-        return self.tree
-    
-    def get_node_by_cat_id(self, cat_id):
-        return self.cat_id_2_node[cat_id]
-    
-    def get_node_by_tree_node_id(self, tree_node_id):
-        return self.tree_node_id_2_node[tree_node_id]
-    
-    def get_cat_id_by_name(self, name):
-        return self.name_2_id[name]
-
-    def get_all_leaf_descendants(self, node):
-        leaf_node = []
-        visit_node = [node]
-        while len(visit_node) > 0:
-            node = visit_node[-1]
-            visit_node = visit_node[:-1]
-            if len(node["children"]) == 0:
-                leaf_node.append(node)
-            visit_node.extend(node["children"])
-        return leaf_node
-
-
 class DataBaseLoader(object):
     def __init__(self, dataname, step=0):
         self.dataname = dataname 
@@ -149,7 +94,8 @@ class Data(DataBaseLoader):
         # additional information can be store here
         self.add_info = {}
         
-
+        self.mismatch = None
+        self.mean_confidence = None
 
         self._load_data()
 
@@ -179,14 +125,6 @@ class Data(DataBaseLoader):
         self.redundant_idx = processed_data[config.redundant_idx_name]
         self.add_info = processed_data[config.add_info_name]
 
-
-        # load hierarchy
-        tree = json_load_data(os.path.join(self.data_all_step_root, "hierarchy-abbr.json"))
-        self.tree_helper = TreeHelper(tree, self.class_name)
-
-        # # load image width and height
-        # self.set_helper = SetHelper(self)
-
         logger.info("end loading data from processed data!")
 
     def run(self):
@@ -208,14 +146,6 @@ class Data(DataBaseLoader):
             el["rule_logit"] = rule_based_processing(el, self.suffix)
             labels.append(el)
         self.labeled_p, self.precision, self.recall = get_precision_and_recall(labels)
-
-    # def get_captions_by_word_and_cat(self, word, cat):
-    #     # this function is deprecated and will be removed in the future
-    #     ids = self.labeled_extracted_labels_by_cat[cat][word]
-    #     ids = [i["id"] for i in ids]
-    #     ids = list(set(ids))
-    #     caps = [self.annos[i]["caption"] for i in ids]
-    #     return caps
 
     def get_labeled_id_by_type(self, cats: list, match_type: str) -> list:
         cursor = self.conn.cursor()
@@ -274,42 +204,36 @@ class Data(DataBaseLoader):
             res[text] = list(set(res[text]))
         return res
 
-    def get_hypergraph(self):
-        # this function is deprecated 
-        set_list = self.get_set()
-        for s in set_list:
-            categories = decoding_categories(s)
-            for c in categories:
-                self.tree_helper.get_node_by_cat_id(c)["sets"].append(s)
 
-
-        if DEBUG:
-            for i in range(len(self.class_name)):
-                leaf = self.tree_helper.get_node_by_cat_id(i)
-                leaf["precision"] = 1
-                leaf["recall"] = 1
+    def get_mismatch(self):
+        if self.mismatch is not None:
+            return self.mismatch.copy()
+        mismatch_path = os.path.join(self.data_root, "mismatch.pkl")
+        if os.path.exists(mismatch_path):
+            logger.info("using mismatch buffer.")
+            self.mismatch = pickle_load_data(mismatch_path)
         else:
-            self.get_precision_and_recall()
-            for i in range(len(self.class_name)):
-                leaf = self.tree_helper.get_node_by_cat_id(i)
-                leaf["precision"] = self.precision[i]
-                leaf["recall"] = self.recall[i]
-                # leaf["words"] = [[k, len(self.labeled_extracted_labels_by_cat[i][k])] 
-                #     for k in self.labeled_extracted_labels_by_cat[i].keys()]
+            image_labels = self.get_category_pred(label_type="all", data_type="image")
+            text_labels = self.get_category_pred(label_type="all", data_type="text")
+            self.mismatch = (image_labels!=text_labels).sum(axis=1)
+            pickle_save_data(mismatch_path, self.mismatch)
+        return self.mismatch.copy()
 
-        return self.tree_helper.get_tree(), set_list
-
-
-    def get_set(self):
-        sets = self.set_helper.get_set()
-        for t in sets:
-            cats = decoding_categories(t)
-            # image_list = self.set_helper.get_image_list_by_type(t, scope="all")
-            # pred = self.get_category_pred(image_list, data_type="text")
-            # pred = pred[:, cats]
-            # match_percent = pred.sum(axis=0) / pred.shape[0]                
-            # types[t]["match_percent"] = match_percent.tolist()
-        return sets   
+    def get_mean_confidence(self):
+        if self.mean_confidence is not None:
+            return self.mean_confidence.copy()
+        confidence_path = os.path.join(self.data_root, "confidence.pkl")
+        if os.path.exists(confidence_path):
+            logger.info("using confidence buffer.")
+            self.mean_confidence = pickle_load_data(confidence_path)
+        else:
+            self.mean_confidence = []
+            for i in range(len(self.train_idx)):
+                conf = np.array(self.get_detection_result(i))[:, -2].mean()
+                self.mean_confidence.append(conf)
+            self.mean_confidence = np.array(self.mean_confidence)
+            pickle_save_data(confidence_path, self.mean_confidence)
+        return self.mean_confidence.copy()
 
     def get_category_pred(self, label_type="unlabeled", data_type="text"):
         if not isinstance(label_type, str) and isinstance(label_type, list):

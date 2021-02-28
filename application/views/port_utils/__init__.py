@@ -18,6 +18,9 @@ def get_current_hypergraph():
     # import IPython; IPython.embed(); exit()
     return jsonify(hypergraph)
 
+def get_rank(image_cluster_id):
+    image_url_list = port.get_rank(image_cluster_id)
+    return jsonify(image_url_list)
 
 def get_image(idx):
     return port.model.data.get_image(idx)

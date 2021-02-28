@@ -23,6 +23,11 @@ def app_get_manifest():
 def app_get_hypergraph():
     return get_current_hypergraph()
 
+@detection.route("/detection/Rank", methods=["GET", "POST"])
+def app_get_rank():
+    image_cluster_id = json.loads(request.data)["image_cluster_id"]
+    return get_rank(image_cluster_id)
+
 # for debug
 @detection.route("/detection/Embedding", methods=["GET", "POST"])
 def app_get_embedding():
