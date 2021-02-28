@@ -262,7 +262,8 @@ class WSLModel(object):
         mat = {
             "text_tree": self.text_tree,
             "image_cluster_list": self.image_cluster_list,
-            "cluster_association_matrix": self.get_R(False).tolist()
+            "cluster_association_matrix": self.get_R(False).tolist(),
+            "vis_image_per_cluster": {i: self.get_rank(i) for i in range(len(self.image_cluster_list))}
         }
         return mat
 
@@ -273,7 +274,8 @@ class WSLModel(object):
         total_score = mismatch - confidence * 5
         sorted_idxs = total_score.argsort()[::-1]
         top_k = [image_ids[i] for i in sorted_idxs[:10]]
-        return None
+        res = [self.data.get_detection_result_for_vis(i) for i in top_k]
+        return res
 
     def save_model(self, path=None):
         buffer_path = self.buffer_path

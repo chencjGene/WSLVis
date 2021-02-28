@@ -22,9 +22,13 @@ class DataBaseLoader(object):
         self.suffix = "step" + str(step)
         self.data_all_step_root = os.path.join(config.data_root, self.dataname)
         self.data_root = os.path.join(config.data_root, self.dataname, self.suffix)
+        self.conf_thresh = 0.5
 
         database_file = os.path.join(self.data_root, "database.db")
         self.conn = sqlite3.connect(database_file, check_same_thread=False)
+
+        self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
+            "width_height.json"))
 
     def database_fetch_by_idx(self, idx, keys):
         # id, cap, bbox, logits, labels, activations, string, detection, image_output
@@ -76,6 +80,19 @@ class DataBaseLoader(object):
         print(split_points)
         feature = features[:, split_points[feature_id]: split_points[feature_id+1]]
         return feature
+
+    def get_detection_result_for_vis(self, idx):
+        w, h = self.width_height[idx]
+        detection = self.get_detection_result(idx)
+        detection = np.array(detection)
+        conf_detection = detection[detection[:, -2] > self.conf_thresh].astype(np.float32)
+        conf_detection[:, 0] /= w
+        conf_detection[:, 2] /= w
+        conf_detection[:, 1] /= h
+        conf_detection[:, 3] /= h
+        conf_detection = np.round(conf_detection, 3)
+        return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist()}
+
 
 class Data(DataBaseLoader):
     def __init__(self, dataname, step=0):
@@ -269,7 +286,7 @@ class Data(DataBaseLoader):
             for idx in tqdm(idxs):
                 detection = self.database_fetch_by_idx(idx, ["detection"])
                 detection = np.array(json.loads(detection)) #[:,-1].astype(int)
-                conf_detection = detection[detection[:, -2] > 0.5].astype(np.float32)
+                conf_detection = detection[detection[:, -2] > self.conf_thresh].astype(np.float32)
                 cats = conf_detection[:, -1].astype(int)
                 cats = np.array(list(set(cats))).astype(int)
                 pred = np.zeros(len(self.class_name))

@@ -60,6 +60,7 @@ export default {
         ...mapState([
             "tree",
             "image_cluster_list",
+            "vis_image_per_cluster",
             "cluster_association_mat",
             "all_sets",
             "focus_node",
@@ -144,7 +145,7 @@ export default {
             console.log("detection update view");
 
             this.text_tree_view.sub_component_update(this.nodes, this.rest_nodes);
-            this.image_view.sub_component_update(this.sets);
+            this.image_view.sub_component_update(this.sets, this.vis_image_per_cluster);
             this.connection_view.sub_component_update(this.set_links);
 
             this.e_mini_nodes = this.mini_tree_node_group

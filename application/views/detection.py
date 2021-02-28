@@ -25,7 +25,7 @@ def app_get_hypergraph():
 
 @detection.route("/detection/Rank", methods=["GET", "POST"])
 def app_get_rank():
-    image_cluster_id = json.loads(request.data)["image_cluster_id"]
+    image_cluster_id = json.loads(request.data)
     return get_rank(image_cluster_id)
 
 # for debug

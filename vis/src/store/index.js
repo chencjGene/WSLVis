@@ -19,6 +19,7 @@ const store = new Vuex.Store({
         current_id: 0,
         tree: {},
         image_cluster_list: [],
+        vis_image_per_cluster: {},
         expand_tree: true,
         cluster_association_mat: [],
         focus_node: null,
@@ -60,6 +61,7 @@ const store = new Vuex.Store({
             this.commit("set_text_tree_data", hypergraph_data.text_tree);
             this.commit("set_image_cluster_list_data", hypergraph_data.image_cluster_list);
             this.commit("set_cluster_association_mat", hypergraph_data.cluster_association_matrix);
+            this.commit("set_vis_image_per_cluster", hypergraph_data.vis_image_per_cluster);
         },
         set_text_tree_data(state, text_tree){
             // process tree 
@@ -150,6 +152,12 @@ const store = new Vuex.Store({
             console.log("set focus text");
             state.focus_text = text;
         },
+        set_vis_image_per_cluster(state, res){
+            console.log("set_vis_image_per_cluster", res);
+            for(let i in res){
+                state.vis_image_per_cluster[i] = res[i];
+            }
+        },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 
             state.tooltip.left = left 
@@ -199,10 +207,12 @@ const store = new Vuex.Store({
             const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_words", JSON.parse(JSON.stringify(resp.data)));
         },
-        // async fetch_image_by_set_id({commit, state}, query){
-        //     console.log("fetch_image_by_set_id", query);
-
-        // }
+        async fetch_images({commit, state}, image_cluster_ids){
+            console.log("fetch_images", image_cluster_ids);
+            const resp = await axios.post(`${state.server_url}/detection/Rank`, image_cluster_ids, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_vis_image_per_cluster", JSON.parse(JSON.stringify(resp.data)));
+            
+        }
     },
     // computed: {
     //     selected_flag(){

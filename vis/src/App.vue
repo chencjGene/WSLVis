@@ -56,8 +56,9 @@ export default {
     this.resize();
     await this.$store.dispatch("fetch_manifest", 
     {"step": "step1", "dataset": "COCO17"});
-    this.$store.dispatch("fetch_hypergraph", 1);
-    this.$store.dispatch("fetch_history", 1);
+    await this.$store.dispatch("fetch_hypergraph", 1);
+    // await this.$store.dispatch("fetch_images", []);
+    // this.$store.dispatch("fetch_history", 1);
   }
 };
 </script>
