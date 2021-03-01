@@ -121,14 +121,14 @@ const TextTree = function (parent) {
             })
             .on("click", (ev, d) => {
                 console.log("on click tree node");
-                that.change_selected_flag(d, !d.selected_flag);
+                // that.change_selected_flag(d, !d.selected_flag);
 
                 // TODO: double click
-                // let query = {
-                //     tree_node_id: d.id,
-                //     match_type: "p",
-                // };
-                // that.fetch_word(query);
+                let query = {
+                    tree_node_id: d.id,
+                    match_type: "p",
+                };
+                that.fetch_word(query);
             })
             .transition()
             .duration(that.create_ani)
@@ -287,6 +287,7 @@ const TextTree = function (parent) {
             .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
             .style("opacity", 0)
             .on("click", (ev, d) => {
+                console.log("set focus node");
                 that.set_focus_node(d.rest_children);
             });
         node_groups

@@ -30,4 +30,4 @@ def get_text(query):
     return jsonify(text_result)
 
 def get_word(query):
-    return jsonify(port.model.data.get_word(query))
+    return jsonify(port.model.get_word(query))

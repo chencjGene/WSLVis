@@ -277,6 +277,16 @@ class WSLModel(object):
         res = [self.data.get_detection_result_for_vis(i) for i in top_k]
         return res
 
+    def get_word(self, query):
+        tree_node_id = query["tree_node_id"]
+        match_type = query["match_type"]
+        node = self.text_tree_helper.get_node_by_tree_node_id(tree_node_id)
+        leaf_node = self.text_tree_helper.get_all_leaf_descendants(node)
+        cats = [n["cat_id"] for n in leaf_node]
+        words = self.data.get_word(cats, match_type)
+        return words
+
+
     def save_model(self, path=None):
         buffer_path = self.buffer_path
         if path:
