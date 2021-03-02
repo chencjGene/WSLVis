@@ -354,12 +354,6 @@ class Data(DataBaseLoader):
         return texts
 
     def get_word(self, cats, match_type):
-        # tree_node_id = query["tree_node_id"]
-        # match_type = query["match_type"]
-        # node = self.tree_helper.get_node_by_tree_node_id(tree_node_id)
-        # leaf_node = self.tree_helper.get_all_leaf_descendants(node)
-        # cats = [n["cat_id"] for n in leaf_node]
-        # print("cats", cats)
         self.current_text_idxs = self.get_labeled_id_by_type(cats, match_type)
         # print("current_text_idxs", self.current_text_idxs)
         self.current_wordcloud = self.get_important_labels(self.current_text_idxs, cats)
