@@ -28,6 +28,7 @@ from application.views.utils.config_utils import config
 from application.views.utils.helper_utils import pickle_load_data, pickle_save_data
 from application.views.database_utils.utils import decoding_categories, encoding_categories
 from application.views.model_utils import WSLModel
+from application.views.model_utils.ranker import lap_score
 
 from sklearn.manifold import TSNE, MDS
 from sklearn.decomposition import PCA
@@ -48,5 +49,14 @@ class CoClusteringTest(unittest.TestCase):
     def test_rank(self):
         m = WSLModel(dataname=config.coco17, step=1)
         m.run()
-        m.get_rank(1)
+        res = m.get_rank(4)
+        # image_ids = m.image_ids_of_clusters[4]
+        # R = np.zeros((len(image_ids), 65))
+        # for idx, img_id in enumerate(image_ids):
+        #     res = m.data.get_detection_result(int(img_id))
+        #     for det in res:
+        #         if det[-2] > m.data.conf_thresh:
+        #             R[idx, det[-1]] = 1
+        # R = R / (R.sum(axis=1).reshape(-1, 1) + 1e-12)
+        # s = lap_score(R.T)
         a = 1

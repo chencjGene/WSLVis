@@ -56,7 +56,7 @@ const ImageCards = function(parent){
             .enter()
             .append("g")
             .attr("class", "set")
-            .attr("id", d => d.type)
+            .attr("id", d => "set-" + d.id)
             .attr(
                 "transform",
                 (d) => "translate(" + d.x + ", " + d.y + ")"

@@ -268,10 +268,10 @@ class WSLModel(object):
         return mat
 
     def get_rank(self, image_cluster_id):
-        image_ids = self.image_ids_of_clusters[image_cluster_id]
+        image_ids = self.image_ids_of_clusters[image_cluster_id] + [43628]
         mismatch = self.data.get_mismatch()[np.array(image_ids)]
         confidence = self.data.get_mean_confidence()[np.array(image_ids)]
-        total_score = mismatch - confidence * 5
+        total_score = mismatch - confidence * 100
         sorted_idxs = total_score.argsort()[::-1]
         top_k = [image_ids[i] for i in sorted_idxs[:10]]
         res = [self.data.get_detection_result_for_vis(i) for i in top_k]
