@@ -253,13 +253,13 @@ class WSLModel(object):
         R = origin_R[1:, :].copy()
         class_name = self.data.class_name[1:]
         R = R / R.max()
-        R = np.power(R, 0.41)
+        R = np.power(R, 0.40)
 
         if exclude_person:
             return R
         else:
             origin_R = origin_R / R.max()
-            origin_R = np.power(origin_R, 0.41)
+            origin_R = np.power(origin_R, 0.40)
             return origin_R
 
     def get_current_hypergraph(self):
@@ -295,7 +295,7 @@ class WSLModel(object):
         cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
 
 
-        k = 13
+        k = 10
         labels = self._kmeans(cluster_feature, k)
         top_k = []
         for i in range(k):

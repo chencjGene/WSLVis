@@ -38,12 +38,12 @@ from sklearn.decomposition import PCA
 class CoClusteringTest(unittest.TestCase):
     def test_model(self):
         m = WSLModel(dataname=config.coco17, step=1)
-        m.run()
-        class_name = m.data.class_name[1:]
-        row_labels = m.text_labels
-        col_labels = m.image_labels
-        for i in range(m.config["text_k"]):
-            selected = row_labels==i
+        m = pickle_load_data(m.buffer_path)
+        m._init_data()
+        class_name = m.data.class_name
+        text_labels = [n["descendants_idx"] for n in m.text_tree["children"][:-1]]
+        for i in range(m.config["text_k"]):''
+            selected = np.array(text_labels[i])
             # print("total num of selected", sum(selected))
             print(np.array(class_name)[selected])
         a = 1

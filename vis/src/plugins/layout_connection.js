@@ -2,7 +2,7 @@ const ConnectionLayout = function(parent, cluster_association_mat){
     let that = this;
     that.parent = parent;
     that.cluster_association_mat = cluster_association_mat;
-    this.threshold = 100;
+    this.threshold = 120;
 
     that.text_width = that.parent.max_text_width + that.parent.layer_height / 4;
     that.layout_width = that.parent.layout_width;

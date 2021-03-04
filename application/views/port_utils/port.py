@@ -32,7 +32,7 @@ class Port(object):
         self._init()
 
     def run_model(self):
-        self.model = self.case_util.run(use_buffer=True)
+        self.model = self.case_util.run(use_buffer=False)
 
     def get_current_hypergraph(self):
         return self.model.get_current_hypergraph()

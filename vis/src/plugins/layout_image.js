@@ -16,9 +16,10 @@ const image_cluster_list_layout = function(parent){
     this.get_set_layout_from_parent();
 
     this.update_parent_set_layout = function(data){
+        console.log("update_parent_set_layout");
         that.parent.set_num = data.length;
         that.parent.set_height = that.layout_height / that.parent.set_num - 2;
-        that.parent.image_height = that.set_height * 0.9;
+        that.parent.image_height = that.parent.set_height * 0.9;
     };
     
     let mean = function(arr){
@@ -40,6 +41,7 @@ const image_cluster_list_layout = function(parent){
     }
 
     this.layout = function(data){
+        console.log("image layout");
         this.update_parent_set_layout(data);
         this.get_set_layout_from_parent();
 

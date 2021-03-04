@@ -356,7 +356,7 @@ export default {
         this.bbox_height = bbox.height;
 
         // text position
-        this.text_height = this.bbox_height * 0.06;
+        this.text_height = this.bbox_height * 0.04;
 
         // node width
         this.max_text_width = 120; // fixed max_text_width
@@ -379,12 +379,12 @@ export default {
         this.rounded_r = 1.5;
 
         // set
-        this.set_num = 10;
-        this.set_height = this.layout_height / this.set_num - 2;
+        this.set_num = 0;
+        this.set_height = 0;
+        this.image_height = 0;
         this.set_left = this.layer_height * 3 + 200;
         this.set_width = this.layout_width - this.set_left;
         this.set_margin = 6;
-        this.image_height = this.set_height * 0.9;
         this.image_margin = this.set_margin;
 
         // animation

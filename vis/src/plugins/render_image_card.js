@@ -70,7 +70,7 @@ const ImageCards = function(parent){
             .append("rect")
             .attr("class", "background")
             .style("fill", "white")
-            .style("stroke", "#f0f0f0")
+            .style("stroke", "#e0e0e0")
             .style("stroke-width", 1)
             .style("opacity", 0)
             .attr("width", (d) => d.width)
