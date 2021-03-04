@@ -56,6 +56,7 @@ class WSLModel(object):
 
         # ranking model
         self.ranker = ImageRanker()
+        self.rank_res = {}
         
 
     def _init_data(self):
@@ -77,6 +78,8 @@ class WSLModel(object):
 
         # hierarchical coclustering
         self._run_hierarchical_coclustering()
+
+        [self.get_rank(i) for i in range(len(self.image_cluster_list))]
     
     def _run_pre_clustering(self):
         pre_clustering_result_file = os.path.join(self.data_root, "pre_clustering.npy")
@@ -269,6 +272,10 @@ class WSLModel(object):
         return mat
 
     def get_rank(self, image_cluster_id):
+        # import IPython; IPython.embed(); exit()
+        if image_cluster_id in self.rank_res \
+            and self.rank_res[image_cluster_id] is not None:
+            return self.rank_res[image_cluster_id]
         image_ids = self.image_ids_of_clusters[image_cluster_id]
         mismatch = self.data.get_mismatch()[np.array(image_ids)]
         confidence = self.data.get_mean_confidence()[np.array(image_ids)]
@@ -288,7 +295,7 @@ class WSLModel(object):
         cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
 
 
-        k = 7
+        k = 13
         labels = self._kmeans(cluster_feature, k)
         top_k = []
         for i in range(k):
@@ -296,8 +303,9 @@ class WSLModel(object):
             score = total_score[idxs]
             top_k.append(image_ids[idxs[score.argmax()]])
         # sorted_idxs = total_score.argsort()[::-1]
-        # top_k = [image_ids[i] for i in sorted_idxs[:10]]
+        # top_k = [image_ids[i] for i in sorted_idxs[:13]]
         res = [self.data.get_detection_result_for_vis(i) for i in top_k]
+        self.rank_res[image_cluster_id] = res
         return res
 
     def get_tsne_of_image_cluster(self, image_cluster_id):
@@ -325,6 +333,7 @@ class WSLModel(object):
 
 
     def save_model(self, path=None):
+        logger.info("save model")
         buffer_path = self.buffer_path
         if path:
             buffer_path = path

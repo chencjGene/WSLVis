@@ -330,14 +330,20 @@ class Data(DataBaseLoader):
         return gt.astype(int)
 
     def get_image(self, idx):
-        # gt = self.annos[idx]["bbox"]
-        # det = self.detections[idx]["bbox"]
+        image_id = self.ids[idx]
+        phase = "train2017_square"
+        if idx in self.val_idx:
+            phase = "val2017"
+        img_path = os.path.join(self.data_all_step_root, phase, "%012d.jpg" %(image_id))
+        return img_path 
+    
+    def get_origin_image(self, idx):
         image_id = self.ids[idx]
         phase = "train2017"
         if idx in self.val_idx:
             phase = "val2017"
         img_path = os.path.join(self.data_all_step_root, phase, "%012d.jpg" %(image_id))
-        return img_path #, gt, det
+        return img_path 
     
     def get_text(self, query):
         cursor = self.conn.cursor()

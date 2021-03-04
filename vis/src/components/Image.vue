@@ -97,7 +97,7 @@ export default {
         .attr("y", d => d.y)
         .attr("width", d => d.width)
         .attr("height", d => d.height)
-        .attr("href", d => this.server_url + `/image/image?filename=${d.idx}.jpg`);
+        .attr("href", d => this.server_url + `/image/origin_image?filename=${d.idx}.jpg`);
 
       this.e_boxes.enter()
         .append("rect")

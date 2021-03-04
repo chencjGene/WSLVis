@@ -34,7 +34,7 @@ const ImageCards = function(parent){
             let x = that.image_margin;
             d.forEach(n => {
                 n.vis_h = that.image_height;
-                n.vis_w = that.image_height * n.w / n.h;
+                n.vis_w = that.image_height;
                 n.x = x;
                 x = x + n.vis_w + that.image_margin;
             })
