@@ -2,7 +2,7 @@
 let Embedding = [];
 let Website = "http://localhost"
 let Port = "20211"
-let EmbeddingApi = "/hybrid/Embedding"
+let EmbeddingApi = "/detection/Embedding"
 let CategoryColor = [
     "#8c564b",
     "#ff7f0e",

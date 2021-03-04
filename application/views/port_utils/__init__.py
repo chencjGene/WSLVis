@@ -10,6 +10,7 @@ def get_manifest():
 
 def init_model(dataname, step):
     port.reset(dataname, step)
+    return port
 
 def get_current_hypergraph():
     port.run_model()
@@ -24,6 +25,9 @@ def get_rank(image_cluster_id):
 
 def get_image(idx):
     return port.model.data.get_image(idx)
+
+def get_origin_image(idx):
+    return port.model.data.get_origin_image(idx)
 
 def get_text(query):
     text_result = port.model.data.get_text(query)

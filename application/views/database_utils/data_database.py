@@ -24,6 +24,9 @@ class DataBaseLoader(object):
         self.data_root = os.path.join(config.data_root, self.dataname, self.suffix)
         self.conf_thresh = 0.5
 
+        self.image_features = None
+        self.text_features = None
+
         database_file = os.path.join(self.data_root, "database.db")
         self.conn = sqlite3.connect(database_file, check_same_thread=False)
 
@@ -67,6 +70,8 @@ class DataBaseLoader(object):
         return text_feature
 
     def get_image_feature(self):
+        if self.image_features is not None:
+            return self.image_features
         feature_path = os.path.join(self.data_root, "feature_train.npy")
         features = np.load(feature_path)
         print("feature shape", features.shape)
@@ -78,8 +83,9 @@ class DataBaseLoader(object):
             sum = sum + i
             split_points.append(sum)
         print(split_points)
-        feature = features[:, split_points[feature_id]: split_points[feature_id+1]]
-        return feature
+        self.image_features = \
+            features[:, split_points[feature_id]: split_points[feature_id+1]]
+        return self.image_features
 
     def get_detection_result_for_vis(self, idx):
         w, h = self.width_height[idx]
@@ -303,7 +309,10 @@ class Data(DataBaseLoader):
     
     def get_groundtruth_labels(self, label_type="unlabeled"):
         logger.debug("begin get groundtruth category with {}".format(label_type))
-        if label_type == "all":
+        if not isinstance(label_type, str) and isinstance(label_type, list):
+            idxs = label_type
+            label_type_text = "idx"
+        elif label_type == "all":
             idxs = self.train_idx
         elif label_type == "labeled":
             idxs = self.labeled_idx
@@ -321,14 +330,20 @@ class Data(DataBaseLoader):
         return gt.astype(int)
 
     def get_image(self, idx):
-        # gt = self.annos[idx]["bbox"]
-        # det = self.detections[idx]["bbox"]
+        image_id = self.ids[idx]
+        phase = "train2017_square"
+        if idx in self.val_idx:
+            phase = "val2017"
+        img_path = os.path.join(self.data_all_step_root, phase, "%012d.jpg" %(image_id))
+        return img_path 
+    
+    def get_origin_image(self, idx):
         image_id = self.ids[idx]
         phase = "train2017"
         if idx in self.val_idx:
             phase = "val2017"
         img_path = os.path.join(self.data_all_step_root, phase, "%012d.jpg" %(image_id))
-        return img_path #, gt, det
+        return img_path 
     
     def get_text(self, query):
         cursor = self.conn.cursor()
@@ -354,12 +369,6 @@ class Data(DataBaseLoader):
         return texts
 
     def get_word(self, cats, match_type):
-        # tree_node_id = query["tree_node_id"]
-        # match_type = query["match_type"]
-        # node = self.tree_helper.get_node_by_tree_node_id(tree_node_id)
-        # leaf_node = self.tree_helper.get_all_leaf_descendants(node)
-        # cats = [n["cat_id"] for n in leaf_node]
-        # print("cats", cats)
         self.current_text_idxs = self.get_labeled_id_by_type(cats, match_type)
         # print("current_text_idxs", self.current_text_idxs)
         self.current_wordcloud = self.get_important_labels(self.current_text_idxs, cats)
