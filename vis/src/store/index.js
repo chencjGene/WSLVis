@@ -129,6 +129,10 @@ const store = new Vuex.Store({
             console.log("set focus node");
             state.focus_node = nodes;
         },
+        set_focus_image(state, image){
+            console.log("set focus image");
+             state.focus_image = image;
+        }, 
         set_selected_node(state, node) {
             console.log("set selected node");
             state.selected_node = node;

@@ -24,6 +24,10 @@ const ImageCards = function(parent){
     };
     this.get_set_layout_from_parent();
 
+    this.set_focus_image = function(image){
+        that.parent.set_focus_image(image);
+    },
+
     this.sub_component_update = function(sets, vis_image_per_cluster) {
         // update layout config
         that.get_set_layout_from_parent();
@@ -91,7 +95,11 @@ const ImageCards = function(parent){
             .attr("y", 0)
             .attr("width", d => d.vis_w)
             .attr("height", d => d.vis_h)
-            .attr("href", d => that.server_url + `/image/image?filename=${d.idx}.jpg`);
+            .attr("href", d => that.server_url + `/image/image?filename=${d.idx}.jpg`)
+            .on("click", (_, d) => {
+                console.log("click image", d);
+                that.set_focus_image(d);
+            })
         
         that.box_groups = g_image_groups.selectAll("rect.box")
             .data(d => {

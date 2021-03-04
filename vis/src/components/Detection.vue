@@ -79,6 +79,7 @@ export default {
             "set_selected_flag",
             "set_focus_node",
             "set_selected_node",
+            "set_focus_image",
             "set_expand_tree",
             "showTooltip",
             "hideTooltip",

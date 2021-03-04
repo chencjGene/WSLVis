@@ -20,45 +20,12 @@ export default {
     }
   },
   computed: {
-    ...mapState(["server_url"])
+    ...mapState(["server_url", "focus_image"])
   },
   methods: {
     ...mapActions([]),
-    update_view() {
-      this.e_images = this.image_group.selectAll(".info-image")
-        .data([this.image_data]);
-      this.e_boxes = this.boxes_group.selectAll(".info-box")
-        .data(this.boxes);
-
-      this.create();
-      this.update();
-      this.remove();
-    },
     update_data() {
       let that = this;
-      this.focus_image = {
-          "idx": 22390,
-          "w": 640,
-          "h": 427,
-          "d": [
-            [
-              0.3089999854564667,
-              0.5090000033378601,
-              1.0180000066757202,
-              0.9890000224113464,
-              0.6930000185966492,
-              52
-            ],
-            [
-              0.10899999737739563,
-              0.289000004529953,
-              0.4059999883174896,
-              0.7829999923706055,
-              0.6589999794960022,
-              58
-            ]
-          ]
-        }
       let aspect_ratio = this.focus_image.h / this.focus_image.w;
       let width = 0;
       let height = 0;
@@ -80,14 +47,25 @@ export default {
         image_y = (that.layout_height - height) / 2;
       }
       for (let i = 0; i < dets.length; i++){
-          let x = width * dets[i][0];
+          let x = width * dets[i][0] + image_x;
           let w = width * (dets[i][2] - dets[i][0]);
-          let y = height * dets[i][1];
+          let y = height * dets[i][1] + image_y;
           let h = height * (dets[i][3] - dets[i][1]);
-          boxes.push({x, y, w, h});
+          let idx = this.focus_image.idx + "-" + i;
+          boxes.push({x, y, w, h, idx});
       }
       this.image_data = {width, height, "idx":this.focus_image.idx, "x":image_x, "y": image_y};
       this.boxes = boxes;
+    },
+    update_view() {
+      this.e_images = this.image_group.selectAll(".info-image")
+        .data([this.image_data], d => d.idx);
+      this.e_boxes = this.boxes_group.selectAll(".info-box")
+        .data(this.boxes, d => d.idx);
+
+      this.create();
+      this.update();
+      this.remove();
     },
     create() {
       this.e_images.enter()
@@ -113,10 +91,17 @@ export default {
 
     },
     update(){
-
+      this.e_images
+        .attr("width", d => d.width)
+        .attr("height", d => d.height)
+        .attr("href", d => this.server_url + `/image/origin_image?filename=${d.idx}.jpg`);
+      
     },
     remove(){
-      
+      this.e_images.exit()
+        .remove();
+      this.e_boxes.exit()
+        .remove();
     }
   },
   async mounted() {
@@ -152,8 +137,6 @@ export default {
         "translate(" + 5 + ", " + 5 + ")"
         );
     
-    this.update_data();
-    this.update_view();
   },
 };
 </script>

@@ -333,7 +333,7 @@ class WSLModel(object):
 
 
     def save_model(self, path=None):
-        logger.info("save model")
+        logger.info("save model buffer")
         buffer_path = self.buffer_path
         if path:
             buffer_path = path
