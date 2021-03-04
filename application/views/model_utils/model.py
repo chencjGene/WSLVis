@@ -2,10 +2,11 @@ import numpy as np
 import os
 
 from sklearn.cluster import KMeans, MiniBatchKMeans
+from sklearn.manifold import TSNE
 
 from ..utils.log_utils import logger
 from ..utils.helper_utils import json_load_data, json_save_data
-from ..utils.helper_utils import pickle_save_data, pickle_load_data
+from ..utils.helper_utils import pickle_save_data, pickle_load_data, check_dir
 from ..database_utils.data_database import Data
 # from ..database_utils.data import Data
 try:
@@ -268,14 +269,50 @@ class WSLModel(object):
         return mat
 
     def get_rank(self, image_cluster_id):
-        image_ids = self.image_ids_of_clusters[image_cluster_id] + [43628]
+        image_ids = self.image_ids_of_clusters[image_cluster_id]
         mismatch = self.data.get_mismatch()[np.array(image_ids)]
         confidence = self.data.get_mean_confidence()[np.array(image_ids)]
         total_score = mismatch - confidence * 100
-        sorted_idxs = total_score.argsort()[::-1]
-        top_k = [image_ids[i] for i in sorted_idxs[:10]]
+        np.random.seed(124)
+        total_score = np.random.rand(len(total_score))
+        features = self.data.get_image_feature()[np.array(image_ids)]
+        print("features.shape", features.shape)
+        norm = (features**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_features = features / norm.reshape(-1,1)
+
+        pred = self.data.get_category_pred(image_ids, "image")
+        norm = (pred**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_pred = pred / (norm.reshape(-1,1)+1e-12)
+        cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
+
+
+        k = 7
+        labels = self._kmeans(cluster_feature, k)
+        top_k = []
+        for i in range(k):
+            idxs = np.array(range(len(labels)))[labels==i]
+            score = total_score[idxs]
+            top_k.append(image_ids[idxs[score.argmax()]])
+        # sorted_idxs = total_score.argsort()[::-1]
+        # top_k = [image_ids[i] for i in sorted_idxs[:10]]
         res = [self.data.get_detection_result_for_vis(i) for i in top_k]
         return res
+
+    def get_tsne_of_image_cluster(self, image_cluster_id):
+        tsne_root = os.path.join(self.data_root, "tsne_of_image_cluster")
+        check_dir(tsne_root)
+        tsne_path = os.path.join(tsne_root, str(image_cluster_id) + ".pkl")
+        if os.path.exists(tsne_path):
+            logger.info("tsne buffer of image cluster {} exists".format(image_cluster_id))
+            return pickle_load_data(tsne_path)
+        image_ids = self.image_ids_of_clusters[image_cluster_id]
+        features = self.data.get_image_feature()[np.array(image_ids)]
+        tsne = TSNE(n_components=2,random_state=15)
+        coor = tsne.fit_transform(features)
+        pickle_save_data(tsne_path, coor)
+        return coor
 
     def get_word(self, query):
         tree_node_id = query["tree_node_id"]

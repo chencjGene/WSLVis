@@ -24,6 +24,9 @@ class DataBaseLoader(object):
         self.data_root = os.path.join(config.data_root, self.dataname, self.suffix)
         self.conf_thresh = 0.5
 
+        self.image_features = None
+        self.text_features = None
+
         database_file = os.path.join(self.data_root, "database.db")
         self.conn = sqlite3.connect(database_file, check_same_thread=False)
 
@@ -67,6 +70,8 @@ class DataBaseLoader(object):
         return text_feature
 
     def get_image_feature(self):
+        if self.image_features is not None:
+            return self.image_features
         feature_path = os.path.join(self.data_root, "feature_train.npy")
         features = np.load(feature_path)
         print("feature shape", features.shape)
@@ -78,8 +83,9 @@ class DataBaseLoader(object):
             sum = sum + i
             split_points.append(sum)
         print(split_points)
-        feature = features[:, split_points[feature_id]: split_points[feature_id+1]]
-        return feature
+        self.image_features = \
+            features[:, split_points[feature_id]: split_points[feature_id+1]]
+        return self.image_features
 
     def get_detection_result_for_vis(self, idx):
         w, h = self.width_height[idx]
@@ -303,7 +309,10 @@ class Data(DataBaseLoader):
     
     def get_groundtruth_labels(self, label_type="unlabeled"):
         logger.debug("begin get groundtruth category with {}".format(label_type))
-        if label_type == "all":
+        if not isinstance(label_type, str) and isinstance(label_type, list):
+            idxs = label_type
+            label_type_text = "idx"
+        elif label_type == "all":
             idxs = self.train_idx
         elif label_type == "labeled":
             idxs = self.labeled_idx

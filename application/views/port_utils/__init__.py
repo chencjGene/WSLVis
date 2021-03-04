@@ -10,6 +10,7 @@ def get_manifest():
 
 def init_model(dataname, step):
     port.reset(dataname, step)
+    return port
 
 def get_current_hypergraph():
     port.run_model()

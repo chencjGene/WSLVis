@@ -20,6 +20,9 @@ let ScatterPlot = function (container){
     let grid_offset = 10;
     that.data = [];
 
+    let colorScale = d3.scaleSequential(d3["interpolate" + "Greens"])
+    .domain([0, 10])
+
     let img_url = null;
     let img_grid_urls = [];
     let img_neighbors_ids = [];
@@ -70,10 +73,12 @@ let ScatterPlot = function (container){
         that.e_data.enter()
             .append("circle")
             .attr("class", "point")
+            .attr("id", d => "id-" + d.id)
             .attr("r", 3)
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
             .style("fill", d => CategoryColor[d.color % 10]);
+            // .style("fill", d => colorScale(d.color));
     };
 
     that._update = function() {
