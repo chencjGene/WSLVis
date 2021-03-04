@@ -78,6 +78,7 @@ export default {
         ...mapMutations([
             "set_selected_flag",
             "set_focus_node",
+            "set_selected_node",
             "set_expand_tree",
             "showTooltip",
             "hideTooltip",

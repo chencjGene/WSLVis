@@ -23,6 +23,9 @@ const store = new Vuex.Store({
         expand_tree: true,
         cluster_association_mat: [],
         focus_node: null,
+        selected_node: {
+            full_name: ''
+        },
         all_sets: [],
         words: [],
         focus_word: null,
@@ -124,6 +127,10 @@ const store = new Vuex.Store({
         set_focus_node(state, nodes) {
             console.log("set focus node");
             state.focus_node = nodes;
+        },
+        set_selected_node(state, node) {
+            console.log("set selected node");
+            state.selected_node = node;
         },
         set_expand_tree(state, node){
             console.log("set expand tree");

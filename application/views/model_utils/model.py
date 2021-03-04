@@ -46,8 +46,8 @@ class WSLModel(object):
         self.buffer_path = os.path.join(self.data_root, "model.pkl")
 
         # clustering model
-        self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
-            size_min=1, size_max=3000, random_state=0)
+        # self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
+            # size_min=1, size_max=3000, random_state=0)
         self.image_cluster_name = ["img_cluster_"+ str(i) for i in range(self.config["pre_k"])]
         self.coclustering = CoClustering(self.config["text_k"], \
             self.config["image_k"], self.config["weight"], verbose=0) 

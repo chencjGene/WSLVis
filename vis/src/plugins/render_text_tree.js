@@ -53,6 +53,10 @@ const TextTree = function (parent) {
         that.parent.$store.dispatch("fetch_word", query);
     }
 
+    that.set_selected_node = function(node){
+        that.parent.set_selected_node(node);
+    }
+
     that.sub_component_update = function (nodes, rest_nodes) {
         // update state
         that.tree_node_group_x = that.parent.tree_node_group_x;
@@ -129,6 +133,10 @@ const TextTree = function (parent) {
                     match_type: "p",
                 };
                 that.fetch_word(query);
+                let node = {
+                    full_name: d.full_name
+                };
+                that.set_selected_node(node);
             })
             .transition()
             .duration(that.create_ani)
