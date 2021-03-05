@@ -159,7 +159,7 @@ class CoClusteringTest(unittest.TestCase):
         R = R / R.max()
         R = np.power(R, 0.4)
 
-        k1, k2 = [9, 9]
+        k1, k2 = [10, 9]
         clf = CoClustering(k1, k2, 1.0)
         # R = _bistochastic_normalize(R) # normalization
         C1, C2 = clf.fit(R, text_feature)

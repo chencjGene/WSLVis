@@ -7,6 +7,7 @@ import networkx as nx
 import seaborn as sns
 from tqdm import tqdm
 from time import time
+from itertools import chain
 
 from sklearn.datasets import make_checkerboard
 from sklearn.cluster import SpectralBiclustering
@@ -40,13 +41,42 @@ class CoClusteringTest(unittest.TestCase):
         m = WSLModel(dataname=config.coco17, step=1)
         m = pickle_load_data(m.buffer_path)
         m._init_data()
+        m.text_tree_helper.import_from_file(os.path.join(m.data_root, \
+                "clustering_hierarchy.json"))
         class_name = m.data.class_name
-        text_labels = [n["descendants_idx"] for n in m.text_tree["children"][:-1]]
-        for i in range(m.config["text_k"]):''
-            selected = np.array(text_labels[i])
+        all_labels = [m.text_tree_helper.get_all_leaf_descendants_ids(n) \
+            for n in m.text_tree_helper.tree["children"][:-1]]
+        descendants = m.text_tree_helper\
+            .get_all_leaf_descendants(m.text_tree_helper.tree)
+        text_labels = [d["id"] for d in descendants[::-1]]
+        image_labels = [d["cluster_idxs"] for d in m.image_cluster_list]
+        image_names = [ np.ones(len(d)).astype(int) * idx for idx, d in enumerate(image_labels)]
+        image_labels = list(chain(*image_labels))
+        image_names = list(chain(*image_names))
+        R = m.get_R(False)
+        R = R[text_labels, :][:,image_labels]
+        sns.set(font_scale=0.5)
+        sns.heatmap(R, yticklabels=np.array(class_name)[text_labels],
+            xticklabels=image_names)
+        plt.show()
+        plt.savefig("test/mismatch/coclustering_result.jpg")
+        plt.close()
+
+        CAM = m.get_cluster_association_matrix().T
+        CAM = CAM[text_labels]
+
+        sns.heatmap(CAM, yticklabels=np.array(class_name)[text_labels])
+        plt.show()
+        plt.savefig("test/mismatch/CAM.jpg")
+        plt.close()
+
+        for i in range(m.config["text_k"]):
+            selected = np.array(all_labels[i])
             # print("total num of selected", sum(selected))
             print(np.array(class_name)[selected])
         a = 1
+
+    
 
     def test_rank(self):
         m = WSLModel(dataname=config.coco17, step=1)

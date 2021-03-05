@@ -52,7 +52,7 @@ class WSLModel(object):
         self.image_cluster_name = ["img_cluster_"+ str(i) for i in range(self.config["pre_k"])]
         self.coclustering = CoClustering(self.config["text_k"], \
             self.config["image_k"], self.config["weight"], verbose=0) 
-        self.text_tree_helper = TextTreeHelper()
+        self.text_tree_helper = TextTreeHelper(data_root=self.data_root)
 
         # ranking model
         self.ranker = ImageRanker()
@@ -262,11 +262,32 @@ class WSLModel(object):
             origin_R = np.power(origin_R, 0.40)
             return origin_R
 
+    def get_cluster_association_matrix(self):
+        origin_mat = self.get_R(False)
+        origin_mat[0, :] = 0
+        mat = []
+        for i in range(len(self.image_cluster_list)):
+            v = origin_mat[:, np.array(self.image_cluster_list[i]["cluster_idxs"])]
+            v = v.sum(axis=1)
+            # v = (v > v.mean()*5).astype(int)
+            mat.append(v)
+        # descendants = self.text_tree_helper\
+        #     .get_all_leaf_descendants(self.text_tree_helper.tree)
+        # text_labels = [d["id"] for d in descendants[::-1]]
+        mat = np.array(mat).T
+        for idx, m in enumerate(mat):
+            v = (m > m.mean() * 2).astype(int)
+            mat[idx] = v
+
+        return mat.T
+
+
     def get_current_hypergraph(self):
+
         mat = {
             "text_tree": self.text_tree,
             "image_cluster_list": self.image_cluster_list,
-            "cluster_association_matrix": self.get_R(False).tolist(),
+            "cluster_association_matrix": self.get_cluster_association_matrix().tolist(),
             "vis_image_per_cluster": {i: self.get_rank(i) for i in range(len(self.image_cluster_list))}
         }
         return mat
@@ -330,7 +351,6 @@ class WSLModel(object):
         cats = [n["cat_id"] for n in leaf_node]
         words = self.data.get_word(cats, match_type)
         return words
-
 
     def save_model(self, path=None):
         logger.info("save model buffer")

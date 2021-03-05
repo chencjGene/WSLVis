@@ -122,6 +122,11 @@ export default {
                 ? this.layer_height / 2
                 : 0;
             this.tree_node_group_y = this.text_height + this.layer_height / 2;
+            this.leaf_nodes = this.nodes.filter((d) => d.children.length === 0);
+            // this.leaf_nodes.forEach(d => {
+            //     if (d.selected_flag===undefined) d.selected_flag = true;
+            // });
+            // this.selected_nodes = this.nodes.filter(d => d.selected_flag);
 
             // minitree layout
             let mat = this.mini_tree_layout.layout(this.tree);
@@ -129,19 +134,14 @@ export default {
             this.mini_links = mat.links;
             
             // update cut cluster association matrix
-            this.connection_layout.update(this.nodes, this.image_cluster_list);
+            this.connection_layout.update(this.leaf_nodes, this.image_cluster_list);
 
             // set layout
-            this.leaf_nodes = this.nodes.filter((d) => d.children.length === 0);
-            this.leaf_nodes.forEach(d => {
-                if (d.selected_flag===undefined) d.selected_flag = true;
-            });
-            this.selected_nodes = this.nodes.filter(d => d.selected_flag);
             console.log("selected_nodes", this.selected_nodes);
             // this.sets = this.connection_layout.reorder(this.image_cluster_list);
             this.sets = this.image_layout.layout(this.image_cluster_list);
 
-            this.set_links = this.connection_layout.get_links();
+            this.set_links = this.connection_layout.get_links(this.sets);
         },
         update_view() {
             console.log("detection update view");
