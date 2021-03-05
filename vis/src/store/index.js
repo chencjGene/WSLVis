@@ -19,6 +19,7 @@ const store = new Vuex.Store({
         current_id: 0,
         tree: {},
         image_cluster_list: [],
+        mismatch: [],
         vis_image_per_cluster: {},
         expand_tree: true,
         cluster_association_mat: [],
@@ -65,6 +66,7 @@ const store = new Vuex.Store({
             this.commit("set_text_tree_data", hypergraph_data.text_tree);
             this.commit("set_image_cluster_list_data", hypergraph_data.image_cluster_list);
             this.commit("set_cluster_association_mat", hypergraph_data.cluster_association_matrix);
+            this.commit("set_mismatch", hypergraph_data.mismatch);
             this.commit("set_vis_image_per_cluster", hypergraph_data.vis_image_per_cluster);
         },
         set_text_tree_data(state, text_tree){
@@ -120,6 +122,11 @@ const store = new Vuex.Store({
         set_cluster_association_mat(state, cluster_association_mat){
             state.cluster_association_mat = cluster_association_mat;
             console.log("cluster_association_mat:", state.cluster_association_mat);
+        },
+        set_mismatch(state, mismatch){
+            state.mismatch = mismatch;
+            console.log("cluster_association_mat:", state.mismatch);
+
         },
         set_history_data(state, history_data) {
             console.log("set history data");

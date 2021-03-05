@@ -265,29 +265,35 @@ class WSLModel(object):
     def get_cluster_association_matrix(self):
         origin_mat = self.get_R(False)
         origin_mat[0, :] = 0
+
+        mismatch = self.data.get_mismatch()
+        mismatch_matrix = []
         mat = []
         for i in range(len(self.image_cluster_list)):
             v = origin_mat[:, np.array(self.image_cluster_list[i]["cluster_idxs"])]
             v = v.sum(axis=1)
-            # v = (v > v.mean()*5).astype(int)
+            m = mismatch[np.array(self.image_ids_of_clusters[i])].sum(axis=0)
+            mismatch_matrix.append(m)
             mat.append(v)
         # descendants = self.text_tree_helper\
         #     .get_all_leaf_descendants(self.text_tree_helper.tree)
         # text_labels = [d["id"] for d in descendants[::-1]]
+        mismatch_matrix = np.array(mismatch_matrix)
         mat = np.array(mat).T
         for idx, m in enumerate(mat):
             v = (m > m.mean() * 2).astype(int)
             mat[idx] = v
 
-        return mat.T
+        return mat.T, mismatch_matrix
 
 
     def get_current_hypergraph(self):
-
+        cam_matrix, mismatch = self.get_cluster_association_matrix()
         mat = {
             "text_tree": self.text_tree,
             "image_cluster_list": self.image_cluster_list,
-            "cluster_association_matrix": self.get_cluster_association_matrix().tolist(),
+            "mismatch": mismatch.tolist(),
+            "cluster_association_matrix": cam_matrix.tolist(),
             "vis_image_per_cluster": {i: self.get_rank(i) for i in range(len(self.image_cluster_list))}
         }
         return mat
@@ -298,7 +304,7 @@ class WSLModel(object):
             and self.rank_res[image_cluster_id] is not None:
             return self.rank_res[image_cluster_id]
         image_ids = self.image_ids_of_clusters[image_cluster_id]
-        mismatch = self.data.get_mismatch()[np.array(image_ids)]
+        mismatch = self.data.get_mismatch()[np.array(image_ids)].sum(axis=1)
         confidence = self.data.get_mean_confidence()[np.array(image_ids)]
         total_score = mismatch - confidence * 100
         np.random.seed(124)

@@ -238,7 +238,7 @@ class Data(DataBaseLoader):
         else:
             image_labels = self.get_category_pred(label_type="all", data_type="image")
             text_labels = self.get_category_pred(label_type="all", data_type="text")
-            self.mismatch = (image_labels!=text_labels).sum(axis=1)
+            self.mismatch = (image_labels!=text_labels)
             pickle_save_data(mismatch_path, self.mismatch)
         return self.mismatch.copy()
 

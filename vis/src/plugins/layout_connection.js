@@ -18,7 +18,11 @@ const ConnectionLayout = function(parent, cluster_association_mat){
 
     this.get_cluster_association_mat = function(){
         return that.parent.cluster_association_mat;
-    }
+    };
+
+    this.get_mismatch = function(){
+        return that.parent.mismatch;
+    },
 
     this.get_tree_node_group_x = function(){
         return that.parent.tree_node_group_x;
@@ -36,24 +40,34 @@ const ConnectionLayout = function(parent, cluster_association_mat){
         let text_num = text_idxs.length;
         let image_num = image_idxs.length;
         that.matrix = [];
+        that.mismatch = [];
         for (let i = 0; i < text_num; i++){
             that.matrix.push([]);
+            that.mismatch.push([]);
             for (let j = 0; j < image_num; j++){
                 let element = 0;
+                let mm_element = 0;
                 for (let s = 0; s < text_idxs[i].length; s++){
                         element += that.get_cluster_association_mat()[j][text_idxs[i][s]];
+                        mm_element += that.get_mismatch()[j][text_idxs[i][s]];
                 }
                 that.matrix[i].push(element);
+                that.mismatch[i].push(mm_element);
             }
         }
 
         for (let j = 0; j < image_num; j++){
             let connected_nodes = [];
+            let mismatch_values = [];
             for (let i = 0; i < text_num; i++){
                 let element = that.matrix[i][j];
-                if (element > 0) connected_nodes.push(text_nodes[i]);
+                if (element > 0) {
+                    connected_nodes.push(text_nodes[i]);
+                    mismatch_values.push(that.mismatch[i][j]);
+                }
             }
             image_nodes[j].connected_nodes = connected_nodes;
+            image_nodes[j].mismatch_values = mismatch_values;
         }
     };
 
@@ -62,8 +76,10 @@ const ConnectionLayout = function(parent, cluster_association_mat){
         that.links = [];
         for (let i = 0; i < image_nodes.length; i++){
             let connected_nodes = image_nodes[i].connected_nodes;
+            let mismatch_values = image_nodes[i].mismatch_values;
             for (let j = 0; j < connected_nodes.length; j++){
                 let text_node = connected_nodes[j];
+                let mismatch_value = mismatch_values[j];
                 let image_node = image_nodes[i];
                 let source = {
                     "x": text_node.x + that.text_width + that.get_tree_node_group_x(),
@@ -79,7 +95,7 @@ const ConnectionLayout = function(parent, cluster_association_mat){
                     "y": image_node.y_center,
                     "id": image_node.id
                 }
-                that.links.push({source, target, turn_point})
+                that.links.push({source, target, turn_point, mismatch_value})
             }
         }
         // for (let i = 0; i < that.text_nodes.length; i++){

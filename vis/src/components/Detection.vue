@@ -62,6 +62,7 @@ export default {
             "image_cluster_list",
             "vis_image_per_cluster",
             "cluster_association_mat",
+            "mismatch",
             "all_sets",
             "focus_node",
             "expand_tree",
