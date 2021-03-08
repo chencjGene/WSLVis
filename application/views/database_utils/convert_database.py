@@ -18,6 +18,8 @@ parser = argparse.ArgumentParser(
 train_set = parser.add_mutually_exclusive_group()
 parser.add_argument('--step', default='',
                     type=str, help='main or debug')
+parser.add_argument('--dataname', default='COCO17',
+                    type=str, help='main or debug')
 args = parser.parse_args()
 if len(args.step) == 0:
     raise ValueError("args.step should be specified")
@@ -117,6 +119,6 @@ def speed_test():
     print("time cost", time() - t0)
 
 if __name__ == "__main__":
-    convert(config.coco17)
+    convert(args.dataname)
     # test()
     # speed_test()

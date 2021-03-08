@@ -33,5 +33,9 @@ def get_text(query):
     text_result = port.model.data.get_text(query)
     return jsonify(text_result)
 
+def get_single_text(idx):
+    text = port.model.data.get_single_text(idx)
+    return jsonify(text)
+
 def get_word(query):
     return jsonify(port.model.get_word(query))

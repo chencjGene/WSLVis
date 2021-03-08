@@ -227,11 +227,14 @@ class WSLModel(object):
             self.image_ids_of_clusters[i] = image_ids
         logger.info("end get_image_ids_of_clusters")
 
-    def get_R(self, exclude_person=True):
+    def get_R(self, exclude_person=True, detection=True):
         # processing R
         class_name = self.data.class_name
         kmeans = self.pre_clustering_res
-        R_path = os.path.join(self.data_root, "cluster_R.npy")
+        suffix = ""
+        if not detection:
+            suffix = "_gt"
+        R_path = os.path.join(self.data_root, "cluster_R{}.npy".format(suffix))
         origin_R = np.zeros((len(class_name), len(np.unique(kmeans))))
         if os.path.exists(R_path):
             origin_R = np.load(R_path)
@@ -241,7 +244,10 @@ class WSLModel(object):
                 r = origin_R[:,i]
                 idxs = np.array(range(len(kmeans)))[kmeans == i]
                 for j in idxs:
-                    res = self.data.get_detection_result(int(j)) 
+                    if detection:
+                        res = self.data.get_detection_result(int(j)) 
+                    else:
+                        res = self.data.get_anno_bbox_result(int(j)) 
                     for det in res:
                         if det[-2] > 0.5:
                             r[det[-1]] += 1
@@ -289,9 +295,27 @@ class WSLModel(object):
 
     def get_current_hypergraph(self):
         cam_matrix, mismatch = self.get_cluster_association_matrix()
+
+        # reordering
+        leaf_nodes = self.text_tree_helper.get_all_leaf_descendants(self.text_tree_helper.tree)
+        leaf_nodes = leaf_nodes[::-1]
+        pos = []
+        for i in range(cam_matrix.shape[0]):
+            p = 0
+            count = 0 
+            for j in range(len(leaf_nodes)):
+                idx = leaf_nodes[j]["id"]
+                if cam_matrix[i][idx] > 0:
+                    p = p + j
+                    count += 1
+            pos.append(p/count)
+        sorted_idxs = np.array(pos).argsort()
+        cam_matrix = cam_matrix[sorted_idxs, :]
+        mismatch = mismatch[sorted_idxs, :]
+
         mat = {
             "text_tree": self.text_tree,
-            "image_cluster_list": self.image_cluster_list,
+            "image_cluster_list": [self.image_cluster_list[i] for i in sorted_idxs],
             "mismatch": mismatch.tolist(),
             "cluster_association_matrix": cam_matrix.tolist(),
             "vis_image_per_cluster": {i: self.get_rank(i) for i in range(len(self.image_cluster_list))}
@@ -344,8 +368,19 @@ class WSLModel(object):
             return pickle_load_data(tsne_path)
         image_ids = self.image_ids_of_clusters[image_cluster_id]
         features = self.data.get_image_feature()[np.array(image_ids)]
+        print("features.shape", features.shape)
+        norm = (features**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_features = features / norm.reshape(-1,1)
+
+        pred = self.data.get_category_pred(image_ids, "image")
+        norm = (pred**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_pred = pred / (norm.reshape(-1,1)+1e-12)
+        cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
+
         tsne = TSNE(n_components=2,random_state=15)
-        coor = tsne.fit_transform(features)
+        coor = tsne.fit_transform(cluster_feature)
         pickle_save_data(tsne_path, coor)
         return coor
 

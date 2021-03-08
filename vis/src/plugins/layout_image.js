@@ -45,7 +45,7 @@ const image_cluster_list_layout = function(parent){
         this.update_parent_set_layout(data);
         this.get_set_layout_from_parent();
 
-        data = this.reorder(data);
+        // data = this.reorder(data);
 
         data.forEach((d, i) => {
             d.x = that.set_left;

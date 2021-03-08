@@ -258,7 +258,9 @@ class Data(DataBaseLoader):
             pickle_save_data(confidence_path, self.mean_confidence)
         return self.mean_confidence.copy()
 
-    def get_category_pred(self, label_type="unlabeled", data_type="text"):
+    def get_category_pred(self, label_type="unlabeled", data_type="text", threshold=None):
+        if threshold is None:
+            threshold = self.conf_thresh
         if not isinstance(label_type, str) and isinstance(label_type, list):
             idxs = label_type
             label_type_text = "idx"
@@ -276,7 +278,7 @@ class Data(DataBaseLoader):
         logger.debug("begin get category pred with {} in {}".format(label_type_text, data_type))
         preds = []
         buffer_file = os.path.join(self.data_root, \
-            "pred_buffer_{}_{}.npy".format(label_type_text, data_type))
+            "pred_buffer_{}_{}_thresh_{}.npy".format(label_type_text, data_type, threshold))
         if os.path.exists(buffer_file) and label_type_text != "idx":
             logger.info("using pred buffer: {}".format(buffer_file))
             preds = np.load(buffer_file)
@@ -292,7 +294,7 @@ class Data(DataBaseLoader):
             for idx in tqdm(idxs):
                 detection = self.database_fetch_by_idx(idx, ["detection"])
                 detection = np.array(json.loads(detection)) #[:,-1].astype(int)
-                conf_detection = detection[detection[:, -2] > self.conf_thresh].astype(np.float32)
+                conf_detection = detection[detection[:, -2] > threshold].astype(np.float32)
                 cats = conf_detection[:, -1].astype(int)
                 cats = np.array(list(set(cats))).astype(int)
                 pred = np.zeros(len(self.class_name))
@@ -367,6 +369,15 @@ class Data(DataBaseLoader):
             }
             texts.append(text)
         return texts
+
+    def get_single_text(self, idx):
+        cursor = self.conn.cursor()
+        sql = "select (cap) from annos where id = ?"
+        result = cursor.execute(sql, (idx,))
+        result = cursor.fetchall()[0]
+        caps = result[0]
+        return caps
+
 
     def get_word(self, cats, match_type):
         self.current_text_idxs = self.get_labeled_id_by_type(cats, match_type)

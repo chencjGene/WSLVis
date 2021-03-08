@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import * as Global from "./global";
+// import * as Global from "./global";
 const TextImageConnection = function (parent) {
     let that = this;
     that.parent = parent;
@@ -10,6 +10,8 @@ const TextImageConnection = function (parent) {
     that.create_ani = that.parent.create_ani;
     that.update_ani = that.parent.update_ani;
     that.remove_ani = that.parent.remove_ani;
+
+    this.mismatch_threshold = 1500;
 
     that.sub_component_update = function (set_links) {
         // update state
@@ -29,7 +31,8 @@ const TextImageConnection = function (parent) {
         that.e_set_links
             .enter()
             .append("path")
-            .attr("class", "set-link")
+            .attr("class", d => d.mismatch_value > that.mismatch_threshold ? 
+                "set-link mismatched-link": "set-link matched-link")
             .attr("id", d => d.source.id + "-" + d.target.id)
             // .attr("d", Global.set_line)
             .attr(
@@ -39,7 +42,8 @@ const TextImageConnection = function (parent) {
                     .y((d) => d.y)
             )
             .style("opacity", 0)
-            .style("stroke", Global.GrayColor)
+            // .style("stroke", d => d.mismatch_value > that.mismatch_threshold ? 
+            //     Global.Red: Global.GrayColor)
             .style("stroke-width", 0.5)
             // .style("stroke-dasharray", "5, 5")
             .transition()

@@ -9,6 +9,7 @@ from tqdm import tqdm
 from time import time
 from itertools import chain
 
+from sklearn.metrics import confusion_matrix
 from sklearn.datasets import make_checkerboard
 from sklearn.cluster import SpectralBiclustering
 from sklearn.metrics import consensus_score
@@ -53,7 +54,7 @@ class CoClusteringTest(unittest.TestCase):
         image_names = [ np.ones(len(d)).astype(int) * idx for idx, d in enumerate(image_labels)]
         image_labels = list(chain(*image_labels))
         image_names = list(chain(*image_names))
-        R = m.get_R(False)
+        R = m.get_R(exclude_person=False, detection=False)
         R = R[text_labels, :][:,image_labels]
         sns.set(font_scale=0.5)
         sns.heatmap(R, yticklabels=np.array(class_name)[text_labels],
@@ -62,7 +63,7 @@ class CoClusteringTest(unittest.TestCase):
         plt.savefig("test/mismatch/coclustering_result.jpg")
         plt.close()
 
-        CAM = m.get_cluster_association_matrix().T
+        CAM = m.get_cluster_association_matrix()[0].T
         CAM = CAM[text_labels]
 
         sns.heatmap(CAM, yticklabels=np.array(class_name)[text_labels])
@@ -76,7 +77,24 @@ class CoClusteringTest(unittest.TestCase):
             print(np.array(class_name)[selected])
         a = 1
 
-    
+    def test_accuracy(self):
+        m = WSLModel(dataname=config.coco17, step=1)
+        m = WSLModel(dataname="COCO20", step=1)
+        m = pickle_load_data(m.buffer_path)
+        m.dataname = "COCO20"
+        m._init_data()
+        cluster_id = 8
+        image_ids = np.array(m.image_ids_of_clusters[cluster_id])
+        image_labels = m.data.get_category_pred(label_type="all", \
+            data_type="image", threshold=0.5)
+        text_labels = m.data.get_category_pred(label_type="all", data_type="text")
+        gt = m.data.get_groundtruth_labels(label_type="all")
+        selected_image_labels = image_labels[image_ids][:, 59]
+        selected_text_labels = text_labels[image_ids][:, 59]
+        selected_gt = gt[image_ids][:, 59]
+        mismatched = (selected_image_labels != selected_text_labels)
+
+        a = 1
 
     def test_rank(self):
         m = WSLModel(dataname=config.coco17, step=1)

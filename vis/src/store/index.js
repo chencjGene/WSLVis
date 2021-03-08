@@ -126,7 +126,6 @@ const store = new Vuex.Store({
         set_mismatch(state, mismatch){
             state.mismatch = mismatch;
             console.log("cluster_association_mat:", state.mismatch);
-
         },
         set_history_data(state, history_data) {
             console.log("set history data");

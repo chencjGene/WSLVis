@@ -383,7 +383,7 @@ export default {
         this.set_num = 0;
         this.set_height = 0;
         this.image_height = 0;
-        this.set_left = this.layer_height * 3 + 200;
+        this.set_left = this.layer_height * 3 + 230;
         this.set_width = this.layout_width - this.set_left;
         this.set_margin = 6;
         this.image_margin = this.set_margin;
@@ -568,5 +568,16 @@ export default {
 #main-topname {
     display: flex;
     justify-content: space-between;
+}
+
+.matched-link{
+    stroke: #D3D3E5;
+}
+
+
+.mismatched-link{
+    stroke: #ED2939;
+    stroke-dasharray: 5, 5;
+
 }
 </style>

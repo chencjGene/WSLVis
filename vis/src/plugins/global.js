@@ -1,5 +1,6 @@
 const GrayColor = "#7f7f7f";
 const DarkGray = "rgb(211, 211, 229)";
+const Red = "rgb(237, 41, 57)";
 const Animation = 1000;
 
 const deepCopy = function(obj) {
@@ -124,6 +125,7 @@ export {
     GrayColor,
     DarkGray,
     Animation,
+    Red,
     deepCopy,
     tree_line,
     getTextWidth,

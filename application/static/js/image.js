@@ -162,7 +162,7 @@ let ImageLayout = function (container){
             return;
         }
         showing_image = true;
-        img_url = Website + ":" + Port + `/image/image?filename=${d.id}.jpg`;
+        img_url = Website + ":" + Port + `/image/origin_image?filename=${d.id}.jpg`;
         console.log("show detail:", detail_pos, img_url);
         layout_width = parseFloat(svg.attr("width"));
         let img_width = x_grid_num*(grid_size+grid_offset)-grid_offset-img_padding*2;
