@@ -5,6 +5,7 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.manifold import TSNE
 
 from ..utils.log_utils import logger
+from ..utils.config_utils import config
 from ..utils.helper_utils import json_load_data, json_save_data
 from ..utils.helper_utils import pickle_save_data, pickle_load_data, check_dir
 from ..database_utils.data_database import Data
@@ -37,6 +38,11 @@ class WSLModel(object):
             return 
         self._init()
     
+    def update_data_root(self, dataname, suffix):
+        suffix = "step" + str(suffix)
+        self.data_all_step_root = os.path.join(config.data_root, dataname)
+        self.data_root = os.path.join(config.data_root, self.dataname, suffix)
+
     def _init(self):
         logger.info("current config of model: dataname-{}, step-{}, text_k-{}, image_k-{}, pre_k-{}".format(self.dataname, self.step,\
                 self.config["text_k"], self.config["image_k"], self.config["pre_k"]))
