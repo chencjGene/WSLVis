@@ -23,7 +23,7 @@
 
 // import Vue from "vue"
 import { mapActions, mapState, mapMutations } from "vuex";
-import * as d3 from "d3";
+import * as d3 from "d3";  
 import * as Global from "../plugins/global";
 
 // computation components
@@ -68,6 +68,7 @@ export default {
             "all_sets",
             "focus_node",
             "expand_tree",
+            "expand_set_id",
             "tooltip",
             "server_url",
             "selected_flag"
@@ -84,6 +85,7 @@ export default {
             "set_selected_node",
             "set_focus_image",
             "set_expand_tree",
+            "set_expand_set_id",
             "showTooltip",
             "hideTooltip",
             "set_words",
@@ -411,6 +413,11 @@ export default {
             this.update_data();
             this.update_view();
         },
+        expand_set_id(){
+            console.log("watch expand set id");
+            this.update_data();
+            this.update_view();
+        },
     },
     async mounted() {
         console.log("detection mounted");
@@ -646,5 +653,9 @@ export default {
 
 .current-label-checkbox{
     cursor: pointer;
+}
+
+.expand-path{
+    pointer-events: none;
 }
 </style>
