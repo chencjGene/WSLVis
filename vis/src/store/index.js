@@ -18,6 +18,7 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
+        use_treecut: true,
         image_cluster_list: [],
         mismatch: [],
         vis_image_per_cluster: {},
@@ -176,6 +177,9 @@ const store = new Vuex.Store({
             for(let i in res){
                 state.vis_image_per_cluster[i] = res[i];
             }
+        },
+        set_use_treecut(state, use_treecut){
+            state.use_treecut = use_treecut;
         },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 

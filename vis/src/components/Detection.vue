@@ -8,7 +8,8 @@
             :content="tooltip.content"
         >
         </info-tooltip>
-        <v-col cols="12" class="main-content pa-0"> </v-col>
+        <v-col cols="12" class="main-content pa-0"> 
+        </v-col>
     </v-col>
 </template>
 
@@ -59,6 +60,7 @@ export default {
     computed: {
         ...mapState([
             "tree",
+            "use_treecut",
             "image_cluster_list",
             "vis_image_per_cluster",
             "cluster_association_mat",
@@ -85,6 +87,7 @@ export default {
             "showTooltip",
             "hideTooltip",
             "set_words",
+            "set_use_treecut",
         ]),
         treecut() {
             console.log("detection treecut");
@@ -168,7 +171,7 @@ export default {
         create() {
             console.log("Global", Global.GrayColor, Global.Animation);
             this.expand_icon_create();
-            this.mini_create();
+            // this.mini_create();
         },
 
         mini_create() {
@@ -219,6 +222,7 @@ export default {
                 .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
         },
         title_create() {
+            let that = this;
             this.svg
                 .append("text")
                 .attr("class", "topname")
@@ -231,6 +235,49 @@ export default {
                 .attr("x", this.set_left * 1.05)
                 .attr("y", this.text_height / 2 + 1)
                 .text("Detection");
+            let checkbox = this.svg
+                .append("g")
+                .attr("class", "current-label-checkbox")
+                .attr("transform", "translate("+ 
+                    (120)+","+
+                    (this.text_height / 2 + 4)+")")
+                .on("click", function() {
+                    console.log("click tree cut", that.use_treecut);
+                    if (that.use_treecut){
+                        that.set_use_treecut(false);
+                        d3.select(this).select("rect")
+                            .attr("fill", "white");
+                    }
+                    else{
+                        that.set_use_treecut(true);
+                        d3.select(this).select("rect")
+                            .attr("fill", Global.GrayColor);
+                    }
+                })
+            checkbox.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", 14)
+                .attr("height", 14)
+                .attr("rx", 3.5)
+                .attr("ry", 3.5)
+                .attr("fill", Global.GrayColor)
+                .attr("stroke", Global.GrayColor);
+            checkbox.append("text")
+                .style("stroke", "white")
+                .style("fill", "white")
+                .attr("text-anchor", "middle")
+                .attr("font-size", "12px")
+                .attr("x", 14 / 2)
+                .attr("y", 14 / 2 + 5)
+                .text("\u2714")
+            checkbox.append("text")
+                .attr("text-anchor", "start")
+                .attr("x", 14 + 2)
+                .attr("y", 12)
+                .attr("font-size", "18px")
+                .text("treecut");
+            
         },
         expand_icon_create() {
             this.expanded_icon_group.on("click", () => {
@@ -266,7 +313,7 @@ export default {
         },
         update() {
             this.expand_icon_update();
-            this.mini_update();
+            // this.mini_update();
         },
         mini_update() {
             this.e_mini_nodes
@@ -317,7 +364,7 @@ export default {
                 });
         },
         remove() {
-            this.mini_remove();
+            // this.mini_remove();
         },
         mini_remove() {},
     },
@@ -574,10 +621,13 @@ export default {
     stroke: #D3D3E5;
 }
 
-
 .mismatched-link{
     stroke: #ED2939;
     stroke-dasharray: 5, 5;
 
+}
+
+.current-label-checkbox{
+    cursor: pointer;
 }
 </style>
