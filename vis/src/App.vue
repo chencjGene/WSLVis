@@ -117,5 +117,5 @@ export default {
 }
 
 /* diable scrollbar on the right */
-::-webkit-scrollbar {display:none;} 
+/* ::-webkit-scrollbar {display:none;}  */
 </style>
