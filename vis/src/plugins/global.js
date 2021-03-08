@@ -48,21 +48,21 @@ const getTextWidth = function(text, font) {
 
 const node_icon = function(x, y, type, basic_ratio){
     basic_ratio = basic_ratio || 2;
-    if (type === 0){
+    if (type === 0){ // collapsed
         let ratio = basic_ratio * 1.8;
         let p1 = {x: x + ratio, y: y};
         let p2 = {x: x - 0.5 * ratio, y: y - 0.866 * ratio};
         let p3 = {x: x - 0.5 * ratio, y: y + 0.866 * ratio};
         return "M" + pos2str(p1) + "L" + pos2str(p2) + "L" + pos2str(p3) + "Z";
     }
-    else if (type === 1){
+    else if (type === 1){ //expanded
         let ratio = basic_ratio * 1.8;
         let p1 = {x: x, y: y + ratio};
         let p2 = {x: x + 0.866 * ratio, y: y - 0.5 * ratio};
         let p3 = {x: x - 0.866 * ratio, y: y - 0.5 * ratio};
         return "M" + pos2str(p1) + "L" + pos2str(p2) + "L" + pos2str(p3) + "Z";
     }
-    else if (type === 2){
+    else if (type === 2){ // leaf node
         let ratio = basic_ratio;
         return "M " + (x - ratio) + ", " + (y) + 
             "a" + ratio + ", " + ratio + " 0 1, 0 " + (ratio * 2) + ", 0" +  

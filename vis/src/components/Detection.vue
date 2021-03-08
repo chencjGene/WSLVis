@@ -92,24 +92,41 @@ export default {
         treecut() {
             console.log("detection treecut");
             console.log("before treecut", this.tree);
-            // tree position backup
-            this.tree.all_descendants.forEach((d) => {
-                d.prev_x = d.x;
-                d.prev_y = d.y;
-                d.prev_vis = false;
-            });
-            this.tree.descendants().forEach((d) => (d.prev_vis = true));
-            this.offset = this.treecut_class.treeCut(
-                this.focus_node,
-                this.tree,
-                this.tree_layout.layout_with_rest_node
-            );
-            this.tree.all_descendants.map((d) => (d.api = 0));
-            this.offset = 0;
-            this.tree.sort(function (a, b) {
-                return a.siblings_id - b.siblings_id;
-            });
-            console.log("after treecut", this.tree);
+            if (this.use_treecut){
+                // tree position backup
+                this.tree.all_descendants.forEach((d) => {
+                    d.prev_x = d.x;
+                    d.prev_y = d.y;
+                    d.prev_vis = false;
+                });
+                this.tree.descendants().forEach((d) => (d.prev_vis = true));
+                this.offset = this.treecut_class.treeCut(
+                    this.focus_node,
+                    this.tree,
+                    this.tree_layout.layout_with_rest_node
+                );
+                this.tree.all_descendants.map((d) => (d.api = 0));
+                this.offset = 0;
+                this.tree.sort(function (a, b) {
+                    return a.siblings_id - b.siblings_id;
+                });
+                console.log("after treecut", this.tree);
+            }
+            else{
+                if (!this.focus_node) {
+                    this.tree.children = this.tree.all_children;
+                }
+                else if(this.focus_node[0].type == 0){
+                    this.focus_node[0].children = this.focus_node[0].all_children;
+                }
+                else if (this.focus_node[0].type == 1){
+                    this.focus_node[0].children = [];
+                }
+                this.tree.descendants().forEach(d => {
+                    d.beforeList = [];
+                    d.afterList = [];
+                })
+            }
         },
         update_data() {
             console.log("detection update data");
