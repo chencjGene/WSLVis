@@ -336,7 +336,11 @@ class Data(DataBaseLoader):
         phase = "train2017_square"
         if idx in self.val_idx:
             phase = "val2017"
-        img_path = os.path.join(self.data_all_step_root, phase, "%012d.jpg" %(image_id))
+        img_path = os.path.join(self.data_all_step_root, \
+            phase, "%012d.jpg" %(image_id))
+        if not os.path.exists(img_path):
+            img_path = os.path.join(config.raw_data_root, \
+                "coco17_raw_data", phase, "%012d.jpg" %(image_id))
         return img_path 
     
     def get_origin_image(self, idx):
@@ -344,7 +348,12 @@ class Data(DataBaseLoader):
         phase = "train2017"
         if idx in self.val_idx:
             phase = "val2017"
-        img_path = os.path.join(self.data_all_step_root, phase, "%012d.jpg" %(image_id))
+        img_path = os.path.join(self.data_all_step_root, \
+            phase, "%012d.jpg" %(image_id))
+        if not os.path.exists(img_path):
+            img_path = os.path.join(config.raw_data_root, \
+                "coco17_raw_data", phase, "%012d.jpg" %(image_id))
+        print("iamge_path", img_path)
         return img_path 
     
     def get_text(self, query):

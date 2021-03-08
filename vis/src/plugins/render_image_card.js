@@ -1,3 +1,5 @@
+import * as Global from "../plugins/global";
+
 const ImageCards = function(parent){
     let that =this;
     that.parent = parent;
@@ -28,6 +30,14 @@ const ImageCards = function(parent){
         that.parent.set_focus_image(image);
     },
 
+    this.set_expand_set_id = function(id){
+        that.parent.set_expand_set_id(id);
+    }
+
+    this.get_expand_set_id = function(){
+        return that.parent.expand_set_id;
+    }
+
     this.sub_component_update = function(sets, vis_image_per_cluster) {
         // update layout config
         that.get_set_layout_from_parent();
@@ -47,7 +57,7 @@ const ImageCards = function(parent){
         
 
         // update view
-        that.e_sets = that.set_group.selectAll(".set").data(sets, d => d.type); 
+        that.e_sets = that.set_group.selectAll(".set").data(sets, d => d.id); 
 
         that.remove();
         that.update();
@@ -65,6 +75,39 @@ const ImageCards = function(parent){
                 "transform",
                 (d) => "translate(" + d.x + ", " + d.y + ")"
             );
+        set_groups
+            .style("opacity", 0)
+            .transition()
+            .duration(that.create_ani)
+            .delay(that.update_ani + that.remove_ani)
+            .style("opacity", 1);
+
+        // expand icon
+        set_groups.append("rect")
+            .attr("class", "expand-rect")
+            .attr("x", -11)
+            .attr("y", 0)
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("rx", 3)
+            .style("ry", 3)
+            .style("fill", "white")
+            .style("stroke", "gray")
+            .style("stroke-width", 1)
+            .on("click", (_, d) => {
+                if (d.id === that.get_expand_set_id()){
+                    that.set_expand_set_id(-1);
+                }
+                else{
+                    that.set_expand_set_id(d.id);
+                }
+            })
+        
+        set_groups.append("path")
+            .attr("class", "expand-path")
+            .style("stroke", "none")
+            .style("fill", "gray")
+            .attr("d", Global.plus_path_d(-11, 0, 10, 10, 2));
 
         set_groups
             .append("rect")
@@ -72,13 +115,8 @@ const ImageCards = function(parent){
             .style("fill", "white")
             .style("stroke", "#e0e0e0")
             .style("stroke-width", 1)
-            .style("opacity", 0)
-            .attr("width", (d) => d.width)
-            .attr("height", (d) => d.height)
-            .transition()
-            .duration(that.create_ani)
-            .delay(that.update_ani + that.remove_ani)
-            .style("opacity", 1);
+            .attr("width", d => d.width)
+            .attr("height", d => d.height);
         
         that.image_groups = set_groups.selectAll("g.detection-result")
             .data(d => that.vis_image_per_cluster[d.id]);
@@ -95,6 +133,8 @@ const ImageCards = function(parent){
             .attr("y", 0)
             .attr("width", d => d.vis_w)
             .attr("height", d => d.vis_h)
+            .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+            .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none")
             .attr("href", d => that.server_url + `/image/image?filename=${d.idx}.jpg`)
             .on("click", (_, d) => {
                 console.log("click image", d);
@@ -116,27 +156,55 @@ const ImageCards = function(parent){
             });
         that.box_groups.enter()
             .append("rect")
-            .attr("rect", "box")
+            .attr("class", "box")
             .attr("x", d => d.x)
             .attr("y", d => d.y)
             .attr("width", d => d.width)
             .attr("height", d => d.height)
             .style("fill", "none")
             .style("stroke", "green")
-            .style("stroke-width", 1);
+            .style("stroke-width", 1)
+            .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
 
             
     };
 
     this.update = function(){
         that.e_sets
-        .transition()
-        .duration(that.update_ani)
-        .delay(that.remove_ani)
-        .attr(
-            "transform",
-            (d) => "translate(" + d.x + ", " + d.y + ")"
-        );
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            .attr(
+                "transform",
+                (d) => "translate(" + d.x + ", " + d.y + ")"
+            );
+        
+        that.e_sets.select("rect.background")
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            .attr("height", d => d.height);
+
+        that.e_sets.selectAll("g.detection-result")
+            .select("image")
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            // .attr("height", d => that.get_expand_set_id() === -1 ? d.vis_h : 0);
+            .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+            .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
+        
+        that.e_sets.selectAll("g.detection-result")
+            .selectAll("rect.box")
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+            .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
+
+        that.e_sets.select(".expand-path")
+            .attr("d", d => d.id === that.get_expand_set_id() ? 
+                Global.minus_path_d(-11, 0, 10, 10, 2): Global.plus_path_d(-11, 0, 10, 10, 2))
     };
 
     this.remove = function(){

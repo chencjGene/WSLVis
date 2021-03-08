@@ -23,6 +23,7 @@ const store = new Vuex.Store({
         mismatch: [],
         vis_image_per_cluster: {},
         expand_tree: true,
+        expand_set_id: -1,
         cluster_association_mat: [],
         focus_node: null,
         selected_node: {
@@ -147,6 +148,10 @@ const store = new Vuex.Store({
         set_expand_tree(state, node){
             console.log("set expand tree");
             state.expand_tree = node;
+        },
+        set_expand_set_id(state, id){
+            console.log("set expand set id", id);
+            state.expand_set_id = id;
         },
         set_words(state, words){
             console.log("set words");

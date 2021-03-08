@@ -239,7 +239,7 @@ const TextTree = function (parent) {
             .on("click", (ev, d) => {
                 console.log("click icon", d.type, d);
                 if (!that.expand_tree) return;
-                if (d.type > 0) return;
+                // if (d.type > 0) return;
                 console.log("click tree node", d.name);
                 // that.highlight(ev, d, "rgb(211, 211, 229)");
                 that.set_focus_node([d]);
@@ -576,7 +576,7 @@ const TextTree = function (parent) {
 
     that.icon_highlight = function(ev, d) {
         console.log("icon-highlight");
-        if (d.type > 0) return;
+        // if (d.type > 0) return;
         that.tree_node_group
             .select("#id-" + d.id)
             .select("path.icon")
