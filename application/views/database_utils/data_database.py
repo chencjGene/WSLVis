@@ -353,6 +353,7 @@ class Data(DataBaseLoader):
         if not os.path.exists(img_path):
             img_path = os.path.join(config.raw_data_root, \
                 "coco17_raw_data", phase, "%012d.jpg" %(image_id))
+        print("iamge_path", img_path)
         return img_path 
     
     def get_text(self, query):

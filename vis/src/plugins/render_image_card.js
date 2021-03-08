@@ -95,7 +95,12 @@ const ImageCards = function(parent){
             .style("stroke", "gray")
             .style("stroke-width", 1)
             .on("click", (_, d) => {
-                that.set_expand_set_id(d.id)
+                if (d.id === that.get_expand_set_id()){
+                    that.set_expand_set_id(-1);
+                }
+                else{
+                    that.set_expand_set_id(d.id);
+                }
             })
         
         set_groups.append("path")
@@ -128,6 +133,8 @@ const ImageCards = function(parent){
             .attr("y", 0)
             .attr("width", d => d.vis_w)
             .attr("height", d => d.vis_h)
+            .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+            .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none")
             .attr("href", d => that.server_url + `/image/image?filename=${d.idx}.jpg`)
             .on("click", (_, d) => {
                 console.log("click image", d);
@@ -149,14 +156,15 @@ const ImageCards = function(parent){
             });
         that.box_groups.enter()
             .append("rect")
-            .attr("rect", "box")
+            .attr("class", "box")
             .attr("x", d => d.x)
             .attr("y", d => d.y)
             .attr("width", d => d.width)
             .attr("height", d => d.height)
             .style("fill", "none")
             .style("stroke", "green")
-            .style("stroke-width", 1);
+            .style("stroke-width", 1)
+            .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
 
             
     };
@@ -170,6 +178,29 @@ const ImageCards = function(parent){
                 "transform",
                 (d) => "translate(" + d.x + ", " + d.y + ")"
             );
+        
+        that.e_sets.select("rect.background")
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            .attr("height", d => d.height);
+
+        that.e_sets.selectAll("g.detection-result")
+            .select("image")
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            // .attr("height", d => that.get_expand_set_id() === -1 ? d.vis_h : 0);
+            .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+            .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
+        
+        that.e_sets.selectAll("g.detection-result")
+            .selectAll("rect.box")
+            .transition()
+            .duration(that.update_ani)
+            .delay(that.remove_ani)
+            .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+            .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
 
         that.e_sets.select(".expand-path")
             .attr("d", d => d.id === that.get_expand_set_id() ? 
