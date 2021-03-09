@@ -25,6 +25,7 @@ const store = new Vuex.Store({
         expand_tree: true,
         expand_set_id: 4,
         grid_data: [],
+        navigation_ids: [],
         label_layout_mode: null,
         cluster_association_mat: [],
         focus_node: null,
@@ -190,6 +191,7 @@ const store = new Vuex.Store({
         },
         set_grid_layout_data(state, data){
             console.log("set grid layout data", state, data);
+            state.grid_data = data.layout;
         },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 

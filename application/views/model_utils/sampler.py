@@ -276,7 +276,9 @@ class Sampler(object):
             for idx, id in enumerate(sampled_idx):
                 res.append({
                     'id': int(id),
-                    'pos': grid_x[idx].tolist()
+                    'img_id': self.image_ids[int(id)],
+                    'pos': grid_x[idx].tolist(),
+                    'mismatch': self.mismatch[int(id)]
                 })
             if old_node_id == "root":
                 pickle_save_data(buffer_path, [idx, sampled_idx, self.current_grid_layout, hiera, res])

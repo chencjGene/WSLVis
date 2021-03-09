@@ -21,6 +21,10 @@ const image_cluster_list_layout = function(parent){
         return that.parent.expand_set_id;
     }
 
+    this.get_grid_data = function(){
+        return that.parent.grid_data;
+    }
+
     this.update_parent_set_layout = function(data){
         console.log("update_parent_set_layout");
         that.parent.set_num = data.length;
@@ -70,7 +74,40 @@ const image_cluster_list_layout = function(parent){
             d.height = w - that.set_margin;
             d.width = that.set_width - that.set_margin;
         });
-        return data;
+        let grids = [];
+        let pos = {};
+        if (that.get_expand_set_id()!==-1) [grids, pos] = that.grid_layout(data);
+        return [data, grids, pos];
+    }
+
+    this.grid_layout = function(data){
+        let grid_height = that.large_set_height;
+        let grid_width = that.set_width;
+        let side_length = 0;
+        let offset_x = 0;
+        let offset_y = 0;
+        if (grid_height > grid_width){
+            offset_y = (grid_height - grid_width) / 2;
+            offset_x = that.set_left + 0;
+            side_length = grid_width;
+        }
+        else{
+            offset_y = 0;
+            offset_x = that.set_left + (grid_width - grid_height) / 2;
+            side_length = grid_height;
+        }
+        offset_y = offset_y + data.filter(d => d.id === that.get_expand_set_id())[0].y;
+        console.log("offset_x, offset_y", offset_x, offset_y);
+
+        let grid_data = that.get_grid_data();
+        let grid_size = Math.ceil(Math.sqrt(grid_data.length));
+        let cell_width = 1.0 / grid_size;
+        grid_data.forEach(d => {
+            d.x = offset_x + side_length * d.pos[0];
+            d.y = offset_y + side_length * d.pos[1];
+            d.width = cell_width * side_length;
+        })
+        return [grid_data, {offset_x, offset_y, side_length}];
     }
 }
 

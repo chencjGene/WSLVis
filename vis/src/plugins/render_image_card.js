@@ -1,19 +1,45 @@
 import * as Global from "../plugins/global";
+import * as d3 from "d3";  
 
 const ImageCards = function(parent){
     let that =this;
     that.parent = parent;
+    that.server_url = that.parent.server_url;
     
     that.set_group = that.parent.set_group;
     that.grid_group = that.parent.grid_group;
-
-    that.server_url = that.parent.server_url;
-
 
     // animation
     that.create_ani = that.parent.create_ani;
     that.update_ani = that.parent.update_ani;
     that.remove_ani = that.parent.remove_ani;
+
+    // 
+    that.boundingbox_width = 3;
+    
+    // let labels = Array(); // Label layout
+    // let img_width = 40;
+
+    let margin_size = 20;
+    let margin_top_size = 100;
+    let plot_width = 800;
+    let plot_height = 800;
+    var offset_x = 0; // position of the left grid when the mode is "juxtaposition"
+    var offset_y = 100;
+
+    let mouse_pressed = false;
+    let mouse_pos = {
+        x: -1,
+        y: -1
+    };
+
+    let relative_sampling_area = {
+        x: 0,
+        y: 0,
+        w: 1,
+        h: 1
+    };
+    let plot_x, plot_y = 1;
 
     this.get_set_layout_from_parent = function(){
         // set
@@ -24,6 +50,7 @@ const ImageCards = function(parent){
         that.set_margin = that.parent.set_margin;
         that.image_height = that.parent.image_height;
         that.image_margin = that.parent.image_margin;
+        that.text_height = that.parent.text_height;
     };
     this.get_set_layout_from_parent();
 
@@ -39,12 +66,17 @@ const ImageCards = function(parent){
         return that.parent.expand_set_id;
     }
 
-    this.sub_component_update = function(sets, vis_image_per_cluster) {
+    this.sub_component_update = function(sets, vis_image_per_cluster, grids, grids_pos) {
         // update layout config
         that.get_set_layout_from_parent();
 
         // update state 
         that.vis_image_per_cluster = vis_image_per_cluster;
+        that.grids = grids;
+        offset_x = grids_pos.offset_x;
+        offset_y = grids_pos.offset_y;
+        plot_width = grids_pos.side_length;
+        plot_height = grids_pos.side_length;
         Object.values(that.vis_image_per_cluster).forEach(d => {
             let x = that.image_margin;
             d.forEach(n => {
@@ -54,11 +86,13 @@ const ImageCards = function(parent){
                 x = x + n.vis_w + that.image_margin;
             })
         })
-        console.log("image card sub component update", sets, that.detections);
+        console.log("image card sub component update", sets, grids);
         
 
         // update view
         that.e_sets = that.set_group.selectAll(".set").data(sets, d => d.id); 
+        that.e_grids = that.grid_group.selectAll(".grid").data(grids, d => d.img_id);
+        
 
         that.remove();
         that.update();
@@ -177,7 +211,42 @@ const ImageCards = function(parent){
     };
 
     this.grid_create = function(){
+        let grid_groups = that.e_grids.enter()
+            .append("g")
+            .attr("class", "grid")
+            .attr("transform", d => "translate(" + (d.x) + ", " +  (d.y) + ")")
+            // .on('click', function(d) {
 
+            // })
+            .on("mouseover", function() {
+                d3.select(this).select("rect")
+                    .style("stroke-width",  2.0);
+            })
+            .on("mouseout", function() {
+                d3.select(this).select("rect")
+                    .style("stroke-width", 0.0);
+            })
+            // TOOD: mouseover, mouseout
+
+        grid_groups.append("rect")
+            .attr("class", "boundingbox")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", d => d.width)
+            .attr("height", d => d.width)
+            .style("fill", d => d.mismatch > 0 ? Global.Orange : Global.GrayColor)
+            .style("stroke", "black")
+            .style("stroke-width", 0)
+            .style("stroke-opacity", 1);
+        
+        grid_groups.append("rect")
+            .attr("class", "display")
+            .attr("x", 0.5 * that.boundingbox_width)
+            .attr("y", 0.5 * that.boundingbox_width)
+            .attr("width", d => d.width - that.boundingbox_width)
+            .attr("height", d => d.width - that.boundingbox_width)
+            .style("fill", d => d.mismatch > 0 ? Global.Orange : Global.GrayColor)
+            .style("pointer-events", "none");
     }
 
     this.update = function(){
@@ -193,7 +262,7 @@ const ImageCards = function(parent){
             .attr(
                 "transform",
                 (d) => "translate(" + d.x + ", " + d.y + ")"
-            );
+            )
         
         that.e_sets.select("rect.background")
             .transition()
@@ -244,6 +313,172 @@ const ImageCards = function(parent){
     that.grid_remove = function(){
 
     }
+
+    that.set_mode = function(mode){
+        console.log("set mode", mode);
+        if (mode === "cropping") {
+            d3.select("#cropping").select("path").attr("d", Global.d_rollback);
+            d3.select("#selecting").select("path").attr("d", Global.d_select);
+            that.enter_overview();
+        } else if (mode === "selecting") {
+            d3.select("#selecting").select("path").attr("d", Global.d_rollback);
+            d3.select("#cropping").select("path").attr("d", Global.d_scan);
+            that.enter_overview();
+        } else if (mode === "exploring") {
+            d3.select("#cropping").select("path").attr("d", Global.d_scan);
+            d3.select("#selecting").select("path").attr("d", Global.d_select);
+        }
+    }
+
+    that.enter_overview = function(){
+        that.overview_group.select("#overview-1")
+            .attr("x", offset_x)
+            .attr("y", offset_y)
+            .attr("width", plot_width)
+            .attr("height", plot_height);
+        // that.overview_group.select("#overview-2")
+        //     .attr("x", small_x_2)
+        //     .attr("y", small_y_2)
+        //     .attr("width", small_grid_width)
+        //     .attr("height", small_grid_width);
+        that.overview_group.style("visibility", "visible");
+        that.overview_group.select("#viewbox").style("visibility", "hidden");
+        that.confirm_button.style("visibility", "hidden");
+    }
+
+    that.quit_overview = function(){
+
+    }
+
+    that._init = function(){
+        that.overview_group = that.parent.svg
+            .append("g")
+            .attr("id", "overview-group");
+        that.confirm_button = that.overview_group.append("g")
+            .attr("id", "confirm-resample")
+            .style("visibility", "hidden");
+
+        that.overview_group.attr("transform",
+            "translate(" + ( 0 ) + "," + ( that.text_height )+ ")")
+            .style("visibility", "hidden");
+        that.overview_group.append("rect")
+            .attr("id", "overview-1")
+            .attr("class", "overview-box");
+        // that.overview_group.append("rect")
+        //     .attr("id", "overview-2")
+        //     .attr("class", "overview-box");
+        that.overview_group.selectAll(".overview-box")
+            .attr("x", 0)
+            .attr("y", 0)
+            .style("fill", "white")
+            .style("stroke", "grey")
+            .style("stroke-width", 5)
+            .style("opacity", 0.3);
+        that.overview_group.append("rect")
+            .attr("id", "viewbox")
+            .style("stroke-dasharray", "5, 5")
+            .style("fill", "white")
+            .style("stroke", "grey")
+            .style("stroke-width", 5)
+            .style("opacity", 0.5);
+
+        d3.select("#cropping").on('click', function() {
+            var mode = d3.select(this).select("path").attr("d") === Global.d_scan ? 
+                "cropping" : "exploring";
+            that.set_mode(mode);
+        });
+        
+        d3.select("#selecting").on('click', function() {
+            var mode = d3.select(this).select("path").attr("d") === Global.d_select ? 
+                "selecting" : "exploring";
+            that.set_mode(mode);
+        });
+
+        function adjust_sampling_area(area) {
+            relative_sampling_area = area;
+            console.log("relative_sampling are", relative_sampling_area);
+            that.overview_group.select("#viewbox")
+                .attr("x", relative_sampling_area.x * plot_width + offset_x)
+                .attr("y", relative_sampling_area.y * plot_height + offset_y - that.text_height)
+                .attr("width", relative_sampling_area.w * plot_width)
+                .attr("height", relative_sampling_area.h * plot_height);
+        }
+        function compute_viewbox(x1, y1, x2, y2) {
+            var min_x = Math.min(x1, x2), max_x = Math.max(x1, x2),
+                min_y = Math.min(y1, y2), max_y = Math.max(y1, y2);
+            var new_area = {
+                x: (min_x - plot_x) / plot_width,
+                y: (min_y - plot_y) / plot_height,
+                w: (max_x - min_x) / plot_width,
+                h: (max_y - min_y) / plot_height
+            };
+            if (new_area.x + new_area.w > 1 && new_area.x < 1) {
+                return relative_sampling_area;
+            } else {
+                return new_area;
+            }
+        }
+
+        that.overview_group.on("mousedown", function(ev){
+            // var offset = $(d3.select(this).node()).offset();
+            plot_x = offset_x;
+            plot_y = offset_y;
+            mouse_pos = {
+                x: ev.offsetX,
+                y: ev.offsetY
+            };
+            mouse_pressed = d3.select(this).attr("id");
+            that.overview_group.select("#viewbox").style("visibility", "visible");
+            that.confirm_button.style("visibility", "hidden");
+            adjust_sampling_area(compute_viewbox(mouse_pos.x, mouse_pos.y, mouse_pos.x, mouse_pos.y));
+        })
+        .on("mousemove", function(ev) {
+            if (!mouse_pressed) {
+                return;
+            }
+            
+            adjust_sampling_area(compute_viewbox(mouse_pos.x, mouse_pos.y, ev.offsetX, ev.offsetY));
+
+            // let left_x = relative_sampling_area.x;
+            // let top_y = relative_sampling_area.y;
+            // let right_x = left_x + relative_sampling_area.w;
+            // let bottom_y = top_y + relative_sampling_area.h;
+
+            // if (parent.get_mode() === "selecting") {
+            //     if (parent.get_position_mode() !== "juxtaposition") {
+            //         // TODO: selected data
+            //     }
+            // }
+        })
+        .on("mouseup", function(ev) {
+            if (!mouse_pressed) {
+                return;
+            }
+            mouse_pressed = false;
+            adjust_sampling_area(compute_viewbox(mouse_pos.x, mouse_pos.y, ev.offsetX, ev.offsetY));
+            let button_x = (relative_sampling_area.x + relative_sampling_area.w) 
+                * plot_width + margin_size + offset_x;
+            let button_y = (relative_sampling_area.y + relative_sampling_area.h) * plot_width  
+                + margin_top_size;
+            that.confirm_button.attr("transform",
+                "translate(" + button_x + ", " + button_y + ")")
+                .style("visibility", "visible");
+        });
+
+
+        that.confirm_button.append("circle")
+            .attr("r", 20)
+            .attr("fill", "grey");
+        that.confirm_button.append("text")
+            .attr("class", 'glyphicon')
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr('dy', '0.25em')
+            .style("fill", "white")
+            .style("opacity", 1)
+            .style('font-size', '20px')
+            .text('\ue015');
+    }.call()
 
 }
 
