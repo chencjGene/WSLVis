@@ -49,8 +49,8 @@ const TextTree = function (parent) {
         that.parent.set_focus_node(nodes);
     };
 
-    that.fetch_word = function(query){
-        that.parent.$store.dispatch("fetch_word", query);
+    that.fetch_word = function(){
+        that.parent.$store.dispatch("fetch_word");
     }
 
     that.set_selected_node = function(node){
@@ -128,15 +128,13 @@ const TextTree = function (parent) {
                 // that.change_selected_flag(d, !d.selected_flag);
 
                 // TODO: double click
-                let query = {
-                    tree_node_id: d.id,
-                    match_type: "p",
-                };
-                that.fetch_word(query);
                 let node = {
-                    full_name: d.full_name
+                    full_name: d.full_name, 
+                    id: d.id
                 };
                 that.set_selected_node(node);
+                
+                that.fetch_word();
             })
             .transition()
             .duration(that.create_ani)

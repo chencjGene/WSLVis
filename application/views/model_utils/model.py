@@ -391,13 +391,26 @@ class WSLModel(object):
         return coor
 
     def get_word(self, query):
-        tree_node_id = query["tree_node_id"]
+        tree_node_ids = query["tree_node_ids"]
         match_type = query["match_type"]
-        node = self.text_tree_helper.get_node_by_tree_node_id(tree_node_id)
-        leaf_node = self.text_tree_helper.get_all_leaf_descendants(node)
-        cats = [n["cat_id"] for n in leaf_node]
-        words = self.data.get_word(cats, match_type)
-        return words
+        # TODO we should compute the intersection for text examples instead of keywords extract from them
+        count = {}
+        for tree_node_id in tree_node_ids:
+            node = self.text_tree_helper.get_node_by_tree_node_id(tree_node_id)
+            leaf_node = self.text_tree_helper.get_all_leaf_descendants(node)
+            cats = [n["cat_id"] for n in leaf_node]
+            words = self.data.get_word(cats, match_type)
+            print(tree_node_id, words)
+            for word in words:
+                if word[0] not in count:
+                    count[word[0]] = []
+                count[word[0]].append(word[1])
+        union_words = []
+        for word in count:
+            # if len(count[word]) == len(tree_node_ids):
+            union_words.append([word, sum(count[word])])
+        print('union:', union_words)
+        return union_words
 
     def save_model(self, path=None):
         logger.info("save model buffer")

@@ -67,6 +67,7 @@ export default {
             "mismatch",
             "all_sets",
             "focus_node",
+            "selected_node",
             "expand_tree",
             "expand_set_id",
             "tooltip",
