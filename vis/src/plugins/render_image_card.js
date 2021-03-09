@@ -5,6 +5,7 @@ const ImageCards = function(parent){
     that.parent = parent;
     
     that.set_group = that.parent.set_group;
+    that.grid_group = that.parent.grid_group;
 
     that.server_url = that.parent.server_url;
 
@@ -64,7 +65,12 @@ const ImageCards = function(parent){
         that.create();
     };
 
-    this.create = function() {
+    this.create = function(){
+        that.set_create();
+        that.grid_create();
+    }
+
+    this.set_create = function() {
         // set
         let set_groups = that.e_sets
             .enter()
@@ -164,12 +170,22 @@ const ImageCards = function(parent){
             .style("fill", "none")
             .style("stroke", "green")
             .style("stroke-width", 1)
+            .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
             .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
 
             
     };
 
+    this.grid_create = function(){
+
+    }
+
     this.update = function(){
+        that.set_update();
+        that.grid_update();
+    }
+
+    this.set_update = function(){
         that.e_sets
             .transition()
             .duration(that.update_ani)
@@ -207,8 +223,16 @@ const ImageCards = function(parent){
                 Global.minus_path_d(-11, 0, 10, 10, 2): Global.plus_path_d(-11, 0, 10, 10, 2))
     };
 
-    this.remove = function(){
+    this.grid_update = function(){
 
+    }
+
+    this.remove = function(){
+        that.set_remove();
+        that.grid_remove();
+    }   
+
+    this.set_remove = function(){
         that.e_sets
         .exit()
         .transition()
@@ -216,6 +240,10 @@ const ImageCards = function(parent){
         .style("opacity", 0)
         .remove();
     };
+
+    that.grid_remove = function(){
+
+    }
 
 }
 

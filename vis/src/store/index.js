@@ -23,7 +23,9 @@ const store = new Vuex.Store({
         mismatch: [],
         vis_image_per_cluster: {},
         expand_tree: true,
-        expand_set_id: -1,
+        expand_set_id: 4,
+        grid_data: [],
+        label_layout_mode: null,
         cluster_association_mat: [],
         focus_node: null,
         selected_node: {
@@ -186,6 +188,9 @@ const store = new Vuex.Store({
         set_use_treecut(state, use_treecut){
             state.use_treecut = use_treecut;
         },
+        set_grid_layout_data(state, data){
+            console.log("set grid layout data", state, data);
+        },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 
             state.tooltip.left = left 
@@ -239,7 +244,10 @@ const store = new Vuex.Store({
             console.log("fetch_images", image_cluster_ids);
             const resp = await axios.post(`${state.server_url}/detection/Rank`, image_cluster_ids, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_vis_image_per_cluster", JSON.parse(JSON.stringify(resp.data)));
-            
+        },
+        async fetch_grid_layout({commit, state}, query){
+            const resp = await axios.post(`${state.server_url}/detection/GridLayout`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_grid_layout_data", JSON.parse(JSON.stringify(resp.data)));
         }
     },
     // computed: {

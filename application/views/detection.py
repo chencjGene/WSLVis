@@ -35,6 +35,21 @@ def app_get_rank():
     image_cluster_id = json.loads(request.data)
     return get_rank(image_cluster_id)
 
+@detection.route("/detection/GridLayout", methods=["GET", "POST"])
+def app_get_grid_layout():
+    data = json.loads(request.data)
+    image_cluster_id = data.get("image_cluster_id", 4)
+    left_x = data.get("left-x", 0)
+    top_y = data.get("top_y", 0)
+    width = data.get("width", 1)
+    height = data.get("height", 1)
+    node_id = data.get("node-id", -1)
+    print("image_cluster_id: {}, right_x {}, "
+                "top_y {}, width {}, height {}, node id: {}"
+                .format(image_cluster_id, left_x, top_y, width, height, node_id))
+    return get_grid_layout(image_cluster_id, left_x, top_y, width, height, node_id)
+
+
 # for debug
 @detection.route("/detection/Embedding", methods=["GET", "POST"])
 def app_get_embedding():
