@@ -96,6 +96,15 @@ class CoClusteringTest(unittest.TestCase):
 
         a = 1
 
+    def test_grid_layout(self):
+        m = WSLModel(dataname=config.coco17, step=1)
+        m = pickle_load_data(m.buffer_path)
+        m.update_data_root(config.coco17, 1)
+        m._init_data()
+        m.set_focus_image_cluster(4)
+        m.get_grid_layout(0, 0, 1, 1, -1)
+        a = 1
+
     def test_rank(self):
         m = WSLModel(dataname=config.coco17, step=1)
         m.run()
@@ -130,3 +139,11 @@ class CoClusteringTest(unittest.TestCase):
         # R = R / (R.sum(axis=1).reshape(-1, 1) + 1e-12)
         # s = lap_score(R.T)
         a = 1
+
+if __name__ == '__main__':
+    suite = unittest.TestSuite()
+    suite.addTest(CoClusteringTest("test_grid_layout"))
+    
+    # # test all cases
+    # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)
+    unittest.TextTestRunner(verbosity=2).run(suite)

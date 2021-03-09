@@ -18,6 +18,7 @@ except:
 from .coclustering import CoClustering
 from .tree_helper import TextTreeHelper, TreeHelper, ImageTreeHelper
 from .ranker import ImageRanker
+from .sampler import Sampler
 
 
 class WSLModel(object):
@@ -59,12 +60,12 @@ class WSLModel(object):
         self.coclustering = CoClustering(self.config["text_k"], \
             self.config["image_k"], self.config["weight"], verbose=0) 
         self.text_tree_helper = TextTreeHelper(data_root=self.data_root)
+        # self.samplers = [Sampler(id=i) for i in range(self.config["image_k"])]
 
         # ranking model
         self.ranker = ImageRanker()
         self.rank_res = {}
         
-
     def _init_data(self):
         self.data = Data(self.dataname, self.step)
 
@@ -298,7 +299,6 @@ class WSLModel(object):
 
         return mat.T, mismatch_matrix
 
-
     def get_current_hypergraph(self):
         cam_matrix, mismatch = self.get_cluster_association_matrix()
 
@@ -372,6 +372,7 @@ class WSLModel(object):
         if os.path.exists(tsne_path):
             logger.info("tsne buffer of image cluster {} exists".format(image_cluster_id))
             return pickle_load_data(tsne_path)
+        logger.info("TSNE buffer did not exists, run TSNE")
         image_ids = self.image_ids_of_clusters[image_cluster_id]
         features = self.data.get_image_feature()[np.array(image_ids)]
         print("features.shape", features.shape)
@@ -398,6 +399,21 @@ class WSLModel(object):
         cats = [n["cat_id"] for n in leaf_node]
         words = self.data.get_word(cats, match_type)
         return words
+
+    def get_grid_layout(self, left_x, top_y, width, height, node_id):
+        # node_id for navigation 
+        return self.current_sampler.get_grid_layout(left_x, top_y, \
+            width, height, node_id)
+
+    def set_focus_image_cluster(self, id):
+        # self.current_sampler = self.samples[id]
+        self.current_sampler = Sampler(id=id)
+        image_ids = self.image_ids_of_clusters[id]
+        mismatch = self.data.get_mismatch()
+        mismatch = mismatch[np.array(image_ids)]
+        self.current_sampler.init(self.get_tsne_of_image_cluster(id),
+            image_ids, mismatch, self.data_all_step_root)
+        
 
     def save_model(self, path=None):
         logger.info("save model buffer")

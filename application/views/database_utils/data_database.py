@@ -70,6 +70,7 @@ class DataBaseLoader(object):
         return text_feature
 
     def get_image_feature(self):
+        logger.info("get_image_feature")
         if self.image_features is not None:
             return self.image_features
         feature_path = os.path.join(self.data_root, "feature_train.npy")
