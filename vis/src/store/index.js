@@ -30,7 +30,9 @@ const store = new Vuex.Store({
         cluster_association_mat: [],
         focus_node: null,
         selected_node: {
-            full_name: ''
+            node_ids: [],
+            nodes: [], 
+            curr_full_name: ''
         },
         all_sets: [],
         words: [],
@@ -145,8 +147,23 @@ const store = new Vuex.Store({
              state.focus_image = image;
         }, 
         set_selected_node(state, node) {
-            console.log("set selected node");
-            state.selected_node = node;
+            console.log("xsx set selected node");
+            let index = state.selected_node.node_ids.indexOf(node.id);
+            if (index === -1) {
+                state.selected_node.node_ids.push(node.id);
+                state.selected_node.nodes.push(node);
+                d3.selectAll(`#id-${node.id}`).style('stroke', 'black');
+            }
+            else {
+                d3.selectAll(`#id-${node.id}`).style('stroke', '');
+                state.selected_node.node_ids.splice(index, 1);
+                state.selected_node.nodes.splice(index, 1);
+            }
+            let new_full_names = [];
+            state.selected_node.nodes.forEach(node=>{
+                new_full_names.push(node.full_name); 
+            });
+            state.selected_node.curr_full_name = new_full_names.join('&');
         },
         set_expand_tree(state, node){
             console.log("set expand tree");
@@ -237,10 +254,16 @@ const store = new Vuex.Store({
             const resp = await axios.post(`${state.server_url}/text/GetText`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));
         },
-        async fetch_word({commit, state}, query){
-            console.log("fetch_word", query);
-            const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
-            commit("set_words", JSON.parse(JSON.stringify(resp.data)));
+        async fetch_word({commit, state}){
+            console.log("fetch_word");
+            if (state.selected_node.node_ids.length > 0) {
+                let query = {
+                    tree_node_ids: state.selected_node.node_ids,
+                    match_type: "p",
+                };
+                const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
+                commit("set_words", JSON.parse(JSON.stringify(resp.data)));
+            }
         },
         async fetch_images({commit, state}, image_cluster_ids){
             console.log("fetch_images", image_cluster_ids);
