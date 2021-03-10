@@ -91,7 +91,7 @@ export default {
         .selectAll(".wordcloud")
         .transition()
         .duration(this.remove_ani)
-        .style("opacity", 0)
+        // .style("opacity", 0)
         .remove();
       this.e_words = this.wordcloud_group
         .selectAll(".wordcloud")
