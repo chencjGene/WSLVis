@@ -66,6 +66,10 @@ const ImageCards = function(parent){
         return that.parent.expand_set_id;
     }
 
+    this.get_grid_data = function(){
+        return that.parent.grid_data;
+    }
+
     this.sub_component_update = function(sets, vis_image_per_cluster, grids, grids_pos) {
         // update layout config
         that.get_set_layout_from_parent();
@@ -214,6 +218,7 @@ const ImageCards = function(parent){
         let grid_groups = that.e_grids.enter()
             .append("g")
             .attr("class", "grid")
+            .attr("id", d => "grid-id-" + d.id)
             .attr("transform", d => "translate(" + (d.x) + ", " +  (d.y) + ")")
             // .on('click', function(d) {
 
@@ -405,7 +410,7 @@ const ImageCards = function(parent){
             // console.log("relative_sampling are", relative_sampling_area);
             that.overview_group.select("#viewbox")
                 .attr("x", relative_sampling_area.x * plot_width + offset_x)
-                .attr("y", relative_sampling_area.y * plot_height + offset_y - that.text_height)
+                .attr("y", relative_sampling_area.y * plot_height + offset_y)//- that.text_height)
                 .attr("width", relative_sampling_area.w * plot_width)
                 .attr("height", relative_sampling_area.h * plot_height);
         }
@@ -428,11 +433,12 @@ const ImageCards = function(parent){
         that.overview_group.on("mousedown", function(ev){
             // var offset = $(d3.select(this).node()).offset();
             plot_x = offset_x;
-            plot_y = offset_y;
+            plot_y = offset_y + that.text_height;
             mouse_pos = {
                 x: ev.offsetX,
                 y: ev.offsetY
             };
+            console.log(plot_x, plot_y, mouse_pos);
             mouse_pressed = d3.select(this).attr("id");
             that.overview_group.select("#viewbox").style("visibility", "visible");
             that.confirm_button.style("visibility", "hidden");
@@ -445,16 +451,49 @@ const ImageCards = function(parent){
             
             adjust_sampling_area(compute_viewbox(mouse_pos.x, mouse_pos.y, ev.offsetX, ev.offsetY));
 
-            // let left_x = relative_sampling_area.x;
-            // let top_y = relative_sampling_area.y;
-            // let right_x = left_x + relative_sampling_area.w;
-            // let bottom_y = top_y + relative_sampling_area.h;
-
-            // if (parent.get_mode() === "selecting") {
-            //     if (parent.get_position_mode() !== "juxtaposition") {
-            //         // TODO: selected data
-            //     }
-            // }
+            let left_x = relative_sampling_area.x;
+            let top_y = relative_sampling_area.y;
+            let right_x = left_x + relative_sampling_area.w;
+            let bottom_y = top_y + relative_sampling_area.h;
+            // console.log("relative sampling area", left_x, right_x, top_y, bottom_y);
+            if (that.get_mode() !== "exploring") {
+                let grid_data = that.get_grid_data();
+                grid_data.forEach(d => {
+                    let x = d.pos[0];
+                    let y = d.pos[1];
+                    let width = d.normed_w;
+                    if (x + width > left_x &&
+                            x < right_x &&
+                            y + width > top_y &&
+                            y < bottom_y){
+                        if (d.selected === false){
+                            d.selected = true;
+                            d3.select("#grid-id-" + d.id)
+                                .select(".boundingbox")
+                                .style("fill", d.mismatch > 0 ? 
+                                    d3.rgb(Global.Orange).darker(1.5) : 
+                                    d3.rgb(Global.GrayColor).darker(1.5));
+                            d3.select("#grid-id-" + d.id)
+                                .select(".display")
+                                .style("fill", d.mismatch > 0 ? 
+                                    d3.rgb(Global.Orange).darker(1.5) : 
+                                    d3.rgb(Global.GrayColor).darker(1.5));
+                        }
+                    }
+                    else{
+                        if (d.selected===true){
+                            d.selected = false;
+                            d3.select("#grid-id-" + d.id)
+                            .select(".boundingbox")
+                            .style("fill", d.mismatch > 0 ? Global.Orange : Global.GrayColor);
+                            d3.select("#grid-id-" + d.id)
+                            .select(".display")
+                            .style("fill", d.mismatch > 0 ? Global.Orange : Global.GrayColor);
+                        
+                        }
+                    }
+                })
+            }
         })
         .on("mouseup", function(ev) {
             if (!mouse_pressed) {

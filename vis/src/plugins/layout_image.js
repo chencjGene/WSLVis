@@ -96,6 +96,8 @@ const image_cluster_list_layout = function(parent){
             offset_x = that.set_left + (grid_width - grid_height) / 2;
             side_length = grid_height;
         }
+        side_length = side_length - that.set_margin * 2;
+        offset_y = offset_y + that.set_margin / 3;
         offset_y = offset_y + data.filter(d => d.id === that.get_expand_set_id())[0].y;
         console.log("offset_x, offset_y", offset_x, offset_y);
 
@@ -106,6 +108,8 @@ const image_cluster_list_layout = function(parent){
             d.x = offset_x + side_length * d.pos[0];
             d.y = offset_y + side_length * d.pos[1];
             d.width = cell_width * side_length;
+            d.normed_w = cell_width;
+            d.selected = false;
         })
         return [grid_data, {offset_x, offset_y, side_length}];
     }

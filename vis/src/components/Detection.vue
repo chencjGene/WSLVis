@@ -93,7 +93,7 @@ export default {
         // }
     },
     methods: {
-        ...mapActions(["fetch_hypergraph", "fetch_word"]),
+        ...mapActions(["fetch_hypergraph", "fetch_word", "fetch_grid_layout"]),
         ...mapMutations([
             "set_selected_flag",
             "set_focus_node",
@@ -431,8 +431,13 @@ export default {
         },
         expand_set_id(){
             console.log("watch expand set id");
-            this.update_data();
-            this.update_view();
+            if (this.expand_set_id < 0){
+                this.update_data();
+                this.update_view();
+            }
+            else{
+                this.fetch_grid_layout({});
+            }
         },
         grid_data(){
             console.log("watch grid_data");
