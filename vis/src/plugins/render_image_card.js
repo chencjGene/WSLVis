@@ -33,7 +33,7 @@ const ImageCards = function(parent){
         y: -1
     };
 
-    let relative_sampling_area = {
+    that.relative_sampling_area = {
         x: 0,
         y: 0,
         w: 1,
@@ -406,13 +406,13 @@ const ImageCards = function(parent){
         });
 
         function adjust_sampling_area(area) {
-            relative_sampling_area = area;
-            // console.log("relative_sampling are", relative_sampling_area);
+            that.relative_sampling_area = area;
+            // console.log("relative_sampling are", that.relative_sampling_area);
             that.overview_group.select("#viewbox")
-                .attr("x", relative_sampling_area.x * plot_width + offset_x)
-                .attr("y", relative_sampling_area.y * plot_height + offset_y)//- that.text_height)
-                .attr("width", relative_sampling_area.w * plot_width)
-                .attr("height", relative_sampling_area.h * plot_height);
+                .attr("x", that.relative_sampling_area.x * plot_width + offset_x)
+                .attr("y", that.relative_sampling_area.y * plot_height + offset_y)//- that.text_height)
+                .attr("width", that.relative_sampling_area.w * plot_width)
+                .attr("height", that.relative_sampling_area.h * plot_height);
         }
         function compute_viewbox(x1, y1, x2, y2) {
             var min_x = Math.min(x1, x2), max_x = Math.max(x1, x2),
@@ -424,7 +424,7 @@ const ImageCards = function(parent){
                 h: (max_y - min_y) / plot_height
             };
             if (new_area.x + new_area.w > 1 && new_area.x < 1) {
-                return relative_sampling_area;
+                return that.relative_sampling_area;
             } else {
                 return new_area;
             }
@@ -451,10 +451,10 @@ const ImageCards = function(parent){
             
             adjust_sampling_area(compute_viewbox(mouse_pos.x, mouse_pos.y, ev.offsetX, ev.offsetY));
 
-            let left_x = relative_sampling_area.x;
-            let top_y = relative_sampling_area.y;
-            let right_x = left_x + relative_sampling_area.w;
-            let bottom_y = top_y + relative_sampling_area.h;
+            let left_x = that.relative_sampling_area.x;
+            let top_y = that.relative_sampling_area.y;
+            let right_x = left_x + that.relative_sampling_area.w;
+            let bottom_y = top_y + that.relative_sampling_area.h;
             // console.log("relative sampling area", left_x, right_x, top_y, bottom_y);
             if (that.get_mode() !== "exploring") {
                 let grid_data = that.get_grid_data();
@@ -501,10 +501,10 @@ const ImageCards = function(parent){
             }
             mouse_pressed = false;
             adjust_sampling_area(compute_viewbox(mouse_pos.x, mouse_pos.y, ev.offsetX, ev.offsetY));
-            let button_x = (relative_sampling_area.x + relative_sampling_area.w) 
+            let button_x = (that.relative_sampling_area.x + that.relative_sampling_area.w) 
                 * plot_width + margin_size + offset_x;
-            let button_y = (relative_sampling_area.y + relative_sampling_area.h) * plot_width  
-                + margin_top_size + that.text_height;
+            let button_y = (that.relative_sampling_area.y + that.relative_sampling_area.h) * plot_height  
+                + margin_top_size + offset_y;
             that.confirm_button.attr("transform",
                 "translate(" + button_x + ", " + button_y + ")")
                 .style("visibility", "visible");
@@ -532,10 +532,10 @@ const ImageCards = function(parent){
             console.log("confirm buttom click");
             if (that.get_mode() === "cropping") {
                 // sampling_area = {
-                //     x: sampling_area.x + sampling_area.w * relative_sampling_area.x,
-                //     y: sampling_area.y + sampling_area.h * relative_sampling_area.y,
-                //     w: sampling_area.w * relative_sampling_area.w,
-                //     h: sampling_area.h * relative_sampling_area.h
+                //     x: sampling_area.x + sampling_area.w * that.relative_sampling_area.x,
+                //     y: sampling_area.y + sampling_area.h * that.relative_sampling_area.y,
+                //     w: sampling_area.w * that.relative_sampling_area.w,
+                //     h: sampling_area.h * that.relative_sampling_area.h
                 // };
                 // that.resample();
             } else if (that.get_mode() === "selecting") {
