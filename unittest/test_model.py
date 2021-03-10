@@ -79,9 +79,9 @@ class CoClusteringTest(unittest.TestCase):
 
     def test_accuracy(self):
         m = WSLModel(dataname=config.coco17, step=1)
-        m = WSLModel(dataname="COCO20", step=1)
+        m = WSLModel(dataname="COCO40", step=1)
         m = pickle_load_data(m.buffer_path)
-        m.dataname = "COCO20"
+        m.dataname = "COCO40"
         m._init_data()
         cluster_id = 8
         image_ids = np.array(m.image_ids_of_clusters[cluster_id])
@@ -142,7 +142,7 @@ class CoClusteringTest(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(CoClusteringTest("test_grid_layout"))
+    suite.addTest(CoClusteringTest("test_accuracy"))
     
     # # test all cases
     # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)

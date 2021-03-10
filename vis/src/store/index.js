@@ -23,7 +23,7 @@ const store = new Vuex.Store({
         mismatch: [],
         vis_image_per_cluster: {},
         expand_tree: true,
-        expand_set_id: 4,
+        expand_set_id: -1,
         grid_data: [],
         navigation_ids: [],
         label_layout_mode: null,

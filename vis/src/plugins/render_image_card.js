@@ -316,6 +316,7 @@ const ImageCards = function(parent){
 
     that.set_mode = function(mode){
         console.log("set mode", mode);
+        that.mode = mode;
         if (mode === "cropping") {
             d3.select("#cropping").select("path").attr("d", Global.d_rollback);
             d3.select("#selecting").select("path").attr("d", Global.d_select);
@@ -327,7 +328,12 @@ const ImageCards = function(parent){
         } else if (mode === "exploring") {
             d3.select("#cropping").select("path").attr("d", Global.d_scan);
             d3.select("#selecting").select("path").attr("d", Global.d_select);
+            that.quit_overview();
         }
+    }
+
+    that.get_mode = function(){
+        return that.mode;
     }
 
     that.enter_overview = function(){
@@ -347,6 +353,9 @@ const ImageCards = function(parent){
     }
 
     that.quit_overview = function(){
+        that.overview_group.style("visibility", "hidden");
+        that.overview_group.select("#viewbox").style("visibility", "hidden");
+        that.confirm_button.select("#confirm-resample").style("visibility", "hidden");
 
     }
 
@@ -354,9 +363,6 @@ const ImageCards = function(parent){
         that.overview_group = that.parent.svg
             .append("g")
             .attr("id", "overview-group");
-        that.confirm_button = that.overview_group.append("g")
-            .attr("id", "confirm-resample")
-            .style("visibility", "hidden");
 
         that.overview_group.attr("transform",
             "translate(" + ( 0 ) + "," + ( that.text_height )+ ")")
@@ -396,7 +402,7 @@ const ImageCards = function(parent){
 
         function adjust_sampling_area(area) {
             relative_sampling_area = area;
-            console.log("relative_sampling are", relative_sampling_area);
+            // console.log("relative_sampling are", relative_sampling_area);
             that.overview_group.select("#viewbox")
                 .attr("x", relative_sampling_area.x * plot_width + offset_x)
                 .attr("y", relative_sampling_area.y * plot_height + offset_y - that.text_height)
@@ -459,13 +465,16 @@ const ImageCards = function(parent){
             let button_x = (relative_sampling_area.x + relative_sampling_area.w) 
                 * plot_width + margin_size + offset_x;
             let button_y = (relative_sampling_area.y + relative_sampling_area.h) * plot_width  
-                + margin_top_size;
+                + margin_top_size + that.text_height;
             that.confirm_button.attr("transform",
                 "translate(" + button_x + ", " + button_y + ")")
                 .style("visibility", "visible");
         });
 
 
+        that.confirm_button = that.parent.svg.append("g")
+            .attr("id", "confirm-resample")
+            .style("visibility", "hidden");
         that.confirm_button.append("circle")
             .attr("r", 20)
             .attr("fill", "grey");
@@ -477,7 +486,36 @@ const ImageCards = function(parent){
             .style("fill", "white")
             .style("opacity", 1)
             .style('font-size', '20px')
+            .style('cursor', 'hand')
             .text('\ue015');
+
+        that.confirm_button.on("click", function(ev) {
+            console.log("confirm buttom click");
+            if (that.get_mode() === "cropping") {
+                // sampling_area = {
+                //     x: sampling_area.x + sampling_area.w * relative_sampling_area.x,
+                //     y: sampling_area.y + sampling_area.h * relative_sampling_area.y,
+                //     w: sampling_area.w * relative_sampling_area.w,
+                //     h: sampling_area.h * relative_sampling_area.h
+                // };
+                // that.resample();
+            } else if (that.get_mode() === "selecting") {
+                // let selected_items_id = [];
+                // for (let i = 0; i < train_data.length; i++) {
+                //     if (train_data[i].selected === true) {
+                //         selected_items_id.push(train_data[i].get_id());
+                //     }
+                // }
+                // for (let i = 0; i < test_data.length; i++) {
+                //     if (test_data[i].selected === true) {
+                //         selected_items_id.push(test_data[i].get_id());
+                //     }
+                // }
+            }
+            that.set_mode("exploring");
+            d3.select(this).style("visibility", "hidden");
+            ev.stopPropagation();
+        });
     }.call()
 
 }
