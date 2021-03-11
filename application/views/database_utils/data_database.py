@@ -5,6 +5,8 @@ import sqlite3
 import json
 from tqdm import tqdm
 
+from sklearn.metrics import precision_score, recall_score
+
 from ..utils.config_utils import config
 from ..utils.log_utils import logger
 from ..utils.helper_utils import pickle_load_data, pickle_save_data
@@ -155,21 +157,14 @@ class Data(DataBaseLoader):
         None
 
     def get_precision_and_recall(self):
-        labels = []
-        cursor = self.conn.cursor()
-        sql = "select activations, logits, string, labels from annos where id = ?"
-        for i in self.labeled_idx:
-            cursor.execute(sql, (i,))
-            activation, logits, string, label = cursor.fetchall()[0]
-            el = {
-                "activations": json.loads(activation),
-                "string": json.loads(string),
-                "logits": json.loads(logits),
-                "label": json.loads(label),
-            }
-            el["rule_logit"] = rule_based_processing(el, self.suffix)
-            labels.append(el)
-        self.labeled_p, self.precision, self.recall = get_precision_and_recall(labels)
+        preds = self.get_category_pred(label_type="labeled", data_type="text")
+        gt = self.get_groundtruth_labels(label_type="labeled")
+        print("preds.shape", preds.shape)
+        self.precision = []
+        self.recall = []
+        for i in range(len(self.class_name)):
+            self.precision.append(precision_score(gt[:, i], preds[:, i]))
+            self.recall.append(recall_score(gt[:, i], preds[:, i]))
 
     def get_labeled_id_by_type(self, cats: list, match_type: str) -> list:
         cursor = self.conn.cursor()
