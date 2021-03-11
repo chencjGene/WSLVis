@@ -9,7 +9,7 @@ from tqdm import tqdm
 from time import time
 from itertools import chain
 
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_score, recall_score
 from sklearn.datasets import make_checkerboard
 from sklearn.cluster import SpectralBiclustering
 from sklearn.metrics import consensus_score
@@ -78,21 +78,65 @@ class CoClusteringTest(unittest.TestCase):
         a = 1
 
     def test_accuracy(self):
-        m = WSLModel(dataname=config.coco17, step=1)
-        m = WSLModel(dataname="COCO40", step=1)
+        dataname = "COCO17"
+        step = 0
+        m = WSLModel(dataname=config.coco17, step=step)
+        m = WSLModel(dataname=dataname, step=step)
         m = pickle_load_data(m.buffer_path)
-        m.dataname = "COCO40"
+        m.dataname = dataname
+        m.step = step
         m._init_data()
+        class_name = m.data.class_name
         cluster_id = 8
         image_ids = np.array(m.image_ids_of_clusters[cluster_id])
         image_labels = m.data.get_category_pred(label_type="all", \
             data_type="image", threshold=0.5)
-        text_labels = m.data.get_category_pred(label_type="all", data_type="text")
-        gt = m.data.get_groundtruth_labels(label_type="all")
-        selected_image_labels = image_labels[image_ids][:, 59]
-        selected_text_labels = text_labels[image_ids][:, 59]
-        selected_gt = gt[image_ids][:, 59]
-        mismatched = (selected_image_labels != selected_text_labels)
+        text_labels = m.data.get_category_pred(label_type="val", data_type="text-only")
+        gt = m.data.get_groundtruth_labels(label_type="val")
+        ps = []
+        rs = []
+        for i in range(len(class_name)):
+            p = precision_score(gt[:, i], text_labels[:, i])
+            r = recall_score(gt[:, i], text_labels[:, i])
+            ps.append(p)
+            rs.append(r)
+            print(class_name[i], p, r)
+        print("mean", np.array(ps).mean(), np.array(rs).mean())
+
+        val_res = os.path.join(config.raw_data_root, "COCO17", "step0", "val_result_text.pkl")
+        val_res = pickle_load_data(val_res)
+        
+        id_map = {}
+        for d in val_res:
+            image_id = d["image_id"][0].decode()
+            id_map[image_id] = d
+
+        preds = []
+        for i in range(text_labels.shape[0]):
+            img_id = m.data.ids[m.data.val_idx[i]]
+            d = id_map[str(img_id)]
+            label = d["label"]
+            pred = (d["logits"] > 0).astype(int).reshape(-1)
+            preds.append(pred)
+            if (text_labels[i] != pred).sum() > 0 or (gt[i]!=label).sum() > 0:
+                a = 1
+        preds = np.array(preds)
+        ps = []
+        rs = []
+        for i in range(len(class_name)):
+            p = precision_score(gt[:, i], text_labels[:, i])
+            r = recall_score(gt[:, i], text_labels[:, i])
+            ps.append(p)
+            rs.append(r)
+            print(class_name[i], p, r)
+        print("mean", np.array(ps).mean(), np.array(rs).mean())
+
+
+
+        # selected_image_labels = image_labels[image_ids][:, 59]
+        # selected_text_labels = text_labels[image_ids][:, 59]
+        # selected_gt = gt[image_ids][:, 59]
+        # mismatched = (selected_image_labels != selected_text_labels)
 
         a = 1
 

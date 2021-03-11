@@ -420,6 +420,9 @@ class WSLModel(object):
 
     def set_focus_image_cluster(self, id):
         # self.current_sampler = self.samples[id]
+        if hasattr(self, "current_sampler") and \
+            self.current_sampler.id == id:
+            return 
         self.current_sampler = Sampler(id=id)
         image_ids = self.image_ids_of_clusters[id]
         mismatch = self.data.get_mismatch()

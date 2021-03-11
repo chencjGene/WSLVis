@@ -274,6 +274,9 @@ class Data(DataBaseLoader):
         elif label_type == "unlabeled":
             idxs = self.unlabeled_idx
             label_type_text = label_type
+        elif label_type == "val":
+            idxs = self.val_idx
+            label_type_text = label_type
         else:
             raise ValueError("unsupported label type")
         logger.debug("begin get category pred with {} in {}".format(label_type_text, data_type))
@@ -290,6 +293,18 @@ class Data(DataBaseLoader):
                 pred = sigmoid(np.array(json.loads(logit))) > 0.5
                 image_output = np.array(json.loads(image_output)) > 0.5
                 preds.append((image_output + pred).astype(float))
+            preds = np.array(preds)
+        elif data_type == "text-only":
+            for idx in tqdm(idxs):
+                logit = self.database_fetch_by_idx(idx, ["logits"])
+                pred = sigmoid(np.array(json.loads(logit))) > 0.5
+                preds.append((pred).astype(float))
+            preds = np.array(preds)
+        elif data_type == "image-for-cls":
+            for idx in tqdm(idxs):
+                image_output = self.database_fetch_by_idx(idx, ["image_output"])
+                image_output = np.array(json.loads(image_output)) > 0.5
+                preds.append((image_output).astype(float))
             preds = np.array(preds)
         elif data_type == "image":
             for idx in tqdm(idxs):
@@ -321,6 +336,8 @@ class Data(DataBaseLoader):
             idxs = self.labeled_idx
         elif label_type == "unlabeled":
             idxs = self.unlabeled_idx
+        elif label_type == "val":
+            idxs = self.val_idx
         else:
             raise ValueError("unsupported label type")
         gt = []

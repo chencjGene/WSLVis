@@ -40,7 +40,7 @@ def app_get_grid_layout():
     data = json.loads(request.data)
     image_cluster_id = data.get("image_cluster_id", 4)
     left_x = data.get("left-x", 0)
-    top_y = data.get("top_y", 0)
+    top_y = data.get("top-y", 0)
     width = data.get("width", 1)
     height = data.get("height", 1)
     node_id = data.get("node-id", -1)
