@@ -147,7 +147,7 @@ const store = new Vuex.Store({
              state.focus_image = image;
         }, 
         set_selected_node(state, node) {
-            console.log("xsx set selected node");
+            console.log("set selected node");
             let index = state.selected_node.node_ids.indexOf(node.id);
             if (index === -1) {
                 state.selected_node.node_ids.push(node.id);
@@ -256,14 +256,12 @@ const store = new Vuex.Store({
         },
         async fetch_word({commit, state}){
             console.log("fetch_word");
-            if (state.selected_node.node_ids.length > 0) {
-                let query = {
-                    tree_node_ids: state.selected_node.node_ids,
-                    match_type: "p",
-                };
-                const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
-                commit("set_words", JSON.parse(JSON.stringify(resp.data)));
-            }
+            let query = {
+                tree_node_ids: state.selected_node.node_ids,
+                match_type: "p",
+            };
+            const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_words", JSON.parse(JSON.stringify(resp.data)));
         },
         async fetch_images({commit, state}, image_cluster_ids){
             console.log("fetch_images", image_cluster_ids);
