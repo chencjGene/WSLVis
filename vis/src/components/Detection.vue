@@ -554,6 +554,13 @@ export default {
                 "transform",
                 "translate(" + 0 + ", " + this.text_height + ")"
             );
+        this.label_group = this.svg
+            .append("g")
+            .attr("id", "label-group")
+            .attr(
+                "transform",
+                "translate(" + 0 + ", " + this.text_height + ")"
+            );
         this.set_link_group = this.svg
             .append("g")
             .attr("id", "set-link-group")
