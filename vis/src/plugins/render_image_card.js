@@ -59,6 +59,7 @@ const ImageCards = function(parent) {
   that.click_ids = [];
   that.click_count = 0;
   that.labels = [];
+  that.use_label_layout = false;
 
   this.get_set_layout_from_parent = function() {
     // set
@@ -127,6 +128,7 @@ const ImageCards = function(parent) {
     });
     that.labels = that.label_layout(Global.deepCopy(that.grids), 
         plot_width, that.labels);
+    that.use_label_layout = that.labels.length ? 1 : 0;
     if (that.get_expand_set_id() < 0){
         that.click_ids = [];
     }
@@ -307,13 +309,14 @@ const ImageCards = function(parent) {
       .style("stroke-opacity", 1);
 
     grid_groups
-      .append("rect")
+      .append("image")
       .attr("class", "display")
       .attr("x", 0.5 * that.boundingbox_width)
       .attr("y", 0.5 * that.boundingbox_width)
       .attr("width", (d) => d.width - that.boundingbox_width)
       .attr("height", (d) => d.width - that.boundingbox_width)
-      .style("fill", (d) => (d.mismatch > 0 ? Global.Orange : Global.GrayColor))
+      .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
+        `/image/image?filename=${d.img_id}.jpg`)
       .style("pointer-events", "none");
   };
 
@@ -449,9 +452,8 @@ const ImageCards = function(parent) {
       .delay(that.remove_ani)
       .attr("width", (d) => d.width - that.boundingbox_width)
       .attr("height", (d) => d.width - that.boundingbox_width)
-      .style("fill", (d) =>
-        d.mismatch > 0 ? Global.Orange : Global.GrayColor
-      );
+      .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
+        `/image/image?filename=${d.img_id}.jpg`);
   };
 
   this.label_update = function(){
