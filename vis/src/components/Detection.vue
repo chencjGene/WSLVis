@@ -84,6 +84,7 @@ export default {
             "expand_tree",
             "expand_set_id",
             "grid_data",
+            "nav_id",
             "tooltip",
             "server_url",
             "selected_flag"
@@ -104,6 +105,7 @@ export default {
             "showTooltip",
             "hideTooltip",
             "set_words",
+            "set_grid_layout_data",
             "set_use_treecut",
         ]),
         treecut() {
@@ -561,6 +563,14 @@ export default {
                 "transform",
                 "translate(" + 0 + ", " + this.text_height + ")"
             );
+        this.nav_group = this.svg
+            .append("g")
+            .attr("id", "nav-group")
+            .attr(
+                "transform",
+                "translate(" + 0 + ", " + 0 + ")"
+            );
+
         this.set_link_group = this.svg
             .append("g")
             .attr("id", "set-link-group")
