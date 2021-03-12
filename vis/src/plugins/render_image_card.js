@@ -8,6 +8,21 @@ const ImageCards = function(parent) {
 
   that.set_group = that.parent.set_group;
   that.grid_group = that.parent.grid_group;
+  that.label_group = that.parent.label_group;
+  that.nav_group = that.parent.nav_group;
+
+  that.nav_gray = "#8f8f8f";
+  that.nav_offset_x = 800;
+  that.nav_offset_y = 18;
+  that.nav_margin = 50;
+  that.nav_group
+    .attr(
+        "transform",
+        "translate(" + that.nav_offset_x + ", " + that.nav_offset_y + ")"
+    );
+  that.nav_group.append("rect").attr("class", "nav-rect")
+    .attr("width", 0).attr("height", 5).attr("y", -2.5)
+    .attr("fill", Global.GrayColor);
 
   // animation
   that.create_ani = that.parent.create_ani;
@@ -41,9 +56,10 @@ const ImageCards = function(parent) {
   };
   let plot_x,
     plot_y = 1;
-  that.click_ids = [-1];
+  that.click_ids = [];
   that.click_count = 0;
   that.labels = [];
+  that.use_label_layout = false;
 
   this.get_set_layout_from_parent = function() {
     // set
@@ -65,6 +81,10 @@ const ImageCards = function(parent) {
       that.parent.set_expand_set_id(id);
     });
 
+    this.set_grid_layout_data = function(data){
+        that.parent.set_grid_layout_data(data);
+    }
+
   this.get_expand_set_id = function() {
     return that.parent.expand_set_id;
   };
@@ -72,6 +92,10 @@ const ImageCards = function(parent) {
   this.get_grid_data = function() {
     return that.parent.grid_data;
   };
+
+  this.get_nav_id = function(){
+      return that.parent.nav_id;
+  }
 
   this.fetch_grid_layout = function(query) {
     return that.parent.fetch_grid_layout(query);
@@ -104,13 +128,28 @@ const ImageCards = function(parent) {
     });
     that.labels = that.label_layout(Global.deepCopy(that.grids), 
         plot_width, that.labels);
+    that.use_label_layout = that.labels.length ? 1 : 0;
+    if (that.get_expand_set_id() < 0){
+        that.click_ids = [];
+    }
+    else{
+        that.click_ids.push({id: that.get_nav_id(), 
+            layout: Global.deepCopy(grids)});
+        that.click_ids.forEach((d, i) => {
+            d.x = i * that.nav_margin;
+            d.y = 0;
+            d.last_one = i === (that.click_ids.length - 1) ? true : false;
+        })
+    }
     console.log("image card sub component update", sets, grids);
 
     // update view
-    that.e_sets = that.set_group.selectAll(".set").data(sets, (d) => d.id);
+    that.e_sets = that.set_group.selectAll(".set").data(sets, d => d.id);
     that.e_grids = that.grid_group
       .selectAll(".grid")
-      .data(grids, (d) => d.img_id);
+      .data(grids, d => d.img_id);
+    that.e_labels = that.label_group.selectAll(".label").data(that.labels, d => d.img_id);
+    that.e_navs = that.nav_group.selectAll(".nav-circle").data(that.click_ids, d => d.id);
 
     that.remove();
     that.update();
@@ -120,6 +159,8 @@ const ImageCards = function(parent) {
   this.create = function() {
     that.set_create();
     that.grid_create();
+    that.label_create();
+    that.nav_create();
   };
 
   this.set_create = function() {
@@ -268,19 +309,80 @@ const ImageCards = function(parent) {
       .style("stroke-opacity", 1);
 
     grid_groups
-      .append("rect")
+      .append("image")
       .attr("class", "display")
       .attr("x", 0.5 * that.boundingbox_width)
       .attr("y", 0.5 * that.boundingbox_width)
       .attr("width", (d) => d.width - that.boundingbox_width)
       .attr("height", (d) => d.width - that.boundingbox_width)
-      .style("fill", (d) => (d.mismatch > 0 ? Global.Orange : Global.GrayColor))
+      .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
+        `/image/image?filename=${d.img_id}.jpg`)
       .style("pointer-events", "none");
   };
+
+  this.label_create = function(){
+    let label_group = that.e_labels
+        .enter()
+        .append("g")
+        .attr("class", "label")
+        .attr("id", d => "label-id-" + d.img_id);
+    label_group
+        .style("opacity", 0)
+        .transition()
+        .duration(that.create_ani)
+        .delay(that.update_ani + that.remove_ani)
+        .style("opacity", 1);
+    label_group
+        .append("rect")
+        .attr("x", d => d.grid.x + offset_x)
+        .attr("y", d => d.grid.y + offset_y)
+        .attr("width", d => d.grid.w)
+        .attr("height", d => d.grid.h)
+        .style("fill", "none")
+        .style("stroke", "grey")
+        .style("stroke-width", 2);
+    label_group
+        .append("image")
+        .attr("x", d => d.label.x + offset_x)
+        .attr("y", d => d.label.y + offset_y)
+        .attr("width", d => d.label.w)
+        .attr("height", d => d.label.h)
+        .attr("xlink:href", d => that.server_url + `/image/image?filename=${d.img_id}.jpg`);
+  }
+
+  this.nav_create = function(){
+    let nav_group = that.e_navs
+        .enter()
+        .append("circle")
+        .attr("class", "nav-circle")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", 10)
+        .style("fill", d => d.last_one ? "white" : that.nav_gray)
+        .style("stroke", d => d.last_one ? that.nav_gray : "white")
+        .style("stroke-width", d => d.last_one ? 3 : 0)
+        .on("click", (_, d) => {
+            if (d.id === that.click_ids.slice(-1)[0].id) return;
+            let i = 0;
+            for (; i < that.click_ids.length; i++){
+                if (d.id === that.click_ids[i].id) break;
+            }
+            that.click_ids = that.click_ids.slice(0, i);
+            that.set_grid_layout_data(d);
+        })
+    nav_group
+        .style("opacity", 0)
+        .transition()
+        .duration(that.create_ani)
+        .delay(that.update_ani + that.remove_ani)
+        .style("opacity", 1);
+  }
 
   this.update = function() {
     that.set_update();
     that.grid_update();
+    that.label_update();
+    that.nav_update();
   };
 
   this.set_update = function() {
@@ -350,14 +452,55 @@ const ImageCards = function(parent) {
       .delay(that.remove_ani)
       .attr("width", (d) => d.width - that.boundingbox_width)
       .attr("height", (d) => d.width - that.boundingbox_width)
-      .style("fill", (d) =>
-        d.mismatch > 0 ? Global.Orange : Global.GrayColor
-      );
+      .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
+        `/image/image?filename=${d.img_id}.jpg`);
   };
+
+  this.label_update = function(){
+    that.e_labels.select("rect")
+        .transition()
+        .duration(that.update_ani)
+        .delay(that.remove_ani)
+        .attr("x", d => d.grid.x + offset_x)
+        .attr("y", d => d.grid.y + offset_y)
+        .attr("width", d => d.grid.w)
+        .attr("height", d => d.grid.h);
+    that.e_labels.select("image")
+        .transition()
+        .duration(that.update_ani)
+        .delay(that.remove_ani)
+        .attr("x", d => d.label.x + offset_x)
+        .attr("y", d => d.label.y + offset_y)
+        .attr("width", d => d.label.w)
+        .attr("height", d => d.label.h)
+        .attr("xlink:href", d => that.server_url + `/image/image?filename=${d.img_id}.jpg`);
+
+
+  }
+
+  this.nav_update = function(){
+    that.e_navs
+        .transition()
+        .duration(that.update_ani)
+        .delay(that.remove_ani)
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .style("fill", d => d.last_one ? "white" : that.nav_gray)
+        .style("stroke", d => d.last_one ? that.nav_gray : "white")
+        .style("stroke-width", d => d.last_one ? 3 : 0);
+    that.nav_group.select("rect")
+        .transition()
+        .duration(that.update_ani)
+        .delay(that.remove_ani)
+        .attr("width", that.click_ids.length === 0 ? 
+            0 : that.nav_margin * (that.click_ids.length - 1));
+  }
 
   this.remove = function() {
     that.set_remove();
     that.grid_remove();
+    that.label_remove();
+    that.nav_remove();
   };
 
   this.set_remove = function() {
@@ -377,6 +520,25 @@ const ImageCards = function(parent) {
       .style("opacity", 0)
       .remove();
   };
+
+  this.label_remove = function(){
+    that.e_labels
+        .exit()
+        .transition()
+        .duration(that.remove_ani)
+        .style("opacity", 0)
+        .remove();
+  }
+
+  this.nav_remove = function(){
+    that.e_navs
+        .exit()
+        .transition()
+        .duration(that.remove_ani)
+        .style("opacity", 0)
+        .remove();
+
+  }
 
   that.set_mode = function(mode) {
     console.log("set mode", mode);
@@ -647,8 +809,8 @@ const ImageCards = function(parent) {
     that.confirm_button.on("click", function(ev) {
       console.log("confirm buttom click");
       if (that.get_mode() === "cropping") {
-        that.click_count += 1;
-        that.click_ids.push(that.click_count);
+        that.click_count = that.click_ids.slice(-1)[0].id;
+        // that.click_ids.push(that.click_count);
         let query = {
           "left-x": that.relative_sampling_area.x,
           "top-y": that.relative_sampling_area.y,
@@ -713,8 +875,8 @@ const ImageCards = function(parent) {
     data.sort((x, y) => y.mismatch - x.mismatch);
     for (let d of data) {
       var center = {
-        x: d.x + 0.5 * grid_size,
-        y: d.y + 0.5 * grid_size,
+        x: d.pos[0] * plot_size + 0.5 * grid_size,
+        y: d.pos[1] * plot_size + 0.5 * grid_size,
       };
       var tmp_grid = {
         x: d.pos[0] * plot_size,

@@ -302,6 +302,10 @@ class WSLModel(object):
     def get_current_hypergraph(self):
         cam_matrix, mismatch = self.get_cluster_association_matrix()
 
+        self.data.get_precision_and_recall()
+        self.text_tree_helper.assign_precision_and_recall(\
+            self.data.precision, self.data.recall)
+
         # reordering
         leaf_nodes = self.text_tree_helper.get_all_leaf_descendants(self.text_tree_helper.tree)
         leaf_nodes = leaf_nodes[::-1]

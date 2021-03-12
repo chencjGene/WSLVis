@@ -1,5 +1,6 @@
 const GrayColor = "#7f7f7f";
 const DarkGray = "rgb(211, 211, 229)";
+const LightGray = "#EBEBF3";
 const Orange = "#ffa953";
 const Red = "rgb(237, 41, 57)";
 const Animation = 1000;
@@ -129,6 +130,7 @@ function half_rounded_rect(x, y, w, h, r_left, r_right){
 export {
     GrayColor,
     DarkGray,
+    LightGray,
     Orange,
     Animation,
     Red,
