@@ -10,6 +10,7 @@ def get_manifest():
 
 def init_model(dataname, step):
     port.reset(dataname, step)
+    return port
 
 def get_current_hypergraph():
     port.run_model()
@@ -18,16 +19,28 @@ def get_current_hypergraph():
     # import IPython; IPython.embed(); exit()
     return jsonify(hypergraph)
 
+def get_grid_layout(image_cluster_id, left_x, top_y, width, height, node_id):
+    port.model.set_focus_image_cluster(image_cluster_id)
+    res = port.model.get_grid_layout(left_x, top_y, width, height, node_id)
+    return jsonify(res)
+
 def get_rank(image_cluster_id):
-    image_url_list = port.get_rank(image_cluster_id)
-    return jsonify(image_url_list)
+    res = port.get_rank(image_cluster_id)
+    return jsonify(res)
 
 def get_image(idx):
     return port.model.data.get_image(idx)
+
+def get_origin_image(idx):
+    return port.model.data.get_origin_image(idx)
 
 def get_text(query):
     text_result = port.model.data.get_text(query)
     return jsonify(text_result)
 
+def get_single_text(idx):
+    text = port.model.data.get_single_text(idx)
+    return jsonify(text)
+
 def get_word(query):
-    return jsonify(port.model.data.get_word(query))
+    return jsonify(port.model.get_word(query))

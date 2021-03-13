@@ -1,10 +1,13 @@
 import numpy as np
 import os
 
+from ..utils.helper_utils import json_load_data, json_save_data
+
 class TreeHelper(object):
-    def __init__(self, tree=None, class_name=None):
+    def __init__(self, tree=None, class_name=None, data_root=None):
         self.tree = tree
         self.class_name = class_name
+        self.data_root = data_root
         if self.tree:
             self._init()
 
@@ -36,10 +39,36 @@ class TreeHelper(object):
             visit_node.extend(node["children"])
         return leaf_node
 
+    def get_all_leaf_descendants_ids(self, node):
+        leaf_node = self.get_all_leaf_descendants(node)
+        return [n["id"] for n in leaf_node]
+
+    def del_descendants(self):
+        leaf_node = []
+        visit_node = [self.tree]
+        while len(visit_node) > 0:
+            node = visit_node[-1]
+            visit_node = visit_node[:-1]
+            visit_node.extend(node["children"])
+            if "descendants_idx" in node:
+                del node["descendants_idx"]
+
+    def export_to_file(self, filename=None):
+        if filename is None:
+            filename = os.path.join(self.data_root, \
+                "clustering_hierarchy.json")
+        json_save_data(filename, self.tree)
+
+    def import_from_file(self, filename=None):
+        if filename is None:
+            filename = os.path.join(self.data_root, \
+                "clustering_hierarchy.json")
+        self.tree = json_load_data(filename)
+        self._init()
 
 class TextTreeHelper(TreeHelper):
-    def __init__(self, tree=None, class_name=None):
-        super(TextTreeHelper, self).__init__(tree, class_name)
+    def __init__(self, tree=None, class_name=None, data_root=None):
+        super(TextTreeHelper, self).__init__(tree, class_name, data_root)
 
     def _init(self):
         # process

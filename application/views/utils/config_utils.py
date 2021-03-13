@@ -8,13 +8,15 @@ class Config(object):
     def __init__(self):
         self.root = SERVER_ROOT
         #raw data root
-        self.raw_data_root = os.path.normpath("/home/changjian/WeaklySupervisedLearning2021/RawData")
+        # self.raw_data_root = os.path.normpath("/home/changjian/WeaklySupervisedLearning2021/RawData")
+        self.raw_data_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../../RawData"))
 
         # first-level directory
         self.data_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../data/"))
         self.test_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../test/"))
         self.image_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../images/"))
         self.lib_root = os.path.normpath(os.path.join(SERVER_ROOT, "../../application/views/lib/"))
+        self.dll_root = os.path.normpath(os.path.join(SERVER_ROOT, "../../application/views/model_utils/"))
         self.log_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../logs/"))
         self.case_util_root = os.path.normpath(os.path.join(SERVER_ROOT, "../../application/views/case_utils/"))
         # self.model_root = os.path.join(SERVER_ROOT, "../model/")

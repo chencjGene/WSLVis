@@ -49,8 +49,12 @@ const TextTree = function (parent) {
         that.parent.set_focus_node(nodes);
     };
 
-    that.fetch_word = function(query){
-        that.parent.$store.dispatch("fetch_word", query);
+    that.fetch_word = function(){
+        that.parent.$store.dispatch("fetch_word");
+    }
+
+    that.set_selected_node = function(node){
+        that.parent.set_selected_node(node);
     }
 
     that.sub_component_update = function (nodes, rest_nodes) {
@@ -121,14 +125,16 @@ const TextTree = function (parent) {
             })
             .on("click", (ev, d) => {
                 console.log("on click tree node");
-                that.change_selected_flag(d, !d.selected_flag);
+                // that.change_selected_flag(d, !d.selected_flag);
 
                 // TODO: double click
-                // let query = {
-                //     tree_node_id: d.id,
-                //     match_type: "p",
-                // };
-                // that.fetch_word(query);
+                let node = {
+                    full_name: d.full_name, 
+                    id: d.id
+                };
+                that.set_selected_node(node);
+                
+                that.fetch_word();
             })
             .transition()
             .duration(that.create_ani)
@@ -231,7 +237,7 @@ const TextTree = function (parent) {
             .on("click", (ev, d) => {
                 console.log("click icon", d.type, d);
                 if (!that.expand_tree) return;
-                if (d.type > 0) return;
+                // if (d.type > 0) return;
                 console.log("click tree node", d.name);
                 // that.highlight(ev, d, "rgb(211, 211, 229)");
                 that.set_focus_node([d]);
@@ -287,6 +293,7 @@ const TextTree = function (parent) {
             .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
             .style("opacity", 0)
             .on("click", (ev, d) => {
+                console.log("set focus node");
                 that.set_focus_node(d.rest_children);
             });
         node_groups
@@ -567,7 +574,7 @@ const TextTree = function (parent) {
 
     that.icon_highlight = function(ev, d) {
         console.log("icon-highlight");
-        if (d.type > 0) return;
+        // if (d.type > 0) return;
         that.tree_node_group
             .select("#id-" + d.id)
             .select("path.icon")

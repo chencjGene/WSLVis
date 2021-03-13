@@ -67,8 +67,9 @@ def jsonify(detection_result):
     return detection_result
 
 class DataCOCO17(DataBase):
-    def __init__(self, suffix="step0"):
-        dataname = config.coco17
+    def __init__(self, dataname=None, suffix="step0"):
+        if dataname is None:
+            dataname = config.coco17
         super(DataCOCO17, self).__init__(dataname, suffix)
         self.label_map, self.class_name = get_label_map(os.path.join(\
             self.data_all_step_dir, "label_map.txt"))
@@ -94,29 +95,29 @@ class DataCOCO17(DataBase):
 
         logger.info("loading groundtruth")
         # val groundtruth
-        val_instance = json_load_data(os.path.join(self.raw_data_all_step_dir, \
-            "shrink_instances_val2017.json"))
+        val_instance = json_load_data(os.path.join(config.raw_data_root, \
+            "Fixed_part/shrink_instances_val2017.json"))
         val_images = val_instance["images"]
         val_annos = val_instance["annotations"]
 
         # train groundtruth
-        train_instance = json_load_data(os.path.join(self.raw_data_all_step_dir, \
-            "shrink_instances_train2017.json"))
+        train_instance = json_load_data(os.path.join(config.raw_data_root, \
+            "Fixed_part/shrink_instances_train2017.json"))
         train_images = train_instance["images"]
         train_annos = train_instance["annotations"]
 
         # train id in order
-        train_ids = open(os.path.join(self.raw_data_all_step_dir, \
-            "shrink_train2017_random_list.txt"), "r").read().strip("\n").split("\n")
+        train_ids = open(os.path.join(config.raw_data_root, \
+            "Fixed_part/shrink_train2017_random_list.txt"), "r").read().strip("\n").split("\n")
 
         logger.info("loading captions")
         # val text
-        val_captions = json_load_data(os.path.join(self.raw_data_all_step_dir, \
-            "captions_val2017.json"))
+        val_captions = json_load_data(os.path.join(config.raw_data_root, \
+            "Fixed_part/captions_val2017.json"))
         val_captions = val_captions["annotations"]
         # train text
-        train_captions = json_load_data(os.path.join(self.raw_data_all_step_dir, \
-            "captions_train2017.json"))
+        train_captions = json_load_data(os.path.join(config.raw_data_root, \
+            "Fixed_part/captions_train2017.json"))
         train_captions = train_captions["annotations"]
 
         logger.info("processing extracted labels")

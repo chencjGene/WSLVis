@@ -131,7 +131,6 @@ def rule_based_processing(extracted_labels, suffix="step1"):
         for k in keys:
             if string.count(k) > 0:
                 pred[cat] = 0 
-
     return pred
 
 def get_precision_and_recall(part):

@@ -17,13 +17,26 @@ const store = new Vuex.Store({
         image_num: 0,
         current_id: 0,
         tree: {},
+        use_treecut: true,
         image_cluster_list: [],
+        mismatch: [],
+        vis_image_per_cluster: {},
         expand_tree: true,
+        expand_set_id: -1,
+        grid_data: [],
+        nav_id: [],
+        label_layout_mode: null,
         cluster_association_mat: [],
         focus_node: null,
+        selected_node: {
+            node_ids: [],
+            nodes: [], 
+            curr_full_name: ''
+        },
         all_sets: [],
         words: [],
         focus_word: null,
+        focus_image: null,
         text_list: [],
         focus_text: null,
         image_list: [],
@@ -59,6 +72,8 @@ const store = new Vuex.Store({
             this.commit("set_text_tree_data", hypergraph_data.text_tree);
             this.commit("set_image_cluster_list_data", hypergraph_data.image_cluster_list);
             this.commit("set_cluster_association_mat", hypergraph_data.cluster_association_matrix);
+            this.commit("set_mismatch", hypergraph_data.mismatch);
+            this.commit("set_vis_image_per_cluster", hypergraph_data.vis_image_per_cluster);
         },
         set_text_tree_data(state, text_tree){
             // process tree 
@@ -71,13 +86,14 @@ const store = new Vuex.Store({
                 element.id = element.data.id;
                 element.full_name = element.data.name;
                 element.name = element.full_name;
-                if (element.full_name.indexOf(" ") > 0){
-                    // element.name = element.data.abbr_name;
-                    element.name = element.name.slice(0, 7) + ".";
+                if (element.children && element.name !== "root"){
+                    element.name = element.children.map(d=>d.name + " ").join("");
                 }
-                else if (element.name.length > 7){
+                if (element.name.length > 7){
                     element.name = element.name.slice(0,7) + ".";
                 }
+                
+
                 // all_children: all children
                 // children: children that are visible
                 // _children: children that are invisible
@@ -113,6 +129,10 @@ const store = new Vuex.Store({
             state.cluster_association_mat = cluster_association_mat;
             console.log("cluster_association_mat:", state.cluster_association_mat);
         },
+        set_mismatch(state, mismatch){
+            state.mismatch = mismatch;
+            console.log("cluster_association_mat:", state.mismatch);
+        },
         set_history_data(state, history_data) {
             console.log("set history data");
             state.history = history_data;
@@ -121,9 +141,36 @@ const store = new Vuex.Store({
             console.log("set focus node");
             state.focus_node = nodes;
         },
+        set_focus_image(state, image){
+            console.log("set focus image");
+             state.focus_image = image;
+        }, 
+        set_selected_node(state, node) {
+            console.log("set selected node");
+            let index = state.selected_node.node_ids.indexOf(node.id);
+            if (index === -1) {
+                state.selected_node.node_ids.push(node.id);
+                state.selected_node.nodes.push(node);
+                d3.selectAll(`#id-${node.id}`).style('stroke', 'black');
+            }
+            else {
+                d3.selectAll(`#id-${node.id}`).style('stroke', '');
+                state.selected_node.node_ids.splice(index, 1);
+                state.selected_node.nodes.splice(index, 1);
+            }
+            let new_full_names = [];
+            state.selected_node.nodes.forEach(node=>{
+                new_full_names.push(node.full_name); 
+            });
+            state.selected_node.curr_full_name = new_full_names.join('&');
+        },
         set_expand_tree(state, node){
             console.log("set expand tree");
             state.expand_tree = node;
+        },
+        set_expand_set_id(state, id){
+            console.log("set expand set id", id);
+            state.expand_set_id = id;
         },
         set_words(state, words){
             console.log("set words");
@@ -148,6 +195,20 @@ const store = new Vuex.Store({
         set_focus_text(state, text){
             console.log("set focus text");
             state.focus_text = text;
+        },
+        set_vis_image_per_cluster(state, res){
+            console.log("set_vis_image_per_cluster", res);
+            for(let i in res){
+                state.vis_image_per_cluster[i] = res[i];
+            }
+        },
+        set_use_treecut(state, use_treecut){
+            state.use_treecut = use_treecut;
+        },
+        set_grid_layout_data(state, data){
+            console.log("set grid layout data", data);
+            state.grid_data = data.layout;
+            state.nav_id = data.id;
         },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 
@@ -193,15 +254,24 @@ const store = new Vuex.Store({
             const resp = await axios.post(`${state.server_url}/text/GetText`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));
         },
-        async fetch_word({commit, state}, query){
-            console.log("fetch_word", query);
+        async fetch_word({commit, state}){
+            console.log("fetch_word");
+            let query = {
+                tree_node_ids: state.selected_node.node_ids,
+                match_type: "p",
+            };
             const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_words", JSON.parse(JSON.stringify(resp.data)));
         },
-        // async fetch_image_by_set_id({commit, state}, query){
-        //     console.log("fetch_image_by_set_id", query);
-
-        // }
+        async fetch_images({commit, state}, image_cluster_ids){
+            console.log("fetch_images", image_cluster_ids);
+            const resp = await axios.post(`${state.server_url}/detection/Rank`, image_cluster_ids, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_vis_image_per_cluster", JSON.parse(JSON.stringify(resp.data)));
+        },
+        async fetch_grid_layout({commit, state}, query){
+            const resp = await axios.post(`${state.server_url}/detection/GridLayout`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_grid_layout_data", JSON.parse(JSON.stringify(resp.data)));
+        }
     },
     // computed: {
     //     selected_flag(){

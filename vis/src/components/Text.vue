@@ -2,12 +2,15 @@
   <v-row class="text-view fill-width mr-0">
     <v-col cols="12" class="topname fill-width"> Text </v-col>
     <v-col cols="12" class="text-content pa-0">
+      <v-col class="label-text pa-0"> Selected: {{selected_node.curr_full_name}} </v-col>
+      <v-col class="label-text pa-0"> Word cloud: </v-col>
       <v-col class="wordcloud-col pa-0"> </v-col>
+      <v-col class="label-text pa-0"> Captions: </v-col>
       <v-col class="text-col pa-0">
         <template>
           <DynamicScroller :items="text_list" 
           :min-item-size="54"
-          class="scroller">
+          class="scroller text-col-scroller" style="overflow-y: auto;">
             <template v-slot="{ item, index, active }">
               <DynamicScrollerItem
                 :item="item"
@@ -49,11 +52,11 @@ export default {
     DynamicScrollerItem: DynamicScrollerItem
   },
   computed: {
-    ...mapState(["words", "focus_word", "text_list", "focus_text"]),
+    ...mapState(["selected_node", "words", "focus_word", "text_list", "focus_text"]),
   },
   watch: {
     words() {
-      console.log("triger words");
+      console.log("triger words", this.focus_node);
       this.update_data();
       this.update_view();
     },
@@ -88,7 +91,7 @@ export default {
         .selectAll(".wordcloud")
         .transition()
         .duration(this.remove_ani)
-        .style("opacity", 0)
+        // .style("opacity", 0)
         .remove();
       this.e_words = this.wordcloud_group
         .selectAll(".wordcloud")
@@ -98,6 +101,31 @@ export default {
       this.create();
       this.update();
       this.remove();
+      this.adapt_wordcloud_height();
+    },
+
+    adapt_wordcloud_height() {
+      let bbox = this.wordcloud_group.node().getBBox();
+      this.wordcloud_group
+        .transition()
+        .duration(this.update_ani)
+        .attr('transform', `translate(0, ${-bbox.y})`);
+      this.wordcloud_svg
+        .transition()
+        .duration(this.update_ani)
+        .attr('height', bbox.height);
+      d3.selectAll('.wordcloud-col')
+        .transition()
+        .duration(this.update_ani)
+        .style('height', `${bbox.height}px`);
+      d3.selectAll('.text-col')
+        .style('height', `calc(100% - ${bbox.height + 90}px)`);
+      bbox = this.text_container.node().getBoundingClientRect();
+      d3.selectAll('.text-col-scroller')
+        .transition()
+        .duration(this.update_ani)
+        .style('height', `${bbox.height - 10}px`);
+      console.log('xsxsx:', bbox);
     },
 
     create() {
@@ -174,6 +202,7 @@ export default {
     window.text = this;
     let wordcloud_container = d3.select(".wordcloud-col");
     let text_container = d3.select(".text-col");
+    this.text_container = text_container;
     // console.log("container", container);
     // let bbox = container.node().getBoundingClientRect();
     // this.bbox_width = bbox.width;
@@ -202,12 +231,12 @@ export default {
     //   .attr("id", "text-svg")
     //   .attr("width", this.bbox_width)
     //   .attr("height", this.layout_height);
-    this.wordcloud_group = d3
+    this.wordcloud_svg = d3
       .select(".wordcloud-col")
       .append("svg")
       .attr("width", this.wordcloud_width)
-      .attr("height", this.wordcloud_height)
-      .append("g")
+      .attr("height", this.wordcloud_height);
+    this.wordcloud_group = this.wordcloud_svg.append("g")
       .attr("id", "wordcloud-group")
       .attr("transform", "translate(" + 0 + ", " + 0 + ")");
     // this.text_group = this.svg.append("g")
@@ -235,7 +264,7 @@ export default {
 
 .wordcloud-col {
   height: 30%;
-  border-bottom: 1px solid #888;
+  /* border-bottom: 1px solid #888; */
 }
 
 .text-col {
@@ -244,6 +273,10 @@ export default {
 
 .scroller {
   height: 390px;
+}
+
+.label-text {
+  font-size: 20px;
 }
 
 </style>

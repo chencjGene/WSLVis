@@ -5,6 +5,8 @@ import sqlite3
 import json
 from tqdm import tqdm
 
+from sklearn.metrics import precision_score, recall_score
+
 from ..utils.config_utils import config
 from ..utils.log_utils import logger
 from ..utils.helper_utils import pickle_load_data, pickle_save_data
@@ -22,9 +24,16 @@ class DataBaseLoader(object):
         self.suffix = "step" + str(step)
         self.data_all_step_root = os.path.join(config.data_root, self.dataname)
         self.data_root = os.path.join(config.data_root, self.dataname, self.suffix)
+        self.conf_thresh = 0.5
+
+        self.image_features = None
+        self.text_features = None
 
         database_file = os.path.join(self.data_root, "database.db")
         self.conn = sqlite3.connect(database_file, check_same_thread=False)
+
+        self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
+            "width_height.json"))
 
     def database_fetch_by_idx(self, idx, keys):
         # id, cap, bbox, logits, labels, activations, string, detection, image_output
@@ -63,6 +72,9 @@ class DataBaseLoader(object):
         return text_feature
 
     def get_image_feature(self):
+        logger.info("get_image_feature")
+        if self.image_features is not None:
+            return self.image_features
         feature_path = os.path.join(self.data_root, "feature_train.npy")
         features = np.load(feature_path)
         print("feature shape", features.shape)
@@ -74,8 +86,22 @@ class DataBaseLoader(object):
             sum = sum + i
             split_points.append(sum)
         print(split_points)
-        feature = features[:, split_points[feature_id]: split_points[feature_id+1]]
-        return feature
+        self.image_features = \
+            features[:, split_points[feature_id]: split_points[feature_id+1]]
+        return self.image_features
+
+    def get_detection_result_for_vis(self, idx):
+        w, h = self.width_height[idx]
+        detection = self.get_detection_result(idx)
+        detection = np.array(detection)
+        conf_detection = detection[detection[:, -2] > self.conf_thresh].astype(np.float32)
+        conf_detection[:, 0] /= w
+        conf_detection[:, 2] /= w
+        conf_detection[:, 1] /= h
+        conf_detection[:, 3] /= h
+        conf_detection = np.round(conf_detection, 3)
+        return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist()}
+
 
 class Data(DataBaseLoader):
     def __init__(self, dataname, step=0):
@@ -131,21 +157,14 @@ class Data(DataBaseLoader):
         None
 
     def get_precision_and_recall(self):
-        labels = []
-        cursor = self.conn.cursor()
-        sql = "select activations, logits, string, labels from annos where id = ?"
-        for i in self.labeled_idx:
-            cursor.execute(sql, (i,))
-            activation, logits, string, label = cursor.fetchall()[0]
-            el = {
-                "activations": json.loads(activation),
-                "string": json.loads(string),
-                "logits": json.loads(logits),
-                "label": json.loads(label),
-            }
-            el["rule_logit"] = rule_based_processing(el, self.suffix)
-            labels.append(el)
-        self.labeled_p, self.precision, self.recall = get_precision_and_recall(labels)
+        preds = self.get_category_pred(label_type="labeled", data_type="text")
+        gt = self.get_groundtruth_labels(label_type="labeled")
+        print("preds.shape", preds.shape)
+        self.precision = []
+        self.recall = []
+        for i in range(len(self.class_name)):
+            self.precision.append(precision_score(gt[:, i], preds[:, i]))
+            self.recall.append(recall_score(gt[:, i], preds[:, i]))
 
     def get_labeled_id_by_type(self, cats: list, match_type: str) -> list:
         cursor = self.conn.cursor()
@@ -215,7 +234,7 @@ class Data(DataBaseLoader):
         else:
             image_labels = self.get_category_pred(label_type="all", data_type="image")
             text_labels = self.get_category_pred(label_type="all", data_type="text")
-            self.mismatch = (image_labels!=text_labels).sum(axis=1)
+            self.mismatch = (image_labels!=text_labels)
             pickle_save_data(mismatch_path, self.mismatch)
         return self.mismatch.copy()
 
@@ -235,7 +254,9 @@ class Data(DataBaseLoader):
             pickle_save_data(confidence_path, self.mean_confidence)
         return self.mean_confidence.copy()
 
-    def get_category_pred(self, label_type="unlabeled", data_type="text"):
+    def get_category_pred(self, label_type="unlabeled", data_type="text", threshold=None):
+        if threshold is None:
+            threshold = self.conf_thresh
         if not isinstance(label_type, str) and isinstance(label_type, list):
             idxs = label_type
             label_type_text = "idx"
@@ -248,12 +269,15 @@ class Data(DataBaseLoader):
         elif label_type == "unlabeled":
             idxs = self.unlabeled_idx
             label_type_text = label_type
+        elif label_type == "val":
+            idxs = self.val_idx
+            label_type_text = label_type
         else:
             raise ValueError("unsupported label type")
         logger.debug("begin get category pred with {} in {}".format(label_type_text, data_type))
         preds = []
         buffer_file = os.path.join(self.data_root, \
-            "pred_buffer_{}_{}.npy".format(label_type_text, data_type))
+            "pred_buffer_{}_{}_thresh_{}.npy".format(label_type_text, data_type, threshold))
         if os.path.exists(buffer_file) and label_type_text != "idx":
             logger.info("using pred buffer: {}".format(buffer_file))
             preds = np.load(buffer_file)
@@ -265,11 +289,23 @@ class Data(DataBaseLoader):
                 image_output = np.array(json.loads(image_output)) > 0.5
                 preds.append((image_output + pred).astype(float))
             preds = np.array(preds)
+        elif data_type == "text-only":
+            for idx in tqdm(idxs):
+                logit = self.database_fetch_by_idx(idx, ["logits"])
+                pred = sigmoid(np.array(json.loads(logit))) > 0.5
+                preds.append((pred).astype(float))
+            preds = np.array(preds)
+        elif data_type == "image-for-cls":
+            for idx in tqdm(idxs):
+                image_output = self.database_fetch_by_idx(idx, ["image_output"])
+                image_output = np.array(json.loads(image_output)) > 0.5
+                preds.append((image_output).astype(float))
+            preds = np.array(preds)
         elif data_type == "image":
             for idx in tqdm(idxs):
                 detection = self.database_fetch_by_idx(idx, ["detection"])
                 detection = np.array(json.loads(detection)) #[:,-1].astype(int)
-                conf_detection = detection[detection[:, -2] > 0.5].astype(np.float32)
+                conf_detection = detection[detection[:, -2] > threshold].astype(np.float32)
                 cats = conf_detection[:, -1].astype(int)
                 cats = np.array(list(set(cats))).astype(int)
                 pred = np.zeros(len(self.class_name))
@@ -286,12 +322,17 @@ class Data(DataBaseLoader):
     
     def get_groundtruth_labels(self, label_type="unlabeled"):
         logger.debug("begin get groundtruth category with {}".format(label_type))
-        if label_type == "all":
+        if not isinstance(label_type, str) and isinstance(label_type, list):
+            idxs = label_type
+            label_type_text = "idx"
+        elif label_type == "all":
             idxs = self.train_idx
         elif label_type == "labeled":
             idxs = self.labeled_idx
         elif label_type == "unlabeled":
             idxs = self.unlabeled_idx
+        elif label_type == "val":
+            idxs = self.val_idx
         else:
             raise ValueError("unsupported label type")
         gt = []
@@ -304,14 +345,29 @@ class Data(DataBaseLoader):
         return gt.astype(int)
 
     def get_image(self, idx):
-        # gt = self.annos[idx]["bbox"]
-        # det = self.detections[idx]["bbox"]
+        image_id = self.ids[idx]
+        phase = "train2017_square"
+        if idx in self.val_idx:
+            phase = "val2017"
+        img_path = os.path.join(self.data_all_step_root, \
+            phase, "%012d.jpg" %(image_id))
+        if not os.path.exists(img_path):
+            img_path = os.path.join(config.raw_data_root, \
+                "coco17_raw_data", phase, "%012d.jpg" %(image_id))
+        return img_path 
+    
+    def get_origin_image(self, idx):
         image_id = self.ids[idx]
         phase = "train2017"
         if idx in self.val_idx:
             phase = "val2017"
-        img_path = os.path.join(self.data_all_step_root, phase, "%012d.jpg" %(image_id))
-        return img_path #, gt, det
+        img_path = os.path.join(self.data_all_step_root, \
+            phase, "%012d.jpg" %(image_id))
+        if not os.path.exists(img_path):
+            img_path = os.path.join(config.raw_data_root, \
+                "coco17_raw_data", phase, "%012d.jpg" %(image_id))
+        print("iamge_path", img_path)
+        return img_path 
     
     def get_text(self, query):
         cursor = self.conn.cursor()
@@ -336,13 +392,16 @@ class Data(DataBaseLoader):
             texts.append(text)
         return texts
 
-    def get_word(self, query):
-        tree_node_id = query["tree_node_id"]
-        match_type = query["match_type"]
-        node = self.tree_helper.get_node_by_tree_node_id(tree_node_id)
-        leaf_node = self.tree_helper.get_all_leaf_descendants(node)
-        cats = [n["cat_id"] for n in leaf_node]
-        print("cats", cats)
+    def get_single_text(self, idx):
+        cursor = self.conn.cursor()
+        sql = "select (cap) from annos where id = ?"
+        result = cursor.execute(sql, (idx,))
+        result = cursor.fetchall()[0]
+        caps = result[0]
+        return caps
+
+
+    def get_word(self, cats, match_type):
         self.current_text_idxs = self.get_labeled_id_by_type(cats, match_type)
         # print("current_text_idxs", self.current_text_idxs)
         self.current_wordcloud = self.get_important_labels(self.current_text_idxs, cats)

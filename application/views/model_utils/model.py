@@ -2,10 +2,12 @@ import numpy as np
 import os
 
 from sklearn.cluster import KMeans, MiniBatchKMeans
+from sklearn.manifold import TSNE
 
 from ..utils.log_utils import logger
+from ..utils.config_utils import config
 from ..utils.helper_utils import json_load_data, json_save_data
-from ..utils.helper_utils import pickle_save_data, pickle_load_data
+from ..utils.helper_utils import pickle_save_data, pickle_load_data, check_dir
 from ..database_utils.data_database import Data
 # from ..database_utils.data import Data
 try:
@@ -16,6 +18,7 @@ except:
 from .coclustering import CoClustering
 from .tree_helper import TextTreeHelper, TreeHelper, ImageTreeHelper
 from .ranker import ImageRanker
+from .sampler import Sampler
 
 
 class WSLModel(object):
@@ -36,6 +39,11 @@ class WSLModel(object):
             return 
         self._init()
     
+    def update_data_root(self, dataname, suffix):
+        suffix = "step" + str(suffix)
+        self.data_all_step_root = os.path.join(config.data_root, dataname)
+        self.data_root = os.path.join(config.data_root, self.dataname, suffix)
+
     def _init(self):
         logger.info("current config of model: dataname-{}, step-{}, text_k-{}, image_k-{}, pre_k-{}".format(self.dataname, self.step,\
                 self.config["text_k"], self.config["image_k"], self.config["pre_k"]))
@@ -46,17 +54,18 @@ class WSLModel(object):
         self.buffer_path = os.path.join(self.data_root, "model.pkl")
 
         # clustering model
-        self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
-            size_min=1, size_max=3000, random_state=0)
+        # self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
+            # size_min=1, size_max=3000, random_state=0)
         self.image_cluster_name = ["img_cluster_"+ str(i) for i in range(self.config["pre_k"])]
         self.coclustering = CoClustering(self.config["text_k"], \
             self.config["image_k"], self.config["weight"], verbose=0) 
-        self.text_tree_helper = TextTreeHelper()
+        self.text_tree_helper = TextTreeHelper(data_root=self.data_root)
+        # self.samplers = [Sampler(id=i) for i in range(self.config["image_k"])]
 
         # ranking model
         self.ranker = ImageRanker()
+        self.rank_res = {}
         
-
     def _init_data(self):
         self.data = Data(self.dataname, self.step)
 
@@ -76,6 +85,8 @@ class WSLModel(object):
 
         # hierarchical coclustering
         self._run_hierarchical_coclustering()
+
+        [self.get_rank(i) for i in range(len(self.image_cluster_list))]
     
     def _run_pre_clustering(self):
         pre_clustering_result_file = os.path.join(self.data_root, "pre_clustering.npy")
@@ -223,11 +234,14 @@ class WSLModel(object):
             self.image_ids_of_clusters[i] = image_ids
         logger.info("end get_image_ids_of_clusters")
 
-    def get_R(self, exclude_person=True):
+    def get_R(self, exclude_person=True, detection=True):
         # processing R
         class_name = self.data.class_name
         kmeans = self.pre_clustering_res
-        R_path = os.path.join(self.data_root, "cluster_R.npy")
+        suffix = ""
+        if not detection:
+            suffix = "_gt"
+        R_path = os.path.join(self.data_root, "cluster_R{}.npy".format(suffix))
         origin_R = np.zeros((len(class_name), len(np.unique(kmeans))))
         if os.path.exists(R_path):
             origin_R = np.load(R_path)
@@ -237,7 +251,10 @@ class WSLModel(object):
                 r = origin_R[:,i]
                 idxs = np.array(range(len(kmeans)))[kmeans == i]
                 for j in idxs:
-                    res = self.data.get_detection_result(int(j)) 
+                    if detection:
+                        res = self.data.get_detection_result(int(j)) 
+                    else:
+                        res = self.data.get_anno_bbox_result(int(j)) 
                     for det in res:
                         if det[-2] > 0.5:
                             r[det[-1]] += 1
@@ -249,33 +266,177 @@ class WSLModel(object):
         R = origin_R[1:, :].copy()
         class_name = self.data.class_name[1:]
         R = R / R.max()
-        R = np.power(R, 0.41)
+        R = np.power(R, 0.40)
 
         if exclude_person:
             return R
         else:
             origin_R = origin_R / R.max()
-            origin_R = np.power(origin_R, 0.41)
+            origin_R = np.power(origin_R, 0.40)
             return origin_R
 
+    def get_cluster_association_matrix(self):
+        origin_mat = self.get_R(False)
+        origin_mat[0, :] = 0
+
+        mismatch = self.data.get_mismatch()
+        mismatch_matrix = []
+        mat = []
+        for i in range(len(self.image_cluster_list)):
+            v = origin_mat[:, np.array(self.image_cluster_list[i]["cluster_idxs"])]
+            v = v.sum(axis=1)
+            m = mismatch[np.array(self.image_ids_of_clusters[i])].sum(axis=0)
+            mismatch_matrix.append(m)
+            mat.append(v)
+        # descendants = self.text_tree_helper\
+        #     .get_all_leaf_descendants(self.text_tree_helper.tree)
+        # text_labels = [d["id"] for d in descendants[::-1]]
+        mismatch_matrix = np.array(mismatch_matrix)
+        mat = np.array(mat).T
+        for idx, m in enumerate(mat):
+            v = (m > m.mean() * 2).astype(int)
+            mat[idx] = v
+
+        return mat.T, mismatch_matrix
+
     def get_current_hypergraph(self):
+        cam_matrix, mismatch = self.get_cluster_association_matrix()
+
+        self.data.get_precision_and_recall()
+        self.text_tree_helper.assign_precision_and_recall(\
+            self.data.precision, self.data.recall)
+
+        # reordering
+        leaf_nodes = self.text_tree_helper.get_all_leaf_descendants(self.text_tree_helper.tree)
+        leaf_nodes = leaf_nodes[::-1]
+        pos = []
+        for i in range(cam_matrix.shape[0]):
+            p = 0
+            count = 0 
+            for j in range(len(leaf_nodes)):
+                idx = leaf_nodes[j]["id"]
+                if cam_matrix[i][idx] > 0:
+                    p = p + j
+                    count += 1
+            pos.append(p/count)
+        sorted_idxs = np.array(pos).argsort()
+        cam_matrix = cam_matrix[sorted_idxs, :]
+        mismatch = mismatch[sorted_idxs, :]
+
         mat = {
             "text_tree": self.text_tree,
-            "image_cluster_list": self.image_cluster_list,
-            "cluster_association_matrix": self.get_R(False).tolist()
+            "image_cluster_list": [self.image_cluster_list[i] for i in sorted_idxs],
+            "mismatch": mismatch.tolist(),
+            "cluster_association_matrix": cam_matrix.tolist(),
+            "vis_image_per_cluster": {i: self.get_rank(i) for i in range(len(self.image_cluster_list))}
         }
         return mat
 
     def get_rank(self, image_cluster_id):
+        # import IPython; IPython.embed(); exit()
+        if image_cluster_id in self.rank_res \
+            and self.rank_res[image_cluster_id] is not None:
+            return self.rank_res[image_cluster_id]
         image_ids = self.image_ids_of_clusters[image_cluster_id]
-        mismatch = self.data.get_mismatch()[np.array(image_ids)]
+        mismatch = self.data.get_mismatch()[np.array(image_ids)].sum(axis=1)
         confidence = self.data.get_mean_confidence()[np.array(image_ids)]
-        total_score = mismatch - confidence * 5
-        sorted_idxs = total_score.argsort()[::-1]
-        top_k = [image_ids[i] for i in sorted_idxs[:10]]
-        return None
+        total_score = mismatch - confidence * 100
+        np.random.seed(124)
+        total_score = np.random.rand(len(total_score))
+        features = self.data.get_image_feature()[np.array(image_ids)]
+        print("features.shape", features.shape)
+        norm = (features**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_features = features / norm.reshape(-1,1)
+
+        pred = self.data.get_category_pred(image_ids, "image")
+        norm = (pred**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_pred = pred / (norm.reshape(-1,1)+1e-12)
+        cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
+
+
+        k = 10
+        labels = self._kmeans(cluster_feature, k)
+        top_k = []
+        for i in range(k):
+            idxs = np.array(range(len(labels)))[labels==i]
+            score = total_score[idxs]
+            top_k.append(image_ids[idxs[score.argmax()]])
+        # sorted_idxs = total_score.argsort()[::-1]
+        # top_k = [image_ids[i] for i in sorted_idxs[:13]]
+        res = [self.data.get_detection_result_for_vis(i) for i in top_k]
+        self.rank_res[image_cluster_id] = res
+        return res
+
+    def get_tsne_of_image_cluster(self, image_cluster_id):
+        tsne_root = os.path.join(self.data_root, "tsne_of_image_cluster")
+        check_dir(tsne_root)
+        tsne_path = os.path.join(tsne_root, str(image_cluster_id) + ".pkl")
+        if os.path.exists(tsne_path):
+            logger.info("tsne buffer of image cluster {} exists".format(image_cluster_id))
+            return pickle_load_data(tsne_path)
+        logger.info("TSNE buffer did not exists, run TSNE")
+        image_ids = self.image_ids_of_clusters[image_cluster_id]
+        features = self.data.get_image_feature()[np.array(image_ids)]
+        print("features.shape", features.shape)
+        norm = (features**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_features = features / norm.reshape(-1,1)
+
+        pred = self.data.get_category_pred(image_ids, "image")
+        norm = (pred**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_pred = pred / (norm.reshape(-1,1)+1e-12)
+        cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
+
+        tsne = TSNE(n_components=2,random_state=15)
+        coor = tsne.fit_transform(cluster_feature)
+        pickle_save_data(tsne_path, coor)
+        return coor
+
+    def get_word(self, query):
+        tree_node_ids = query["tree_node_ids"]
+        match_type = query["match_type"]
+        # TODO we should compute the intersection for text examples instead of keywords extract from them
+        count = {}
+        for tree_node_id in tree_node_ids:
+            node = self.text_tree_helper.get_node_by_tree_node_id(tree_node_id)
+            leaf_node = self.text_tree_helper.get_all_leaf_descendants(node)
+            cats = [n["cat_id"] for n in leaf_node]
+            words = self.data.get_word(cats, match_type)
+            print(tree_node_id, words)
+            for word in words:
+                if word[0] not in count:
+                    count[word[0]] = []
+                count[word[0]].append(word[1])
+        union_words = []
+        for word in count:
+            # if len(count[word]) == len(tree_node_ids):
+            union_words.append([word, sum(count[word])])
+        print('union:', union_words)
+        return union_words
+
+    def get_grid_layout(self, left_x, top_y, width, height, node_id):
+        # node_id for navigation 
+        return self.current_sampler.get_grid_layout(left_x, top_y, \
+            width, height, node_id)
+
+    def set_focus_image_cluster(self, id):
+        # self.current_sampler = self.samples[id]
+        if hasattr(self, "current_sampler") and \
+            self.current_sampler.id == id:
+            return 
+        self.current_sampler = Sampler(id=id)
+        image_ids = self.image_ids_of_clusters[id]
+        mismatch = self.data.get_mismatch()
+        mismatch = mismatch[np.array(image_ids)]
+        self.current_sampler.init(self.get_tsne_of_image_cluster(id),
+            image_ids, mismatch, self.data_all_step_root)
+        
 
     def save_model(self, path=None):
+        logger.info("save model buffer")
         buffer_path = self.buffer_path
         if path:
             buffer_path = path

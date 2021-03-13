@@ -22,7 +22,9 @@ class CaseCOCO17(CaseBase):
             if use_buffer and self.model.buffer_exist():
                 logger.info("buffer exists. Loading model.")
                 # self.model.load_model()
+                dataname = self.model.dataname
                 self.model = pickle_load_data(self.model.buffer_path)
+                self.model.update_data_root(dataname, self.step)
                 self.model._init_data()
                 return self.model
         # logger.info("You do not intend to use the model buffer or the buffer does not exist")
