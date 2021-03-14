@@ -11,8 +11,7 @@ Vue.use(Vuex)
 //create VueX
 const store = new Vuex.Store({
     state:{
-        // server_url: 'http://166.111.81.68:20211',
-        server_url: 'http://localhost:20211',
+        server_url: 'http://166.111.80.151:20211',
         // action trail
         history: [],
         image_num: 0,
