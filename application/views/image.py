@@ -7,7 +7,7 @@ from .utils.config_utils import config
 import json
 import time
 
-from .port_utils import get_image, get_origin_image
+from .port_utils import get_image, get_origin_image, get_image_detection
 
 image = Blueprint("image", __name__)
 
@@ -25,3 +25,11 @@ def app_get_origin_image():
     idx = int(idx)
     img_path = get_origin_image(idx)
     return send_file(img_path)
+
+@image.route("/image/SingleImageDetection", methods=["GET", "POST"])
+def app_get_single_image_detection():
+    idx = json.loads(request.data)["image_id"]
+    conf = json.loads(request.data).get("conf", None)
+    idx = int(idx)
+    res = get_image_detection(idx, conf)
+    return res

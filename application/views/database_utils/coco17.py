@@ -34,20 +34,23 @@ def process_extracted_result(result):
         image_id = d["image_id"][0].decode()
         logits = d["logits"][0].tolist()
         label = d["label"][0].tolist()
-        output_t = sigmoid(d["output_t"][0])
-        string = [t.decode() for t in d["string"][0]]
+        # import IPython; IPython.embed(); exit()
         activations = []
-        for idx, text in enumerate(string):
-            pred = output_t[idx] > 0.5
-            cats = np.nonzero(pred)
-            probs = output_t[idx][cats]
-            if len(cats[0]) > 0:
-                activations.append({
-                    "idx": idx,
-                    "text": text,
-                    "cats": cats[0].tolist(),
-                    "probs": probs.tolist()
-                })
+        string = []
+        # output_t = sigmoid(d["output_t"][0])
+        # string = [t.decode() for t in d["string"][0]]
+        # activations = []
+        # for idx, text in enumerate(string):
+        #     pred = output_t[idx] > 0.5
+        #     cats = np.nonzero(pred)
+        #     probs = output_t[idx][cats]
+        #     if len(cats[0]) > 0:
+        #         activations.append({
+        #             "idx": idx,
+        #             "text": text,
+        #             "cats": cats[0].tolist(),
+        #             "probs": probs.tolist()
+        #         })
         map[image_id] = {
             "logits": logits,
             "label": label,

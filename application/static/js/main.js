@@ -4,17 +4,17 @@ let Website = "http://localhost"
 let Port = "20211"
 let EmbeddingApi = "/detection/Embedding"
 let CategoryColor = [
-    "#8c564b",
-    "#ff7f0e",
+    "#777777",
+    "#ff7f0e", // orange
+    "#d62728", // red
     "#9467bd",
-    "#d62728",
+    "#8c564b",
     "#1f77b4",
     "#2ca02c",
     "#e377c2",
     "#ffdb45",
     "#bcbd22",
-    "#17becf",
-    "#777777"];
+    "#17becf",];
 
 var load_data = function (dataset) {
     /*

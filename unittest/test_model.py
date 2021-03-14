@@ -140,6 +140,32 @@ class CoClusteringTest(unittest.TestCase):
 
         a = 1
 
+    def test_mismatch(self):
+        dataname = "COCO17"
+        step = 2
+        m = WSLModel(dataname=config.coco17, step=step)
+        m = WSLModel(dataname=dataname, step=step)
+        m = pickle_load_data(m.buffer_path)
+        m.update_data_root(dataname, step)
+        m._init_data()
+        cluster_id = 3
+        image_ids = m.image_ids_of_clusters[cluster_id]
+        image_labels = m.data.get_category_pred(label_type="all", \
+            data_type="image", threshold=0.5)
+        text_labels = m.data.get_category_pred(label_type="all", data_type="text-only")
+        gt = m.data.get_groundtruth_labels(label_type="all")
+        mismatch = (image_labels!=text_labels)[np.array(image_ids)].sum(axis=1)
+        
+        _, mismatch_matrix = m.get_cluster_association_matrix()
+        # hist, bins = np.histogram(mismatch_matrix.reshape(-1), bins=51, range=(0, 5100))
+        plt.hist(mismatch_matrix.reshape(-1), bins = list(range(0, 5200, 100)))
+        # plt.show()
+
+        res = pickle_load_data("test/detection/add_annos.pkl")
+
+
+        a = 1
+
     def test_grid_layout(self):
         m = WSLModel(dataname=config.coco17, step=1)
         m = pickle_load_data(m.buffer_path)
@@ -186,7 +212,7 @@ class CoClusteringTest(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(CoClusteringTest("test_accuracy"))
+    suite.addTest(CoClusteringTest("test_mismatch"))
     
     # # test all cases
     # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)

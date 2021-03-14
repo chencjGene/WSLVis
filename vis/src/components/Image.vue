@@ -33,6 +33,7 @@ export default {
       let image_y = 0;
       let boxes = [];
       let dets = this.focus_image.d;
+      // dets = dets.filter(d => d[5]== 7)
       that.dets = dets;
       if (aspect_ratio > this.aspect_ratio){
         height = that.layout_height;

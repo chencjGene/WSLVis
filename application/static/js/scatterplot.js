@@ -51,6 +51,7 @@ let ScatterPlot = function (container){
 
     that._update_data = async function(state) {
         that.data = state;
+        that.data.sort((a,b) => a.c - b.c)
         that.data.forEach(d => {
             d.x = d.p[0] / 1000.0 * layout_width;
             d.y = d.p[1] / 1000.0 * layout_height;
