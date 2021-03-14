@@ -288,6 +288,11 @@ const store = new Vuex.Store({
             const resp = await axios.post(`${state.server_url}/detection/Rank`, image_cluster_ids, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_vis_image_per_cluster", JSON.parse(JSON.stringify(resp.data)));
         },
+        async fetch_single_image_detection({commit, state}, query){
+            console.log("fetch_single_image_detection", query);
+            const resp = await axios.post(`${state.server_url}/image/SingleImageDetection`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_focus_image", JSON.parse(JSON.stringify(resp.data)));
+        },
         async fetch_grid_layout({commit, state}, query){
             const resp = await axios.post(`${state.server_url}/detection/GridLayout`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_grid_layout_data", JSON.parse(JSON.stringify(resp.data)));

@@ -53,31 +53,29 @@ def app_get_grid_layout():
 # for debug
 @detection.route("/detection/Embedding", methods=["GET", "POST"])
 def app_get_embedding():
-    port = init_model("COCO17", "step1")
+    port = init_model("COCO17", "step2")
     m = port.model
     m = pickle_load_data(m.buffer_path)
-    m.dataname = "COCO17"
-    m.step = "1"
+    m.update_data_root("COCO17", 2)
     m._init_data()
-    cluster_id = 8
+    cluster_id = 3
+    class_id = 9
     image_ids = m.image_ids_of_clusters[cluster_id]
     image_labels = m.data.get_category_pred(label_type="all", \
-        data_type="image", threshold=0.2)
-    text_labels = m.data.get_category_pred(label_type="all", data_type="text")
-    mismatch = (image_labels!=text_labels)[np.array(image_ids)][:, 59]
-    # mismatch = m.data.get_mismatch()[np.array(image_ids)][:, 59]
-    mismatch = mismatch.astype(int)
- 
-    # pd = pairwise_distances(features)
-    # outlier_degree = []
-    # for i in range(len(labels)):
-    #     d = pd[i]
-    #     selected_idxs = d.argsort()[:10]
-    #     selected_labels = labels[selected_idxs]
-    #     outlier_degree.append(sum(selected_labels != labels[i]))
-    # outlier_degree = np.array(outlier_degree)
-    # labels[outlier_degree > 5] = 1
-    # labels[outlier_degree <= 5] = -1
+        data_type="image", threshold=0.5)
+    text_labels = m.data.get_category_pred(label_type="all", data_type="text-only")
+    gt = m.data.get_groundtruth_labels(label_type="all")
+    mismatch = (image_labels!=text_labels)[np.array(image_ids)][:, class_id]
+    selected_img = image_labels[np.array(image_ids)][:,class_id]
+    selected_text = text_labels[np.array(image_ids)][:,class_id]
+    selected_gt = gt[np.array(image_ids)][:,class_id]
+    # mismatch = m.data.get_mismatch()[np.array(image_ids)][:, 2]
+
+    # mismatch = mismatch.astype(int)
+    # for i, id in enumerate(image_ids):
+    #     if mismatch[i]:
+    #         if selected_img[i] != selected_gt[i]:
+    #             mismatch[i] = 2
 
     coor = m.get_tsne_of_image_cluster(cluster_id)
     print("tsne shape", coor.shape)
@@ -93,6 +91,8 @@ def app_get_embedding():
             "id": image_ids[i],
             "idx": i,
             "c": int(mismatch[i]),
+            "img": selected_img[i],
+            "text": selected_text[i],
             "p": coor[i]
         })
     # return jsonify(features)

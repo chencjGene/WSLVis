@@ -78,7 +78,6 @@ class DataBaseLoader(object):
             return self.image_features
         feature_path = os.path.join(self.data_root, "feature_train.npy")
         features = np.load(feature_path)
-        print("feature shape", features.shape)
         sizes = [256, 256, 256, 512, 1024, 512]
         split_points = [0]
         sum = 0
@@ -86,22 +85,25 @@ class DataBaseLoader(object):
         for i in sizes:
             sum = sum + i
             split_points.append(sum)
-        print(split_points)
+        logger.info("split_points: {}".format(str(split_points)))
         self.image_features = \
             features[:, split_points[feature_id]: split_points[feature_id+1]]
         return self.image_features
 
-    def get_detection_result_for_vis(self, idx):
+    def get_detection_result_for_vis(self, idx, conf_thresh=None):
+        if conf_thresh is None:
+            conf_thresh = self.conf_thresh
         w, h = self.width_height[idx]
         detection = self.get_detection_result(idx)
         detection = np.array(detection)
-        conf_detection = detection[detection[:, -2] > self.conf_thresh].astype(np.float32)
+        conf_detection = detection[detection[:, -2] > conf_thresh].astype(np.float32)
+        gt_d = self.get_anno_bbox_result(idx)
         conf_detection[:, 0] /= w
         conf_detection[:, 2] /= w
         conf_detection[:, 1] /= h
         conf_detection[:, 3] /= h
         conf_detection = np.round(conf_detection, 3)
-        return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist()}
+        return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist(), "gt_d": gt_d}
 
 
 class Data(DataBaseLoader):

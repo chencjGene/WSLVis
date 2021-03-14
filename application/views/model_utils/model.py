@@ -39,10 +39,12 @@ class WSLModel(object):
             return 
         self._init()
     
-    def update_data_root(self, dataname, suffix):
-        suffix = "step" + str(suffix)
+    def update_data_root(self, dataname, step):
+        self.step = step
+        suffix = "step" + str(step)
         self.data_all_step_root = os.path.join(config.data_root, dataname)
         self.data_root = os.path.join(config.data_root, self.dataname, suffix)
+        self.buffer_path = os.path.join(self.data_root, "model.pkl")
 
     def _init(self):
         logger.info("current config of model: dataname-{}, step-{}, text_k-{}, image_k-{}, pre_k-{}".format(self.dataname, self.step,\
@@ -393,6 +395,7 @@ class WSLModel(object):
         tsne = TSNE(n_components=2,random_state=15)
         coor = tsne.fit_transform(cluster_feature)
         pickle_save_data(tsne_path, coor)
+        logger.info("finish TSNE")
         return coor
 
     def get_word(self, query):
@@ -456,6 +459,7 @@ class WSLModel(object):
         buffer_path = self.buffer_path
         if path:
             buffer_path = path
+        logger.info(buffer_path)
         if os.path.exists(buffer_path):
             return True
         else:

@@ -18,7 +18,7 @@ class CaseCOCO17(CaseBase):
         #     raise ValueError("case_mode is set but step is provided")
         if self.step == 0:
             None
-        elif self.step == 1:
+        elif self.step >= 1:
             if use_buffer and self.model.buffer_exist():
                 logger.info("buffer exists. Loading model.")
                 # self.model.load_model()
