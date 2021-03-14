@@ -7,7 +7,7 @@ from .utils.config_utils import config
 import json
 import time
 
-from .port_utils import get_image, get_origin_image
+from .port_utils import get_image, get_origin_image, get_image_ids_by_prediction, get_image_box_by_image_id
 
 image = Blueprint("image", __name__)
 
@@ -17,6 +17,16 @@ def app_get_image():
     idx = int(idx)
     img_path = get_image(idx)
     return send_file(img_path)
+
+@image.route("/text/GetImage", methods=["GET", "POST"])
+def app_get_image_ids():
+    query_data = json.loads(request.data)["query"]
+    return get_image_ids_by_prediction(query_data)
+
+@image.route("/text/GetImageBox", methods=["GET", "POST"])
+def app_get_image_box():
+    image_id = json.loads(request.data)["image_id"]
+    return get_image_box_by_image_id(image_id)
 
 
 @image.route("/image/origin_image", methods=["GET"])

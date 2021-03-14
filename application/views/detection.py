@@ -56,7 +56,8 @@ def app_get_embedding():
     port = init_model("COCO17", "step1")
     m = port.model
     m = pickle_load_data(m.buffer_path)
-    m.dataname = "COCO20"
+    m.dataname = "COCO17"
+    m.step = "1"
     m._init_data()
     cluster_id = 8
     image_ids = m.image_ids_of_clusters[cluster_id]

@@ -30,6 +30,7 @@ class DataBaseLoader(object):
         self.text_features = None
 
         database_file = os.path.join(self.data_root, "database.db")
+        print(database_file)
         self.conn = sqlite3.connect(database_file, check_same_thread=False)
 
         self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
