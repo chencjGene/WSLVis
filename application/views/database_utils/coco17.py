@@ -85,6 +85,7 @@ class DataCOCO17(DataBase):
         # val detection result
         val_detection_path = os.path.join(self.raw_data_dir, \
             "detections_val.pkl")
+        logger.info(val_detection_path)
         val_detection_result = pickle_load_data(val_detection_path)
         val_detection_result = jsonify(val_detection_result)
 

@@ -80,7 +80,6 @@ def convert(dataname):
         string = json.dumps(anno["extracted_labels"]["string"])
         image_output = json.dumps(np.round(anno["extracted_labels"]["output_v"], 4).tolist())
         detection = json.dumps(data.detections[idx]["bbox"])
-        # import IPython; IPython.embed(); exit()
         results.append((idx, cap, bbox, logit, label, activation, string, image_output, detection))
 
     # caps = np.array(caps)
