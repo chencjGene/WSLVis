@@ -59,7 +59,7 @@ def app_get_embedding():
     m.update_data_root("COCO17", 2)
     m._init_data()
     cluster_id = 3
-    class_id = 9
+    class_id = 7
     image_ids = m.image_ids_of_clusters[cluster_id]
     image_labels = m.data.get_category_pred(label_type="all", \
         data_type="image", threshold=0.5)
@@ -71,11 +71,11 @@ def app_get_embedding():
     selected_gt = gt[np.array(image_ids)][:,class_id]
     # mismatch = m.data.get_mismatch()[np.array(image_ids)][:, 2]
 
-    # mismatch = mismatch.astype(int)
-    # for i, id in enumerate(image_ids):
-    #     if mismatch[i]:
-    #         if selected_img[i] != selected_gt[i]:
-    #             mismatch[i] = 2
+    mismatch = mismatch.astype(int)
+    for i, id in enumerate(image_ids):
+        if mismatch[i]:
+            if selected_img[i] != selected_gt[i]:
+                mismatch[i] = 2
 
     coor = m.get_tsne_of_image_cluster(cluster_id)
     print("tsne shape", coor.shape)
