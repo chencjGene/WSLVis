@@ -56,10 +56,8 @@ def get_image_ids_by_prediction(query):
     max_image_num = 100
     if selection.shape[0] > max_image_num:
         selection = selection[np.random.choice(selection.shape[0], max_image_num, replace=False)]
-    print(selection.tolist())
-    return jsonify(selection.tolist())
-
-def get_image_box_by_image_id(image_id):
-    return jsonify(port.model.data.get_detection_result_for_vis(image_id))
+    res = [port.model.data.get_detection_result_for_vis(int(x)) for x in selection]
+    # print(res)
+    return jsonify(res)
 
     
