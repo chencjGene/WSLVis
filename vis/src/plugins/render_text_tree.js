@@ -51,11 +51,15 @@ const TextTree = function (parent) {
 
     that.fetch_word = function(){
         that.parent.$store.dispatch("fetch_word");
-    }
+    };
+
+    that.fetch_image = function(){
+        that.parent.$store.dispatch("fetch_image");
+    };
 
     that.set_selected_node = function(node){
         that.parent.set_selected_node(node);
-    }
+    };
 
     that.sub_component_update = function (nodes, rest_nodes) {
         // update state
@@ -135,6 +139,7 @@ const TextTree = function (parent) {
                 that.set_selected_node(node);
                 
                 that.fetch_word();
+                that.fetch_image();
             })
             .transition()
             .duration(that.create_ani)

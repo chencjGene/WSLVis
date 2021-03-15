@@ -125,7 +125,6 @@ export default {
         .transition()
         .duration(this.update_ani)
         .style('height', `${bbox.height - 10}px`);
-      console.log('xsxsx:', bbox);
     },
 
     create() {
@@ -268,11 +267,11 @@ export default {
 }
 
 .text-col {
-  height: 70%;
+  height: calc(70% - 90px);
 }
 
 .scroller {
-  height: 390px;
+  height: 100%;
 }
 
 .label-text {

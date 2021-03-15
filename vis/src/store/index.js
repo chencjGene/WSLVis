@@ -35,6 +35,7 @@ const store = new Vuex.Store({
         },
         all_sets: [],
         words: [],
+        selected_images: [],
         focus_word: null,
         focus_image: null,
         text_list: [],
@@ -184,6 +185,16 @@ const store = new Vuex.Store({
             });
             state.words = state.words.slice(0, 20);
         },
+        set_selected_images(state, images){
+            console.log("set images");
+            state.selected_images = images.map((d, i) => {
+                let res = {};
+                res.id = d;
+                res.index = i;
+                return res;
+            });
+            // state.images = state.images.slice(0, 20);
+        },
         set_focus_word(state, word){
             console.log("set focus word");
             state.focus_word = word;
@@ -262,6 +273,15 @@ const store = new Vuex.Store({
             };
             const resp = await axios.post(`${state.server_url}/text/GetWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_words", JSON.parse(JSON.stringify(resp.data)));
+        },
+        async fetch_image({commit, state}){
+            console.log("fetch_image");
+            let query = {
+                tree_node_ids: state.selected_node.node_ids,
+                match_type: "p",
+            };
+            const resp = await axios.post(`${state.server_url}/text/GetImage`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_selected_images", JSON.parse(JSON.stringify(resp.data)));
         },
         async fetch_images({commit, state}, image_cluster_ids){
             console.log("fetch_images", image_cluster_ids);

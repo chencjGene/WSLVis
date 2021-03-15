@@ -94,7 +94,7 @@ export default {
         // }
     },
     methods: {
-        ...mapActions(["fetch_hypergraph", "fetch_word", "fetch_grid_layout"]),
+        ...mapActions(["fetch_hypergraph", "fetch_word", "fetch_image", "fetch_grid_layout"]),
         ...mapMutations([
             "set_selected_flag",
             "set_focus_node",
