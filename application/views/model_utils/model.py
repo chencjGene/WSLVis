@@ -54,7 +54,7 @@ class WSLModel(object):
         self.data_root = self.data.data_root
         self.data_all_step_root = self.data.data_all_step_root
         self.buffer_path = os.path.join(self.data_root, "model.pkl")
-        self.hiera = "sub2"
+        self.hiera = ""
 
         # clustering model
         # self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],

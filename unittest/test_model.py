@@ -153,11 +153,11 @@ class CoClusteringTest(unittest.TestCase):
     def test_mismatch(self):
         dataname = "COCO17"
         step = 0
+        mat = pickle_load_data("test/mismatch/network.pkl")
         m = WSLModel(dataname=config.coco17, step=step)
-        m = WSLModel(dataname=dataname, step=step)
-        m = pickle_load_data(m.buffer_path)
-        m.update_data_root(dataname, step)
-        m._init_data()
+        m.update_hiera("sub3")
+        m.run()
+
         cluster_id = 3
         image_ids = m.image_ids_of_clusters[cluster_id]
         image_labels = m.data.get_category_pred(label_type="all", \
@@ -222,7 +222,7 @@ class CoClusteringTest(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(CoClusteringTest("test_cluster_buffer"))
+    suite.addTest(CoClusteringTest("test_mismatch"))
     
     # # test all cases
     # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)
