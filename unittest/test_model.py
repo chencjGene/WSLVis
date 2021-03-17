@@ -33,6 +33,7 @@ from application.views.utils.helper_utils import pickle_load_data, pickle_save_d
 from application.views.database_utils.utils import decoding_categories, encoding_categories
 from application.views.model_utils import WSLModel
 from application.views.model_utils.ranker import lap_score
+from application.views.utils.helper_utils import json_load_data, json_save_data
 
 from sklearn.manifold import TSNE, MDS
 from sklearn.decomposition import PCA
@@ -140,9 +141,17 @@ class CoClusteringTest(unittest.TestCase):
 
         a = 1
 
+    def test_cluster_buffer(self):
+        dataname = "COCO17"
+        step = 0
+        m = WSLModel(dataname=config.coco17, step=step)
+        m.run()
+
+        a = 1
+
     def test_mismatch(self):
         dataname = "COCO17"
-        step = 2
+        step = 0
         m = WSLModel(dataname=config.coco17, step=step)
         m = WSLModel(dataname=dataname, step=step)
         m = pickle_load_data(m.buffer_path)
@@ -212,7 +221,7 @@ class CoClusteringTest(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(CoClusteringTest("test_mismatch"))
+    suite.addTest(CoClusteringTest("test_cluster_buffer"))
     
     # # test all cases
     # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)

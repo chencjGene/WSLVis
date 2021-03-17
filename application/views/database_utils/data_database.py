@@ -53,6 +53,7 @@ class DataBaseLoader(object):
     def __init__(self, dataname, step=0):
         self.dataname = dataname 
         self.suffix = "step" + str(step)
+        self.step = step
         self.data_all_step_root = os.path.join(config.data_root, self.dataname)
         self.data_root = os.path.join(config.data_root, self.dataname, self.suffix)
         self.conf_thresh = 0.5
@@ -217,14 +218,26 @@ class Data(DataBaseLoader):
         None
 
     def get_precision_and_recall(self):
-        preds = self.get_category_pred(label_type="labeled", data_type="text")
-        gt = self.get_groundtruth_labels(label_type="labeled")
+        logger.info("get precision and recall")
+        label_type = "labeled"
+        if self.step == 0:
+            preds = self.get_category_pred(label_type=label_type, data_type="text-only")
+        else:
+            preds = self.get_category_pred(label_type=label_type, data_type="text")
+        gt = self.get_groundtruth_labels(label_type=label_type)
         print("preds.shape", preds.shape)
         self.precision = []
         self.recall = []
         for i in range(len(self.class_name)):
-            self.precision.append(precision_score(gt[:, i], preds[:, i]))
-            self.recall.append(recall_score(gt[:, i], preds[:, i]))
+            pre = precision_score(gt[:, i], preds[:, i])
+            if pre == 0:
+                pre = 0.01
+            rec = recall_score(gt[:, i], preds[:, i])
+            if rec == 0:
+                rec = 0.01
+            self.precision.append(pre)
+            self.recall.append(rec)
+        
 
     def get_labeled_id_by_type(self, cats: list, match_type: str) -> list:
         cursor = self.conn.cursor()

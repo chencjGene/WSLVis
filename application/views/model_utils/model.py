@@ -203,20 +203,33 @@ class WSLModel(object):
 
     def _run_hierarchical_coclustering(self):
         self.R = self.get_R()
-        text_feature = self.data.get_text_feature()[1:]
-        text_w, image_h = self.coclustering._fit(self.R, text_feature)
-        image_h = image_h.T
-        text_tree = {
-            "type": "text",
-            "name": "root",
-            "descendants_idx":list(range(text_w.shape[0])),
-        }
-        text_tree = self._hierarchical_coclustering(text_tree, text_w)
-        self.image_cluster_list = self._image_cluster(image_h, self.config["image_k"])
-        self._get_image_ids_of_clusters()
+        text_clustering_path = os.path.join(self.data_root, "clustering_hierarchy.json")
+        image_clustering_path = os.path.join(self.data_root, "image_clustering.pkl")
+        if os.path.exists(text_clustering_path) and os.path.exists(image_clustering_path):
+            logger.info("loading clustering result from buffer")
+            self.text_tree = json_load_data(text_clustering_path)
+            self.image_cluster_list = pickle_load_data(image_clustering_path)
+        else:
+            text_feature = self.data.get_text_feature()[1:]
+            text_w, image_h = self.coclustering._fit(self.R, text_feature)
+            image_h = image_h.T
+            text_tree = {
+                "type": "text",
+                "name": "root",
+                "descendants_idx":list(range(text_w.shape[0])),
+            }
+            text_tree = self._hierarchical_coclustering(text_tree, text_w)
+            self.text_tree = self._post_processing_hierarchy(text_tree, self.data.class_name)
+            self.image_cluster_list = self._image_cluster(image_h, self.config["image_k"])
+            pickle_save_data(image_clustering_path, self.image_cluster_list)
+            json_save_data(text_clustering_path, text_tree)
 
-        self.text_tree = self._post_processing_hierarchy(text_tree, self.data.class_name)
+
+        self._get_image_ids_of_clusters()
+        [self.get_rank(i) for i in range(len(self.image_cluster_list))]
         self.text_tree_helper.update(self.text_tree, self.data.class_name)
+
+        
         self.data.get_precision_and_recall()
         self.text_tree_helper.assign_precision_and_recall(\
             self.data.precision, self.data.recall)
@@ -335,40 +348,45 @@ class WSLModel(object):
         return mat
 
     def get_rank(self, image_cluster_id):
-        # import IPython; IPython.embed(); exit()
-        if image_cluster_id in self.rank_res \
-            and self.rank_res[image_cluster_id] is not None:
-            return self.rank_res[image_cluster_id]
-        image_ids = self.image_ids_of_clusters[image_cluster_id]
-        mismatch = self.data.get_mismatch()[np.array(image_ids)].sum(axis=1)
-        confidence = self.data.get_mean_confidence()[np.array(image_ids)]
-        total_score = mismatch - confidence * 100
-        np.random.seed(124)
-        total_score = np.random.rand(len(total_score))
-        features = self.data.get_image_feature()[np.array(image_ids)]
-        print("features.shape", features.shape)
-        norm = (features**2).sum(axis=1)
-        norm = norm ** 0.5
-        norm_features = features / norm.reshape(-1,1)
+        rank_res_path = os.path.join(self.data_root, "rank_res.json")
+        if str(image_cluster_id) in self.rank_res \
+            and self.rank_res[str(image_cluster_id)] is not None:
+            top_k = self.rank_res[str(image_cluster_id)]
+        elif os.path.exists(rank_res_path):
+            logger.info("loading rank result from buffer")
+            self.rank_res = json_load_data(rank_res_path)
+            top_k = self.rank_res[str(image_cluster_id)]
+        else:
+            image_ids = self.image_ids_of_clusters[image_cluster_id]
+            mismatch = self.data.get_mismatch()[np.array(image_ids)].sum(axis=1)
+            confidence = self.data.get_mean_confidence()[np.array(image_ids)]
+            total_score = mismatch - confidence * 100
+            np.random.seed(124)
+            total_score = np.random.rand(len(total_score))
+            features = self.data.get_image_feature()[np.array(image_ids)]
+            print("features.shape", features.shape)
+            norm = (features**2).sum(axis=1)
+            norm = norm ** 0.5
+            norm_features = features / norm.reshape(-1,1)
 
-        pred = self.data.get_category_pred(image_ids, "image")
-        norm = (pred**2).sum(axis=1)
-        norm = norm ** 0.5
-        norm_pred = pred / (norm.reshape(-1,1)+1e-12)
-        cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
+            pred = self.data.get_category_pred(image_ids, "image")
+            norm = (pred**2).sum(axis=1)
+            norm = norm ** 0.5
+            norm_pred = pred / (norm.reshape(-1,1)+1e-12)
+            cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
 
 
-        k = 10
-        labels = self._kmeans(cluster_feature, k)
-        top_k = []
-        for i in range(k):
-            idxs = np.array(range(len(labels)))[labels==i]
-            score = total_score[idxs]
-            top_k.append(image_ids[idxs[score.argmax()]])
-        # sorted_idxs = total_score.argsort()[::-1]
-        # top_k = [image_ids[i] for i in sorted_idxs[:13]]
+            k = 10
+            labels = self._kmeans(cluster_feature, k)
+            top_k = []
+            for i in range(k):
+                idxs = np.array(range(len(labels)))[labels==i]
+                score = total_score[idxs]
+                top_k.append(image_ids[idxs[score.argmax()]])
+            # sorted_idxs = total_score.argsort()[::-1]
+            # top_k = [image_ids[i] for i in sorted_idxs[:13]]
+            self.rank_res[str(image_cluster_id)] = top_k
         res = [self.data.get_detection_result_for_vis(i) for i in top_k]
-        self.rank_res[image_cluster_id] = res
         return res
 
     def get_tsne_of_image_cluster(self, image_cluster_id):
