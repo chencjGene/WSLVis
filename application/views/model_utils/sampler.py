@@ -17,44 +17,6 @@ from .gridlayout import grid_layout
 
 SO_PATH = os.path.join(config.dll_root)
 
-class FuncThread(threading.Thread):
-    def __init__(self, target, *args):
-        threading.Thread.__init__(self)
-        self._target = target
-        self._args = args
-
-    def run(self):
-        return self._target(*self._args)
-
-
-def Knn(X1, N, D, n_neighbors, forest_size, subdivide_variance_size, leaf_number):
-    ffi = cffi.FFI()
-    ffi.cdef(
-        """void knn(double* X, int N, int D, int n_neighbors, int* neighbors_nn, double* distances_nn, int forest_size,
-    		int subdivide_variance_size, int leaf_number);
-         """)
-    import os
-    try:
-        t1 = time.time()
-        dllPath = os.path.join(SO_PATH, 'knnDll.dll')
-        C = ffi.dlopen(dllPath)
-        cffi_X1 = ffi.cast('double*', X1.ctypes.data)
-        neighbors_nn = np.zeros((N, n_neighbors), dtype=np.int32)
-        distances_nn = np.zeros((N, n_neighbors), dtype=np.float64)
-        cffi_neighbors_nn = ffi.cast('int*', neighbors_nn.ctypes.data)
-        cffi_distances_nn = ffi.cast('double*', distances_nn.ctypes.data)
-        t = FuncThread(C.knn, cffi_X1, N, D, n_neighbors, cffi_neighbors_nn, cffi_distances_nn, forest_size, subdivide_variance_size, leaf_number)
-        t.daemon = True
-        t.start()
-        while t.is_alive():
-            t.join(timeout=1.0)
-            sys.stdout.flush()
-        print("knn runtime = %f"%(time.time() - t1))
-        return neighbors_nn, distances_nn
-    except Exception as ex:
-        print(ex)
-    return [[], []]
-
 class Sampler(object):
     def __init__(self, sampling_square_len=45, id=None):
         t = time.time()
@@ -285,6 +247,22 @@ class Sampler(object):
 
         return idx, sampled_idx, grid_x, hiera, res
 
+def Knn(X1, N, D, n_neighbors, forest_size, subdivide_variance_size, leaf_number):
+    forest = AnnoyIndex(X1.shape[1], 'euclidean')
+    forest_size = 10
+    indices = []
+    distances = []
+    for i in range(N):
+        forest.add_item(i, X1[i])
+    forest.build(forest_size)
+        
+    for i in range(N):
+        ret = forest.get_nns_by_item(i, n_neighbors + 1, include_distances = True)
+        indices.append(ret[0][1:])
+        distances.append(ret[1][1:])
+    indices = np.array(indices)
+    distances = np.array(distances)
+    return indices, distances
 
 
 class DensityBasedSampler(object):
@@ -345,60 +323,49 @@ class DensityBasedSampler(object):
     def _fit_sample(self, data: np.ndarray, label=None, selection=None, mismatch=None):
         if selection is not None and selection.sum() >= self.n_samples:
             return selection
-        # self.tree = BallTree(data, leaf_size=2)
         knn = 50
-
-        # guang 8-30
         X = np.array(data.tolist(), dtype=np.float64)
         N, D = X.shape
         if knn + 1 > N:
             knn = int((N - 1) / 2)
-        # dist, neighbor = self.tree.query(X, k=knn + 1, return_distance=True)
         neighbor, dist = Knn(X, N, D, knn + 1, 1, 1, int(N))
-        # ==================== shouxing 9-15
-
-        # r = math.sqrt(np.mean(dist[:, -1]))    # 之前的距离没有开方，所以密度采样的计算有误
-        # print("r = %f"%(r))
-
-        # # old knn
-        # # dist, _ = self.tree.query(data, k=knn + 1, return_distance=True)
-        # r = np.mean(dist[:, -1])
-
-        # # guang 9/5
-        # r = np.mean(self._kDist(data, knn + 1))
-
-        # guang 9-6
         self.radius_of_k_neighbor = dist[:, -1]
+        M = mismatch.sum()
+
+        knn //= 2
+        if knn + 1 > M:
+            knn = int((M - 1) / 2)
+
+        X2 = X[mismatch]
+        mismatch_index = [i for i in range(len(mismatch)) if mismatch[i]]
+        _, mis_dist = Knn(X2, M, D, knn + 1, 1, 1, int(M))
+        self.radius_of_k_mis_neighbor = dist[:, -1].copy()
+        for i, j in enumerate(mismatch_index):
+            self.radius_of_k_mis_neighbor[j] = mis_dist[i, -1]
+
         for i in range(len(self.radius_of_k_neighbor)):
             self.radius_of_k_neighbor[i] = math.sqrt(self.radius_of_k_neighbor[i])
         maxD = np.max(self.radius_of_k_neighbor)
         minD = np.min(self.radius_of_k_neighbor)
         for i in range(len(self.radius_of_k_neighbor)):
             self.radius_of_k_neighbor[i] = ((self.radius_of_k_neighbor[i] - minD) * 1.0 / (maxD - minD)) * 0.5 + 0.5
-            self.radius_of_k_neighbor[i] = 1
-        # for i in range(len(self.estimated_density)):
-        #     self.estimated_density[i] = self.estimated_density[i]  #采样概率与r成正比
+            #self.radius_of_k_neighbor[i] = 1
 
-        # hist, bins = np.histogram(entropy, 100, normed=False)
-        # print(entropy.shape)
-        # cdf = hist.cumsum()
-        # print(cdf)
-        # cdf = cdf / cdf[-1]
-        # entropy = np.interp(entropy, bins[:-1], cdf)
-        #
-        # ent_max = np.max(entropy)
-        # if ent_max < 1e-6:
-        #     ent_max = 1
-        # self.prob = np.ones_like(self.radius_of_k_neighbor) * 0.001
-        self.prob = self.radius_of_k_neighbor + self.beta * (mismatch**2) # 采样概率与r和类标混杂度成正比
 
-        ## old estimated_density
-        # self.estimated_density = self.tree.query_radius(data, r=r, count_only=True)
-        # if self.alpha > 0:
-        #     self.prob = 1 / ((self.estimated_density + 1) ** self.alpha)
-        # else:
-        #     self.prob = (self.estimated_density + 1) ** abs(self.alpha)
+        for i in range(len(self.radius_of_k_mis_neighbor)):
+            self.radius_of_k_mis_neighbor[i] = math.sqrt(self.radius_of_k_mis_neighbor[i])
+        maxR = np.max(self.radius_of_k_mis_neighbor)
+        minR = np.min(self.radius_of_k_mis_neighbor)
+        for i in range(len(self.radius_of_k_mis_neighbor)):
+            self.radius_of_k_mis_neighbor[i] = ((maxR - self.radius_of_k_mis_neighbor[i]) * 1.0 / (maxR - minR)) ** 3
+            if not mismatch[i]:
+                self.radius_of_k_mis_neighbor[i] = 1
 
+        self.beta *= 4
+        self.prob = (self.radius_of_k_mis_neighbor) * (self.radius_of_k_neighbor + self.beta * (mismatch ** 2)) # 采样概率与r和类标混杂度成正比
+        mis_prob = self.prob[mismatch_index]
+        for i in range(0, len(mis_prob), 100):
+            print(i, mis_prob[i: i + 100])
         self.prob = self.prob / self.prob.sum()
         if selection is None:
             selection = np.zeros(self.N, dtype=bool)
@@ -414,6 +381,7 @@ class DensityBasedSampler(object):
                 count += 1
                 selection[selected_index[i]] = True
         return selection
+
 
 
 if __name__ == '__main__':

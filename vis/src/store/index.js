@@ -87,9 +87,9 @@ const store = new Vuex.Store({
                 element.id = element.data.id;
                 element.full_name = element.data.name;
                 element.name = element.full_name;
-                if (element.children && element.name !== "root"){
-                    element.name = element.children.map(d=>d.name + " ").join("");
-                }
+                // if (element.children && element.name !== "root"){
+                //     element.name = element.children.map(d=>d.name + " ").join("");
+                // }
                 if (element.name.length > 7){
                     element.name = element.name.slice(0,7) + ".";
                 }

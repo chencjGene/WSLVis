@@ -9,7 +9,7 @@
         >
         </info-tooltip>
         <v-col cols="12" class="main-content pa-0"> 
-            <div style="position: absolute; padding-left: 500px; padding-top: 3px" >
+            <div style="position: absolute; padding-left: 600px; padding-top: 3px" >
                 <div id="cropping" class="waves-effect waves-light btn-floating grey" title="Zoom in">
                     <svg class="icon" width="24px" height="24px" transform="translate(2.6, 2.6)" viewBox="0 0 1024 1024">
                         <path fill="white" d="M136 384h56c4.4 0 8-3.6 8-8V200h176c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-37.6 0-68 30.4-68 68v180c0 4.4 3.6 8 8 8zM648 200h176v176c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V196c0-37.6-30.4-68-68-68H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM376 824H200V648c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v180c0 37.6 30.4 68 68 68h180c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM888 640h-56c-4.4 0-8 3.6-8 8v176H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h180c37.6 0 68-30.4 68-68V648c0-4.4-3.6-8-8-8zM904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z" />
@@ -264,19 +264,19 @@ export default {
                 .append("text")
                 .attr("class", "topname")
                 .attr("x", this.layer_height / 2)
-                .attr("y", this.text_height / 2 + 1)
-                .text("Category");
+                .attr("y", this.text_height / 3 + 1)
+                .text("Category labels");
             this.svg
                 .append("text")
                 .attr("class", "topname")
                 .attr("x", this.set_left * 1.05)
-                .attr("y", this.text_height / 2 + 1)
-                .text("Detection");
+                .attr("y", this.text_height / 3 + 1)
+                .text("Detection results");
             let checkbox = this.svg
                 .append("g")
                 .attr("class", "current-label-checkbox")
                 .attr("transform", "translate("+ 
-                    (120)+","+
+                    (30)+","+
                     (this.text_height / 2 + 4)+")")
                 .on("click", function() {
                     console.log("click tree cut", that.use_treecut);
@@ -317,36 +317,36 @@ export default {
             
         },
         expand_icon_create() {
-            this.expanded_icon_group.on("click", () => {
-                console.log("click expanded icon", this.expand_tree);
-                this.set_expand_tree(!this.expand_tree);
-            });
-            this.expanded_icon_group
-                .selectAll("rect")
-                .data([this.expand_tree])
-                .enter()
-                .append("rect")
-                .attr("width", 10)
-                .attr("height", 10)
-                .style("rx", 3)
-                .style("ry", 3)
-                .style("fill", "white")
-                .style("stroke", "gray")
-                .style("stroke-width", 1);
-            this.expanded_icon_group
-                .selectAll("path")
-                .data([this.expand_tree])
-                .enter()
-                .append("path")
-                .style("stroke", "none")
-                .style("fill", "gray")
-                .attr("d", () => {
-                    if (this.expand_tree) {
-                        return Global.minus_path_d(0, 0, 10, 10, 2);
-                    } else {
-                        return Global.plus_path_d(0, 0, 10, 10, 2);
-                    }
-                });
+            // this.expanded_icon_group.on("click", () => {
+            //     console.log("click expanded icon", this.expand_tree);
+            //     this.set_expand_tree(!this.expand_tree);
+            // });
+            // this.expanded_icon_group
+            //     .selectAll("rect")
+            //     .data([this.expand_tree])
+            //     .enter()
+            //     .append("rect")
+            //     .attr("width", 10)
+            //     .attr("height", 10)
+            //     .style("rx", 3)
+            //     .style("ry", 3)
+            //     .style("fill", "white")
+            //     .style("stroke", "gray")
+            //     .style("stroke-width", 1);
+            // this.expanded_icon_group
+            //     .selectAll("path")
+            //     .data([this.expand_tree])
+            //     .enter()
+            //     .append("path")
+            //     .style("stroke", "none")
+            //     .style("fill", "gray")
+            //     .attr("d", () => {
+            //         if (this.expand_tree) {
+            //             return Global.minus_path_d(0, 0, 10, 10, 2);
+            //         } else {
+            //             return Global.plus_path_d(0, 0, 10, 10, 2);
+            //         }
+            //     });
         },
         update() {
             this.expand_icon_update();
@@ -389,16 +389,16 @@ export default {
                 .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
         },
         expand_icon_update() {
-            this.expanded_icon_group
-                .selectAll("path")
-                .data([this.expand_tree])
-                .attr("d", () => {
-                    if (this.expand_tree) {
-                        return Global.minus_path_d(0, 0, 10, 10, 2);
-                    } else {
-                        return Global.plus_path_d(0, 0, 10, 10, 2);
-                    }
-                });
+            // this.expanded_icon_group
+            //     .selectAll("path")
+            //     .data([this.expand_tree])
+            //     .attr("d", () => {
+            //         if (this.expand_tree) {
+            //             return Global.minus_path_d(0, 0, 10, 10, 2);
+            //         } else {
+            //             return Global.plus_path_d(0, 0, 10, 10, 2);
+            //         }
+            //     });
         },
         remove() {
             // this.mini_remove();

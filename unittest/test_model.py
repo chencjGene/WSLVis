@@ -144,6 +144,7 @@ class CoClusteringTest(unittest.TestCase):
     def test_cluster_buffer(self):
         dataname = "COCO17"
         step = 0
+        mat = pickle_load_data("test/mismatch/network.pkl")
         m = WSLModel(dataname=config.coco17, step=step)
         m.run()
 

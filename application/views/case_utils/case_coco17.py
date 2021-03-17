@@ -32,6 +32,7 @@ class CaseCOCO17(CaseBase):
             logger.info("The model buffer does not exist. Run the model.")
         else:
             logger.info("You do not intend to use the model buffer. Rerun the model.")
+        self.model.update_hiera(self.base_config["hiera"])
         self.model.run()
         self.model.save_model()
         return self.model

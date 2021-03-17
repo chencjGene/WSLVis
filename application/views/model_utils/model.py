@@ -54,6 +54,7 @@ class WSLModel(object):
         self.data_root = self.data.data_root
         self.data_all_step_root = self.data.data_all_step_root
         self.buffer_path = os.path.join(self.data_root, "model.pkl")
+        self.hiera = "sub2"
 
         # clustering model
         # self.pre_clustering = KMeansConstrained(n_init=1, n_clusters=self.config["pre_k"],
@@ -75,6 +76,9 @@ class WSLModel(object):
         self.dataname = dataname
         self.step = step
         self._init()
+
+    def update_hiera(self, hiera):
+        self.hiera = hiera
 
     def run(self):
         self.data.run()
@@ -203,10 +207,11 @@ class WSLModel(object):
 
     def _run_hierarchical_coclustering(self):
         self.R = self.get_R()
-        text_clustering_path = os.path.join(self.data_root, "clustering_hierarchy.json")
+        text_clustering_path = os.path.join(self.data_root, "clustering_hierarchy-{}.json".format(self.hiera))
         image_clustering_path = os.path.join(self.data_root, "image_clustering.pkl")
         if os.path.exists(text_clustering_path) and os.path.exists(image_clustering_path):
             logger.info("loading clustering result from buffer")
+            logger.info("{}".format(text_clustering_path))
             self.text_tree = json_load_data(text_clustering_path)
             self.image_cluster_list = pickle_load_data(image_clustering_path)
         else:

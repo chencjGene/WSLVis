@@ -51,7 +51,7 @@ def get_word(query):
     return jsonify(port.model.get_word(query))
 
 def get_image_ids_by_prediction(query):
-    predictions = port.model.data.get_category_pred(label_type="all", data_type="image")
+    predictions = port.model.data.get_category_pred(label_type="all", data_type="text-only")
     selection = np.where(predictions[:,query['tree_node_ids']].sum(axis=1) == len(query['tree_node_ids']))[0]
     max_image_num = 100
     if selection.shape[0] > max_image_num:
