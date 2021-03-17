@@ -58,8 +58,8 @@ def app_get_embedding():
     m = pickle_load_data(m.buffer_path)
     m.update_data_root("COCO17", 2)
     m._init_data()
-    cluster_id = 3
-    class_id = 7
+    cluster_id = 8
+    class_id = 59
     image_ids = m.image_ids_of_clusters[cluster_id]
     image_labels = m.data.get_category_pred(label_type="all", \
         data_type="image", threshold=0.5)

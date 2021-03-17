@@ -6,6 +6,7 @@ import json
 from tqdm import tqdm
 
 from sklearn.metrics import precision_score, recall_score
+from PIL import Image, ImageDraw, ImageFont
 
 from ..utils.config_utils import config
 from ..utils.log_utils import logger
@@ -18,6 +19,36 @@ from .set_helper import SetHelper
 
 DEBUG = False
 
+class RoIMaxPooling2d(object):  # torch.nn.AdaptiveMaxPool2d
+    def __init__(self, out_size):
+        self.w, self.h = out_size  # (w, h)
+
+    def __call__(self, x: np.ndarray):
+        x = x.transpose(2, 0, 1)
+        (channels, width, height) = x.shape  # (channels, width, height)
+        out = np.zeros([channels, self.w, self.h])
+
+        if x.shape[1] <= 1 or x.shape[2] <= 1:
+            out[:, :min(x.shape[1], self.w), :min(x.shape[2], self.h)] = \
+                x[:, :min(x.shape[1], self.w), :min(x.shape[2], self.h)]
+            return out.reshape(-1)
+        grid_w = (width + self.w - 1) // self.w
+        grid_h = (height + self.h - 1) // self.h
+        for ch in range(channels):  # channels
+            for iw in range(self.w):  # width
+                sw, ew = self.update_index(iw, grid_w)
+                for ih in range(self.h):  # height
+                    sh, eh = self.update_index(ih, grid_h)
+                    out[ch, iw, ih] = np.max(x[ch][sw:ew, sh:eh])
+        out = out.transpose(1, 2, 0)
+        return out
+
+    @staticmethod
+    def update_index(idx, grid):
+        start = idx * grid
+        end = start + grid
+        return  start, end
+
 class DataBaseLoader(object):
     def __init__(self, dataname, step=0):
         self.dataname = dataname 
@@ -28,6 +59,7 @@ class DataBaseLoader(object):
 
         self.image_features = None
         self.text_features = None
+        self.detection_features = None
 
         database_file = os.path.join(self.data_root, "database.db")
         print(database_file)
@@ -49,6 +81,7 @@ class DataBaseLoader(object):
             return res
     
     def get_detection_result(self, idx):
+        idx = int(idx)
         cursor = self.conn.cursor()
         sql = "select detection from annos where id = ?"
         cursor.execute(sql, (idx,))
@@ -57,6 +90,7 @@ class DataBaseLoader(object):
         return res
 
     def get_anno_bbox_result(self, idx):
+        idx = int(idx)
         cursor = self.conn.cursor()
         sql = "select bbox from annos where id = ?"
         cursor.execute(sql, (idx,))
@@ -89,6 +123,29 @@ class DataBaseLoader(object):
         self.image_features = \
             features[:, split_points[feature_id]: split_points[feature_id+1]]
         return self.image_features
+
+    def get_detection_feature(self, img_id, bbox):
+        if self.detection_features is None:
+            # return self.detection_features
+            detection_feature_path = os.path.join(self.data_root, "feature_map.npy")
+            self.detection_features = np.load(detection_feature_path)
+        feature = self.detection_features[img_id]
+        img_path = self.get_origin_image(img_id)
+        img = Image.open(img_path)
+        width, height = img.size
+        bbox = np.array(bbox) / np.array([width, height, width, height])
+        feature_map_size = feature.shape[0]
+        bbox = (bbox * feature_map_size + 0.49).astype(int)
+        feature = feature[bbox[1]:bbox[3]+1, bbox[0]:bbox[2]+1]
+        if np.array(feature.shape).all() == 0:
+            return np.zeros(16)
+        out = feature.transpose(2, 0, 1).reshape(16, -1).mean(axis=1)
+        # output = RoIMaxPooling2d((2, 2))(feature)
+        if np.isnan(out.max()):
+            a = 1
+        return out
+
+
 
     def get_detection_result_for_vis(self, idx, conf_thresh=None):
         if conf_thresh is None:
@@ -369,7 +426,7 @@ class Data(DataBaseLoader):
         if not os.path.exists(img_path):
             img_path = os.path.join(config.raw_data_root, \
                 "coco17_raw_data", phase, "%012d.jpg" %(image_id))
-        print("iamge_path", img_path)
+        # print("iamge_path", img_path)
         return img_path 
     
     def get_text(self, query):

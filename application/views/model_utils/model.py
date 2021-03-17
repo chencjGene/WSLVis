@@ -390,7 +390,8 @@ class WSLModel(object):
         norm = (pred**2).sum(axis=1)
         norm = norm ** 0.5
         norm_pred = pred / (norm.reshape(-1,1)+1e-12)
-        cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
+        # cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
+        cluster_feature = norm_features
 
         tsne = TSNE(n_components=2,random_state=15)
         coor = tsne.fit_transform(cluster_feature)
