@@ -22,7 +22,7 @@ def app_get_word():
 @text.route("/text/GetText", methods=["GET", "POST"])
 def app_get_text():
     query_data = json.loads(request.data)["query"]
-    print(query_data)
+    # print(query_data)
     return get_text(query_data)
 
 @text.route("/text/text", methods=["GET"])

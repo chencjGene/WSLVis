@@ -52,7 +52,7 @@ export default {
     DynamicScrollerItem: DynamicScrollerItem
   },
   computed: {
-    ...mapState(["selected_node", "words", "focus_word", "text_list", "focus_text"]),
+    ...mapState(["selected_node", "words", "focus_word", "text_list"]),
   },
   watch: {
     words() {
@@ -72,7 +72,7 @@ export default {
   },
   methods: {
     ...mapActions(["fetch_text"]),
-    ...mapMutations(["set_focus_word", "set_focus_text"]),
+    ...mapMutations(["set_focus_word"]),
     update_data() {
       this.min_value = Math.min(...this.words.map((d) => d.value));
       this.max_value = Math.max(...this.words.map((d) => d.value));

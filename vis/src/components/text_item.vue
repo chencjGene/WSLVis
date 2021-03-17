@@ -7,7 +7,7 @@
 
 
 <script>
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapMutations, mapActions } from "vuex";
 export default {
   name: "TextItem",
   props: {
@@ -21,14 +21,18 @@ export default {
     }
   },
   computed: {
-    ...mapState(["focus_text"])
+    ...mapState([])
   },
   data: () => ({}),
   methods: {
-    ...mapMutations(["set_focus_text"]),
+    ...mapActions(["fetch_single_image_detection_for_focus_text"]),
+    ...mapMutations([]),
     click(){
       console.log("text item click");
-      this.set_focus_text(this.id);
+      this.fetch_single_image_detection_for_focus_text({
+        image_id: this.id
+      });
+      // this.set_focus_text(data);
     },
   }
 };

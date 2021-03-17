@@ -189,8 +189,9 @@ const store = new Vuex.Store({
             console.log("set images");
             state.selected_images = images.map((d, i) => {
                 let res = {};
-                res.id = d;
+                res.id = d.idx;
                 res.index = i;
+                res.data = d;
                 return res;
             });
             // state.images = state.images.slice(0, 20);
@@ -292,6 +293,11 @@ const store = new Vuex.Store({
             console.log("fetch_single_image_detection", query);
             const resp = await axios.post(`${state.server_url}/image/SingleImageDetection`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_focus_image", JSON.parse(JSON.stringify(resp.data)));
+        },
+        async fetch_single_image_detection_for_focus_text({commit, state}, query){
+            console.log("fetch_single_image_detection_for_focus_text", query);
+            const resp = await axios.post(`${state.server_url}/image/SingleImageDetection`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_focus_text", JSON.parse(JSON.stringify(resp.data)));
         },
         async fetch_grid_layout({commit, state}, query){
             const resp = await axios.post(`${state.server_url}/detection/GridLayout`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
