@@ -207,7 +207,7 @@ export default {
             .attr("width", d => d.data.w * d.image_width)
             .attr("height", d => d.data.h * d.image_height)
             .style("fill", "none")
-            .style("stroke", "green")
+            .style("stroke", Global.BoxRed)
             .style("stroke-width", 1);
         }
       }
@@ -229,7 +229,7 @@ export default {
           .attr("width", d => d.w)
           .attr("height", d => d.h)
           .style("fill", "none")
-          .style("stroke", "green")
+          .style("stroke", Global.BoxRed)
           .style("stroke-width", 1);
       }
     },
@@ -264,7 +264,7 @@ export default {
             .attr("width", d => d.data.w * d.image_width)
             .attr("height", d => d.data.h * d.image_height)
             .style("fill", "none")
-            .style("stroke", "green")
+            .style("stroke", Global.BoxRed)
             .style("stroke-width", 1);
         }
       }

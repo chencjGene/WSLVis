@@ -265,7 +265,7 @@ const ImageCards = function(parent) {
       .attr("width", (d) => d.width)
       .attr("height", (d) => d.height)
       .style("fill", "none")
-      .style("stroke", "green")
+      .style("stroke", Global.BoxRed)
       .style("stroke-width", 1)
       .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
       .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
