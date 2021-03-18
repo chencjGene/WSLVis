@@ -263,7 +263,7 @@ export default {
     this.wordcloud_svg = d3
       .select(".wordcloud-col")
       .append("svg")
-      .attr("width", this.wordcloud_width)
+      .attr("width", this.wordcloud_box_width)
       .attr("height", this.wordcloud_height);
     this.wordcloud_group = this.wordcloud_svg.append("g")
       .attr("id", "wordcloud-group")
