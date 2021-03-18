@@ -220,7 +220,7 @@ class Data(DataBaseLoader):
     def get_precision_and_recall(self):
         logger.info("get precision and recall")
         label_type = "labeled"
-        if self.step == 0:
+        if self.step == 0 or self.step == 1:
             preds = self.get_category_pred(label_type=label_type, data_type="text-only")
         else:
             preds = self.get_category_pred(label_type=label_type, data_type="text")

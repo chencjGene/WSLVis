@@ -3,9 +3,9 @@
     <v-col cols="12" class="topname fill-width"> Text </v-col>
     <v-col cols="12" class="text-content pa-0">
       <v-col class="label-text pa-0"> Selected: {{selected_node.curr_full_name}} </v-col>
-      <v-col class="label-text pa-0"> Word cloud: </v-col>
+      <v-col class="label-text pa-0" id="wordcloud-name"> Word cloud: </v-col>
       <v-col class="wordcloud-col pa-0"> </v-col>
-      <v-col class="label-text pa-0"> Captions: </v-col>
+      <v-col class="label-text pa-0" id="caption-name"> Captions: </v-col>
       <v-col class="text-col pa-0">
         <template>
           <DynamicScroller :items="text_list" 
@@ -76,7 +76,7 @@ export default {
     update_data() {
       this.min_value = Math.min(...this.words.map((d) => d.value));
       this.max_value = Math.max(...this.words.map((d) => d.value));
-      this.sizeScale = d3.scaleSqrt([this.min_value, this.max_value], [10, 50]);
+      this.sizeScale = d3.scaleSqrt([this.min_value, this.max_value], [10, 45]);
       this.wordclouds = wordcloud()
         .size([this.wordcloud_width, this.wordcloud_height])
         .data(Global.deepCopy(this.words))
@@ -109,7 +109,7 @@ export default {
       this.wordcloud_group
         .transition()
         .duration(this.update_ani)
-        .attr('transform', `translate(0, ${-bbox.y})`);
+        .attr('transform', `translate(${this.wordcloud_left_margin}, ${-bbox.y})`);
       this.wordcloud_svg
         .transition()
         .duration(this.update_ani)
@@ -119,7 +119,7 @@ export default {
         .duration(this.update_ani)
         .style('height', `${bbox.height}px`);
       d3.selectAll('.text-col')
-        .style('height', `calc(100% - ${bbox.height + 90}px)`);
+        .style('height', `calc(100% - ${bbox.height + 120}px)`);
       bbox = this.text_container.node().getBoundingClientRect();
       d3.selectAll('.text-col-scroller')
         .transition()
@@ -216,9 +216,11 @@ export default {
     this.wordcloud_height = wordcloud_container
       .node()
       .getBoundingClientRect().height;
-    this.wordcloud_width = wordcloud_container
+    this.wordcloud_box_width = wordcloud_container
       .node()
       .getBoundingClientRect().width;
+    this.wordcloud_width = this.wordcloud_box_width * 0.8;
+    this.wordcloud_left_margin = this.wordcloud_box_width * 0.1;
     this.fontFamily = "Arial";
 
     // text
@@ -245,7 +247,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .text-view {
   height: 66%;
 }
@@ -258,7 +260,7 @@ export default {
 }
 
 .wordcloud{
-  cursor: pointer;
+  cursor: default;
 }
 
 .wordcloud-col {
@@ -267,7 +269,7 @@ export default {
 }
 
 .text-col {
-  height: calc(70% - 90px);
+  height: calc(70% - 120px);
 }
 
 .scroller {
@@ -276,6 +278,14 @@ export default {
 
 .label-text {
   font-size: 20px;
+  font-weight: 600;
 }
 
+#wordcloud-name{
+  margin-top: 15px;
+}
+
+#caption-name{
+  margin-top: 15px;
+}
 </style>
