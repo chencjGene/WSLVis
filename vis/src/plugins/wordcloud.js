@@ -183,10 +183,22 @@ function wordcloud() {
         ctx.font = `${d.style} ${d.weight} ${d.size}px ${d.font}`
         let ret = ctx.measureText(d.text)
         const width = ret.actualBoundingBoxRight + ret.actualBoundingBoxLeft
-        const height = ret.actualBoundingBoxAscent + 1 //ret.actualBoundingBoxDescent
+        let height = ret.actualBoundingBoxAscent + 1 //ret.actualBoundingBoxDescent
         const dx = ret.actualBoundingBoxRight - ret.actualBoundingBoxLeft
-        const dy = ret.actualBoundingBoxDescent / 2
+        let dy = ret.actualBoundingBoxDescent / 2
         ctx.restore()
+        // TODO: hack the wordcloud
+        if (d.text.indexOf('p') != -1 || d.text.indexOf('g') != -1 || d.text.indexOf('q') != -1 || d.text.indexOf('y') != -1) {
+          dy -= height * 0.2
+          height *= 1.2
+          console.log(d.text)
+        }
+        /*
+        if (d.text.indexOf('l') != -1 || d.text.indexOf('h') != -1 || d.text.indexOf('t') != -1 || d.text.indexOf('b') != -1 || d.text.indexOf('f') != -1) {
+          dy -= d.height * 0.1
+          height *= 1.1
+        }
+        */
         return [width, height, dx, dy]
       }
   
