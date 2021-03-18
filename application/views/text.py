@@ -6,7 +6,7 @@ from .utils.config_utils import config
 import json
 import time
 
-from .port_utils import get_text, get_word, get_single_text
+from .port_utils import get_text, get_word, get_text_by_word, get_single_text
 
 text = Blueprint("text", __name__)
 
@@ -24,6 +24,12 @@ def app_get_text():
     query_data = json.loads(request.data)["query"]
     # print(query_data)
     return get_text(query_data)
+
+@text.route("/text/GetTextByWord", methods=["GET", "POST"])
+def app_get_text_by_word():
+    query_data = json.loads(request.data)["query"]
+    # print(query_data)
+    return get_text_by_word(query_data)
 
 @text.route("/text/text", methods=["GET"])
 def app_get_single_text():

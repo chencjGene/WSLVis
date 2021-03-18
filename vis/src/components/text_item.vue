@@ -1,6 +1,7 @@
 <template>
   <div class="text-div" 
-    @click="click"
+    :id="id_name"
+    :style="{ 'background' : selected ? '#ddd' : '#fff'}"
     >
     {{ text }}</div>
 </template>
@@ -18,17 +19,30 @@ export default {
     id: {
       type: Number,
       default: -1
+    },
+    
+    selected: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
-    ...mapState([])
+    ...mapState([]),
+    id_name(){
+      return "id-text-"+this.id
+    }
   },
-  data: () => ({}),
+  data: () => ({
+  }),
   methods: {
     ...mapActions(["fetch_single_image_detection_for_focus_text"]),
     ...mapMutations([]),
     click(){
       console.log("text item click");
+      // d3.selectAll(".text-div").style("background", "#fff");
+      // this.current_selected_id = this.id
+      // d3.select("#id-text-" + this.id)
+
       this.fetch_single_image_detection_for_focus_text({
         image_id: this.id
       });
@@ -46,6 +60,7 @@ export default {
   margin-right: 8px;
   padding-top: 8px;
   padding-bottom: 8px;
+  padding-left: 3px;
   border-bottom: 1px solid #ddd;
   word-break: break-all;
 }

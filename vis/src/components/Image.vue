@@ -40,7 +40,7 @@ export default {
     ...mapState(["server_url", "selected_images", "focus_image", "focus_text"])
   },
   methods: {
-    ...mapActions([]),
+    ...mapActions(["fetch_text_by_ids"]),
     update_data() {
       let that = this;
       if (that.mode === 'grid') {
@@ -307,6 +307,7 @@ export default {
     }, 
     show_detail(d, i){
       let that = this;
+      that.selected_id = d ? [d.id] : [];
       
       if(i===-1){
         that.detail_pos = -1;
@@ -487,7 +488,11 @@ export default {
 
     this.detail_group = this.main_group
       .append("g")
-      .attr("id", "detail-group");
+      .attr("id", "detail-group")
+      .on("click", () => {
+        console.log("detail group");
+        this.fetch_text_by_ids(this.selected_id);
+      })
 
     this.grid_group = this.main_group
       .append("g")

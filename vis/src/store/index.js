@@ -257,11 +257,19 @@ const store = new Vuex.Store({
             // console.log(resp);
             commit("set_history_data", JSON.parse(JSON.stringify(resp.data)));
         },
-        async fetch_text({commit, state}, key){
+        async fetch_text_by_word_and_cat_ids({commit, state}, key){
             console.log("fetch_text", key);
             let query = {
                 "cat_id": key.cat_id,
                 "word": key.text
+            }
+            const resp = await axios.post(`${state.server_url}/text/GetTextByWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
+            commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));
+        },
+        async fetch_text_by_ids({commit, state}, ids){
+            console.log("fetch_text_by_ids", ids);
+            let query = {
+                "ids": ids,
             }
             const resp = await axios.post(`${state.server_url}/text/GetText`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));

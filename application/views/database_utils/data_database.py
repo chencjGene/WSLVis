@@ -228,6 +228,7 @@ class Data(DataBaseLoader):
         print("preds.shape", preds.shape)
         self.precision = []
         self.recall = []
+        self.correctness = (preds == gt)
         for i in range(len(self.class_name)):
             pre = precision_score(gt[:, i], preds[:, i])
             if pre == 0:
@@ -240,27 +241,27 @@ class Data(DataBaseLoader):
         
 
     def get_labeled_id_by_type(self, cats: list, match_type: str) -> list:
-        cursor = self.conn.cursor()
-        sql = "select labels, logits from annos where id = ?"
         cats = np.array(cats)
         tp = []
         tn = []
         fp = []
         fn = []
+        label_type = "labeled"
+        if self.step == 0 or self.step == 1:
+            preds = self.get_category_pred(label_type=label_type, data_type="text-only")
+        else:
+            preds = self.get_category_pred(label_type=label_type, data_type="text")
+        gt = self.get_groundtruth_labels(label_type=label_type)
         for idx in self.labeled_idx:
-            cursor.execute(sql, (idx,))
-            result = cursor.fetchall()[0]
-            label, logits = result
-            label = np.array(json.loads(label)).reshape(-1)
-            pred = sigmoid(np.array(json.loads(logits))) > 0.5 #TODO: not support rules now
+            label = gt[idx]
+            pred = preds[idx]
             g = np.any(label[cats].any() > 0)
             p = np.any(pred[cats].any() > 0)
-            # import IPython; IPython.embed(); exit()
             if g == True and p == True:
                 tp.append(idx)
             elif g == True and p == False:
                 fn.append(idx)
-            elif g is False and p == True:
+            elif g == False and p == True:
                 fp.append(idx)
             elif g == False and p == False:
                 tn.append(idx)
@@ -442,14 +443,17 @@ class Data(DataBaseLoader):
         # print("iamge_path", img_path)
         return img_path 
     
-    def get_text(self, query):
+    def get_text_by_word(self, query):
         cursor = self.conn.cursor()
         sql = "select (cap) from annos where id = ?"
         word = query["word"]
+        cat_ids = np.array(query["cat_id"])
         idxs = self.current_wordcloud[word]
         idxs = list(set(idxs))
+        correctness = self.correctness[np.array(idxs)][:, cat_ids]
+        correctness = correctness.sum(axis=1)
         texts = []
-        for idx in idxs:
+        for i, idx in enumerate(idxs):
             # anno = self.annos[idx]
             # caps = anno["caption"]
             result = cursor.execute(sql, (idx,))
@@ -460,7 +464,29 @@ class Data(DataBaseLoader):
             text = {
                 "message": caps,
                 "active": True,
-                "id": idx
+                "id": idx,
+                "c": int(correctness[i])
+            }
+            texts.append(text)
+        return texts
+    
+    def get_text(self, query):
+        cursor = self.conn.cursor()
+        sql = "select (cap) from annos where id = ?"
+        ids = np.array(query["ids"])
+        texts = []
+        for i, idx in enumerate(ids):
+            # anno = self.annos[idx]
+            # caps = anno["caption"]
+            result = cursor.execute(sql, (int(idx),))
+            result = cursor.fetchall()[0]
+            caps = result[0]
+            # caps = [c + " " for c in caps]
+            # caps = "".join(caps)
+            text = {
+                "message": caps,
+                "active": True,
+                "id": int(idx),
             }
             texts.append(text)
         return texts

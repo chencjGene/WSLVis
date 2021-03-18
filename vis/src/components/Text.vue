@@ -2,10 +2,10 @@
   <v-row class="text-view fill-width mr-0">
     <v-col cols="12" class="topname fill-width"> Text </v-col>
     <v-col cols="12" class="text-content pa-0">
-      <v-col class="label-text pa-0"> Selected: {{selected_node.curr_full_name}} </v-col>
-      <v-col class="label-text pa-0" id="wordcloud-name"> Word cloud: </v-col>
+      <v-col class="label-text pa-0 pl-2"> Selected: {{selected_node.curr_full_name}} </v-col>
+      <v-col class="label-text pa-0 pl-2" id="wordcloud-name"> Word cloud: </v-col>
       <v-col class="wordcloud-col pa-0"> </v-col>
-      <v-col class="label-text pa-0" id="caption-name"> Captions: </v-col>
+      <v-col class="label-text pa-0 pl-2" id="caption-name"> Captions: </v-col>
       <v-col class="text-col pa-0">
         <template>
           <DynamicScroller :items="text_list" 
@@ -18,11 +18,18 @@
                 :size-dependencies="[item.message,]"
                 :data-index="index"
               >
-              <text-item
-                :text="item.message"
+              <div
+                class="text-div" 
                 :id="item.id"
+                :style="{ 'background' : item.id == current_selected_id ? '#ddd' : '#fff'}"
+                @click="onTextItemClick(item.id)"
               >
-              </text-item>
+                <span v-for="(text, index) in item.message.split(' ')" :key="`${item.id}_${index}`"
+                  :style="{ 'text-decoration' : focus_word && text == focus_word.text ? 'underline' : 'none' }"
+                >
+                  {{ text }}
+                </span>
+              </div>
               </DynamicScrollerItem>
             </template>
           </DynamicScroller>
@@ -38,16 +45,18 @@ import { mapState, mapActions, mapMutations } from "vuex";
 import * as d3 from "d3";
 import * as Global from "../plugins/global";
 import { wordcloud } from "../plugins/wordcloud.js";
-import TextItem from "../components/text_item"
+//import TextItem from "../components/text_item"
 import { DynamicScroller, DynamicScrollerItem } from "vue-virtual-scroller";
 import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 // import Text_item from './text_item.vue';
 
 export default {
   name: "CapText",
-  data: () => ({}),
+  data: () => ({
+    current_selected_id: null
+  }),
   components: {
-    "text-item": TextItem,
+    ///"text-item": TextItem,
     DynamicScroller: DynamicScroller,
     DynamicScrollerItem: DynamicScrollerItem
   },
@@ -62,7 +71,10 @@ export default {
     },
     focus_word() {
       console.log("triger focus word");
-      this.$store.dispatch("fetch_text", this.focus_word);
+      this.$store.dispatch("fetch_text_by_word_and_cat_ids", {
+        "text": this.focus_word.text,
+        "cat_id": this.selected_node["node_ids"]
+      });
     }
     // text_list() {
     //   console.log("triger text list", this.text_list);
@@ -71,8 +83,17 @@ export default {
     // },
   },
   methods: {
-    ...mapActions(["fetch_text"]),
+    ...mapActions(["fetch_text_by_word_and_cat_ids", 
+      "fetch_single_image_detection_for_focus_text",
+      "fetch_text_by_ids"]),
     ...mapMutations(["set_focus_word"]),
+    onTextItemClick(id) {
+      console.log("onTextItemClick", id);
+      this.current_selected_id = id;
+      this.fetch_single_image_detection_for_focus_text({
+        image_id: id,
+      });
+    },
     update_data() {
       this.min_value = Math.min(...this.words.map((d) => d.value));
       this.max_value = Math.max(...this.words.map((d) => d.value));
@@ -140,6 +161,8 @@ export default {
         .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
         .on("click", (ev, d) => {
           console.log("click word", ev, d);
+          d3.selectAll(".wordcloud").style("text-decoration", "none");
+          d3.select("#id-" + d.text).style("text-decoration", "underline");
           this.set_focus_word(d);
         });
       word_groups
@@ -179,6 +202,11 @@ export default {
         .attr("dy", (d) => d.dy)
         .attr("font-size", (d) => d.size)
         .style("font-family", (d) => d.font)
+        // .style("text-decoration", d => {
+        //   console.log(this.focus_word, d.text, d.text === this.focus_word.text)
+        //   return (this.focus_word) && d.text === this.focus_word.text ? 
+        //   "underline": "none"
+        // })
         .text((d) => d.text);
     },
     text_update() {},
@@ -287,5 +315,19 @@ export default {
 
 #caption-name{
   margin-top: 15px;
+}
+.text-div{
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 8px;
+  margin-right: 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 3px;
+  border-bottom: 1px solid #ddd;
+  word-break: break-all;
+}
+.text-div:hover {
+  background: #ddd;
 }
 </style>
