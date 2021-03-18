@@ -2,7 +2,9 @@
   <v-row class="text-view fill-width mr-0">
     <v-col cols="12" class="topname fill-width"> Text </v-col>
     <v-col cols="12" class="text-content pa-0">
-      <v-col class="label-text pa-0 pl-2"> Selected: {{selected_node.curr_full_name}} </v-col>
+      <v-col class="label-text pa-0 pl-2"> Selected: 
+        <span id="selected-class-name">{{selected_node.curr_full_name}} </span>
+        </v-col>
       <v-col class="label-text pa-0 pl-2" id="wordcloud-name"> Word cloud: </v-col>
       <v-col class="wordcloud-col pa-0"> </v-col>
       <v-col class="label-text pa-0 pl-2" id="caption-name"> Captions: </v-col>
@@ -329,5 +331,11 @@ export default {
 }
 .text-div:hover {
   background: #ddd;
+}
+
+#selected-class-name{
+  color: #428BCA;
+  font-weight: 400;
+
 }
 </style>
