@@ -113,10 +113,10 @@ const store = new Vuex.Store({
                 }
                 if (!element.data.mismatch){
                     let s = element.all_children.map(d=>d.data.mismatch);
-                    if (s) element.data.mismatch = s.reduce((a,c)=>{return a+c}, 0) / s.length;
+                    if (s) element.data.mismatch = s.reduce((a,c)=>{return a+c}, 0);
                 }
                 element.f1_api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
-                element.mm_api = element.data.mismatch / 50000;
+                element.mm_api = element.data.mismatch / 20000;
                 element.api = state.f1_score_selected ? element.f1_api : element.mm_api;
             });
 

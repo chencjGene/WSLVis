@@ -367,7 +367,7 @@ export default {
                 .attr("height", 14)
                 .attr("rx", 3.5)
                 .attr("ry", 3.5)
-                .attr("fill", Global.GrayColor)
+                .attr("fill", that.f1_score_selected ? Global.GrayColor : "white")
                 .attr("stroke", Global.GrayColor);
             prec_rec_checkbox.append("text")
                 .style("stroke", "white")
@@ -390,7 +390,7 @@ export default {
                 .attr("height", 14)
                 .attr("rx", 3.5)
                 .attr("ry", 3.5)
-                .attr("fill", Global.GrayColor)
+                .attr("fill", that.f1_score_selected ? "white" : Global.GrayColor)
                 .attr("stroke", Global.GrayColor);
             mismatch_checkbox.append("text")
                 .style("stroke", "white")

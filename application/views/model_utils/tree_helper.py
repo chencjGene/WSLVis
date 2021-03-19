@@ -112,7 +112,7 @@ class TextTreeHelper(TreeHelper):
         m = mismatch.sum(axis=0)
         for i in range(len(self.class_name)):
             leaf = self.get_node_by_cat_id(i)
-            leaf["mismatch"] = int(m[0])
+            leaf["mismatch"] = int(m[i])
 
 class ImageTreeHelper(TreeHelper):
     def __init__(self, tree=None, class_name=None):
