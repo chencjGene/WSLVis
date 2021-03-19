@@ -7,6 +7,13 @@ from ..utils.config_utils import config
 from ..utils.helper_utils import pickle_save_data, pickle_load_data
 from ..utils.log_utils import logger
 
+# # What to do in each step
+# step0: before and after word embedding finetuning
+# step1: add rules and image embeddings through vis
+# step2: improve constraint weights // pattern: 有很多区域被检测出来了，但是conf不高
+# step3: look the distribution and validation //pattern：有些区域既有label错了，又有image错了
+# step4: 
+
 class CaseCOCO17(CaseBase):
     def __init__(self, case_mode):
         dataname = config.coco17

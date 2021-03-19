@@ -220,10 +220,7 @@ class Data(DataBaseLoader):
     def get_precision_and_recall(self):
         logger.info("get precision and recall")
         label_type = "labeled"
-        if self.step == 0 or self.step == 1:
-            preds = self.get_category_pred(label_type=label_type, data_type="text-only")
-        else:
-            preds = self.get_category_pred(label_type=label_type, data_type="text")
+        preds = self.get_category_pred(label_type=label_type, data_type="text-only")
         gt = self.get_groundtruth_labels(label_type=label_type)
         print("preds.shape", preds.shape)
         self.precision = []
@@ -247,7 +244,7 @@ class Data(DataBaseLoader):
         fp = []
         fn = []
         label_type = "labeled"
-        if self.step == 0 or self.step == 1:
+        if self.step <= 2:
             preds = self.get_category_pred(label_type=label_type, data_type="text-only")
         else:
             preds = self.get_category_pred(label_type=label_type, data_type="text")
@@ -307,7 +304,7 @@ class Data(DataBaseLoader):
             self.mismatch = pickle_load_data(mismatch_path)
         else:
             image_labels = self.get_category_pred(label_type="all", data_type="image")
-            text_labels = self.get_category_pred(label_type="all", data_type="text")
+            text_labels = self.get_category_pred(label_type="all", data_type="text-only")
             self.mismatch = (image_labels!=text_labels)
             pickle_save_data(mismatch_path, self.mismatch)
         return self.mismatch.copy()
