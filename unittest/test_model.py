@@ -152,10 +152,6 @@ class CoClusteringTest(unittest.TestCase):
             data_type="image", threshold=0.5)
         text_labels = m.data.get_category_pred(label_type="all", data_type="text-only")
         gt = m.data.get_groundtruth_labels(label_type="all")
-        for i in range(10000):
-            cap = m.data.database_fetch_by_idx(i, ["cap"])
-            if cap.count("restaurant") > 0 and gt[i][33] == 0:
-                a = 1
         a = 1
 
     def test_mismatch(self):
