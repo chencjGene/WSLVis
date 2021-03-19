@@ -108,6 +108,12 @@ class TextTreeHelper(TreeHelper):
             leaf["precision"] = precision[i]
             leaf["recall"] = recall[i]
 
+    def assign_mismatch(self, mismatch):
+        m = mismatch.sum(axis=0)
+        for i in range(len(self.class_name)):
+            leaf = self.get_node_by_cat_id(i)
+            leaf["mismatch"] = int(m[0])
+
 class ImageTreeHelper(TreeHelper):
     def __init__(self, tree=None, class_name=None):
         super(ImageTreeHelper, self).__init__(tree, class_name)

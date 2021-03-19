@@ -42,6 +42,7 @@ const store = new Vuex.Store({
         focus_text: null,
         image_list: [],
         selected_flag: [],
+        f1_score_selected: false,
         tooltip: {
           top: 0,
           left: 0,
@@ -110,7 +111,13 @@ const store = new Vuex.Store({
                     let s = element.all_children.map(d=>d.data.recall);
                     if (s) element.data.recall = s.reduce((a,c)=>{return a+c}, 0) / s.length;
                 }
-                element.api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
+                if (!element.data.mismatch){
+                    let s = element.all_children.map(d=>d.data.mismatch);
+                    if (s) element.data.mismatch = s.reduce((a,c)=>{return a+c}, 0) / s.length;
+                }
+                element.f1_api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
+                element.mm_api = element.data.mismatch / 50000;
+                element.api = state.f1_score_selected ? element.f1_api : element.mm_api;
             });
 
             state.tree.eachBefore((d, i) => d.order = i);

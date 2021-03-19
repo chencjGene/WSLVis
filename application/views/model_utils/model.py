@@ -235,9 +235,9 @@ class WSLModel(object):
         self.text_tree_helper.update(self.text_tree, self.data.class_name)
 
         
-        self.data.get_precision_and_recall()
-        self.text_tree_helper.assign_precision_and_recall(\
-            self.data.precision, self.data.recall)
+        # self.data.get_precision_and_recall()
+        # self.text_tree_helper.assign_precision_and_recall(\
+        #     self.data.precision, self.data.recall)
 
         a = 1
 
@@ -324,6 +324,7 @@ class WSLModel(object):
         self.data.get_precision_and_recall()
         self.text_tree_helper.assign_precision_and_recall(\
             self.data.precision, self.data.recall)
+        self.text_tree_helper.assign_mismatch(mismatch)
 
         # reordering
         leaf_nodes = self.text_tree_helper.get_all_leaf_descendants(self.text_tree_helper.tree)

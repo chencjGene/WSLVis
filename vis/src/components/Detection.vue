@@ -9,7 +9,7 @@
         >
         </info-tooltip>
         <v-col cols="12" class="main-content pa-0"> 
-            <div style="position: absolute; padding-left: 600px; padding-top: 3px" >
+            <!-- <div style="position: absolute; padding-left: 600px; padding-top: 3px" >
                 <div id="cropping" class="waves-effect waves-light btn-floating grey" title="Zoom in">
                     <svg class="icon" width="24px" height="24px" transform="translate(2.6, 2.6)" viewBox="0 0 1024 1024">
                         <path fill="white" d="M136 384h56c4.4 0 8-3.6 8-8V200h176c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-37.6 0-68 30.4-68 68v180c0 4.4 3.6 8 8 8zM648 200h176v176c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V196c0-37.6-30.4-68-68-68H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM376 824H200V648c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v180c0 37.6 30.4 68 68 68h180c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM888 640h-56c-4.4 0-8 3.6-8 8v176H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h180c37.6 0 68-30.4 68-68V648c0-4.4-3.6-8-8-8zM904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z" />
@@ -20,7 +20,7 @@
                         <path fill="white" d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h360c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H184V184h656v320c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V144c0-17.7-14.3-32-32-32zM653.3 599.4l52.2-52.2c4.7-4.7 1.9-12.8-4.7-13.6l-179.4-21c-5.1-0.6-9.5 3.7-8.9 8.9l21 179.4c0.8 6.6 8.9 9.4 13.6 4.7l52.4-52.4 256.2 256.2c3.1 3.1 8.2 3.1 11.3 0l42.4-42.4c3.1-3.1 3.1-8.2 0-11.3L653.3 599.4z" />
                     </svg>
                 </div>
-            </div>
+            </div> -->
         </v-col>
     </v-col>
 </template>
@@ -74,6 +74,7 @@ export default {
         ...mapState([
             "tree",
             "use_treecut",
+            "f1_score_selected",
             "image_cluster_list",
             "vis_image_per_cluster",
             "cluster_association_mat",
@@ -258,26 +259,29 @@ export default {
                 .delay(this.remove_ani + this.update_ani)
                 .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
         },
-        title_create() {
+        legend_create() {
             let that = this;
-            this.svg
-                .append("text")
-                .attr("class", "topname")
-                .attr("x", this.layer_height / 2)
-                .attr("y", this.text_height / 3 + 1)
-                .text("Category labels");
-            this.svg
-                .append("text")
-                .attr("class", "topname")
-                .attr("x", this.set_left * 1.05)
-                .attr("y", this.text_height / 3 + 1)
-                .text("Detection results");
+            let scale = 0.8;
+            let top_y = 4;
+            let bottom_y = 22;
+            // this.svg
+            //     .append("text")
+            //     .attr("class", "topname")
+            //     .attr("x", this.layer_height / 2)
+            //     .attr("y", this.text_height / 3 + 1)
+            //     .text("Category labels");
+            // this.svg
+            //     .append("text")
+            //     .attr("class", "topname")
+            //     .attr("x", this.set_left * 1.05)
+            //     .attr("y", this.text_height / 3 + 1)
+            //     .text("Detection results");
             let checkbox = this.svg
                 .append("g")
                 .attr("class", "current-label-checkbox")
                 .attr("transform", "translate("+ 
-                    (30)+","+
-                    (this.text_height / 2 + 4)+")")
+                    (45)+","+
+                    (top_y)+")" + "scale(" + 1+"," + 1+")")
                 .on("click", function() {
                     console.log("click tree cut", that.use_treecut);
                     if (that.use_treecut){
@@ -290,7 +294,48 @@ export default {
                         d3.select(this).select("rect")
                             .attr("fill", Global.GrayColor);
                     }
-                })
+                });
+            
+            let prec_rec_checkbox = this.svg
+                .append("g")
+                .attr("class", "prec-rec-checkbox")
+                .attr("transform", "translate("+ 
+                    (10)+","+
+                    (bottom_y)+")"+ "scale(" + scale+"," + scale+")")
+                .on("click", function() {
+                    console.log("click tree cut", that.use_treecut);
+                    if (that.use_treecut){
+                        that.set_use_treecut(false);
+                        d3.select(this).select("rect")
+                            .attr("fill", "white");
+                    }
+                    else{
+                        that.set_use_treecut(true);
+                        d3.select(this).select("rect")
+                            .attr("fill", Global.GrayColor);
+                    }
+                });
+
+            let mismatch_checkbox = this.svg
+                .append("g")
+                .attr("class", "mismatch-checkbox")
+                .attr("transform", "translate("+ 
+                    (90)+","+
+                    (bottom_y)+")"+ "scale(" + scale+"," + scale+")")
+                .on("click", function() {
+                    console.log("click tree cut", that.use_treecut);
+                    if (that.use_treecut){
+                        that.set_use_treecut(false);
+                        d3.select(this).select("rect")
+                            .attr("fill", "white");
+                    }
+                    else{
+                        that.set_use_treecut(true);
+                        d3.select(this).select("rect")
+                            .attr("fill", Global.GrayColor);
+                    }
+                });
+
             checkbox.append("rect")
                 .attr("x", 0)
                 .attr("y", 0)
@@ -313,7 +358,54 @@ export default {
                 .attr("x", 14 + 2)
                 .attr("y", 12)
                 .attr("font-size", "18px")
-                .text("treecut");
+                .text("Treecut");
+
+            prec_rec_checkbox.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", 14)
+                .attr("height", 14)
+                .attr("rx", 3.5)
+                .attr("ry", 3.5)
+                .attr("fill", Global.GrayColor)
+                .attr("stroke", Global.GrayColor);
+            prec_rec_checkbox.append("text")
+                .style("stroke", "white")
+                .style("fill", "white")
+                .attr("text-anchor", "middle")
+                .attr("font-size", "12px")
+                .attr("x", 14 / 2)
+                .attr("y", 14 / 2 + 5)
+                .text("\u2714")
+            prec_rec_checkbox.append("text")
+                .attr("text-anchor", "start")
+                .attr("x", 14 + 2)
+                .attr("y", 12)
+                .attr("font-size", "18px")
+                .text("F1 score");
+            mismatch_checkbox.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", 14)
+                .attr("height", 14)
+                .attr("rx", 3.5)
+                .attr("ry", 3.5)
+                .attr("fill", Global.GrayColor)
+                .attr("stroke", Global.GrayColor);
+            mismatch_checkbox.append("text")
+                .style("stroke", "white")
+                .style("fill", "white")
+                .attr("text-anchor", "middle")
+                .attr("font-size", "12px")
+                .attr("x", 14 / 2)
+                .attr("y", 14 / 2 + 5)
+                .text("\u2714")
+            mismatch_checkbox.append("text")
+                .attr("text-anchor", "start")
+                .attr("x", 14 + 2)
+                .attr("y", 12)
+                .attr("font-size", "18px")
+                .text("Mismatch");
             
         },
         expand_icon_create() {
@@ -499,7 +591,7 @@ export default {
             .attr("width", this.bbox_width)
             .attr("height", this.bbox_height)
             .style("padding-top", "5px");
-        this.title_create();
+        this.legend_create();
         this.expanded_icon_group = this.svg
             .append("g")
             .attr("id", "expanded-icon-group")
