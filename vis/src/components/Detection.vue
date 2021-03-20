@@ -776,6 +776,7 @@ export default {
     padding-left: 10px;
     color: rgb(120, 120, 120);
     height: 22px;
+    justify-content: space-between;
 }
 
 #main-topname {

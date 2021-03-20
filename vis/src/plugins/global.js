@@ -131,6 +131,47 @@ function half_rounded_rect(x, y, w, h, r_left, r_right){
         + " 0,0,1 " + pos2str(delta6) + "z";
 }
 
+const get_path_of_page_btn = function(x, y, width, height, direction){
+    let path = '';
+    if (direction === 'up') {
+        for (let j = 0;j < 2;j++) {
+            let points = []
+            for (let i = 0;i < 3;i++) {
+                points.push(`${x + i / 2 * width},${y + (j + 1 - i % 2) / 2 * height}`);
+            }
+            path += 'M' + points.join('L');
+        }
+    }
+    else if (direction === 'down') {
+        for (let j = 0;j < 2;j++) {
+            let points = []
+            for (let i = 0;i < 3;i++) {
+                points.push(`${x + i / 2 * width},${y + (j + i % 2) / 2 * height}`);
+            }
+            path += 'M' + points.join('L');
+        }
+    }
+    else if (direction === 'left') {
+        for (let j = 0;j < 2;j++) {
+            let points = []
+            for (let i = 0;i < 3;i++) {
+                points.push(`${x + (j + 1 - i % 2) / 2 * width}, ${y + i / 2 * height}`);
+            }
+            path += 'M' + points.join('L');
+        }
+    }
+    else if (direction === 'right') {
+        for (let j = 0;j < 2;j++) {
+            let points = []
+            for (let i = 0;i < 3;i++) {
+                points.push(`${x + (j + i % 2) / 2 * width}, ${y + i / 2 * height}`);
+            }
+            path += 'M' + points.join('L');
+        }
+    }
+    return path;
+}
+
 export {
     GrayColor,
     DarkGray,
@@ -143,6 +184,7 @@ export {
     d_rollback,
     d_scan,
     d_select,
+    get_path_of_page_btn,
     deepCopy,
     tree_line,
     getTextWidth,
