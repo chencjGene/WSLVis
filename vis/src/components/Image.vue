@@ -1,6 +1,6 @@
 <template>
   <v-row class="image-view fill-width mr-0">
-    <v-col cols="12" class="topname fill-width"> Image </v-col>
+    <v-col cols="12" class="topname fill-width"> Image <svg id="btn-svg" width="100px" height="24px"></svg></v-col>
     <v-col cols="12" class="image-content pa-0"> </v-col>
   </v-row>
 </template>
@@ -60,6 +60,12 @@ export default {
           }
           d.boxes = boxes;
         });
+        that.grid_page = 0;
+        let end_num = that.x_grid_num * that.y_grid_num;
+        if (that.grid_images.length < end_num) {
+          end_num = that.grid_images.length;
+        }
+        that.grid_images_showing = that.grid_images.slice(0, end_num);
       }
       else if (that.mode === 'focus-image') {
           // one-image mode, focus image
@@ -166,7 +172,7 @@ export default {
       let that = this;
       if (that.mode === 'grid') {
         that.grid_group_g =  that.grid_group.selectAll(".grid-image")
-          .data(that.grid_images);
+          .data(that.grid_images_showing);
         that.grid_group.selectAll("image").data(that.img_grid_urls);
         that.grid_group.selectAll("rect").data(that.img_grid_urls);
         let grid_group_enters = that.grid_group_g.enter()
@@ -183,7 +189,7 @@ export default {
           .attr("height", that.grid_size);
 
         that.cover_group_rect_g = that.cover_group.selectAll(".one-grid-image-rect-g")
-          .data(that.grid_images);
+          .data(that.grid_images_showing);
         let cover_group_rect_g_enters = that.cover_group_rect_g.enter()
           .append("g")
           .attr("class", "one-grid-image-rect-g")
@@ -237,8 +243,8 @@ export default {
       let that = this;
       if (that.mode === 'grid'){
         that.e_data.attr("href", d => that.Website + ":" + that.Port + `/image/image?filename=${d.id}.jpg`);
-        that.grid_group.selectAll(".one-grid-image").data(that.grid_images).attr("xlink:href", d => that.Website + ":" + that.Port + `/image/image?filename=${d.id}.jpg`);
-        that.cover_group.selectAll(".one-grid-image-rect").data(that.grid_images);
+        that.grid_group.selectAll(".one-grid-image").data(that.grid_images_showing).attr("xlink:href", d => that.Website + ":" + that.Port + `/image/image?filename=${d.id}.jpg`);
+        that.cover_group.selectAll(".one-grid-image-rect").data(that.grid_images_showing);
 
         that.grid_group_g.selectAll("rect")
           .transition()
@@ -448,72 +454,157 @@ export default {
           .attr("height", bbox.height + 10);
       }, that.update_ani);
       
+    },
+    change_grid_page(direction) {
+      let that = this;
+      let start_num = that.x_grid_num * that.y_grid_num * (that.grid_page + direction);
+      if (start_num >= 0 && start_num <that.grid_images.length) {
+        that.grid_page += direction;
+        let end_num = start_num + that.x_grid_num * that.y_grid_num;
+        if (that.grid_images.length < end_num) {
+          end_num = that.grid_images.length;
+        }
+        that.grid_images_showing = that.grid_images.slice(start_num, end_num);
+        that.update_view();
+        that.show_detail(null, -1);
+      }
     }
   },
   async mounted() {
     window.image = this;
+    let that = this;
     let container = d3.select(".image-content");
     // console.log("container", container);
     container.style('height', `${Global.WindowHeight * 0.34 - 24}px`);
     let bbox = container.node().getBoundingClientRect();
-    this.width = bbox.width;
-    this.height = bbox.height;
-    this.layout_width = this.width - 10;
-    this.layout_height = this.height - 10;
-    this.Website = "http://localhost";
-    this.Port = "20211";
-    this.img_padding = 10;
-    this.grid_size = 50;
-    this.grid_offset = 10;
-    this.x_grid_num = parseInt((this.layout_width - 5) / (this.grid_offset + this.grid_size));
-    this.create_ani = Global.Animation / 4;
-    this.update_ani = Global.Animation / 4;
-    this.remove_ani = Global.Animation / 4;
-    this.detail_pos = -1;
-    this.mode = 'grid';
-    this.grid_images = [];
-    this.img_grid_urls = [];
-    this.aspect_ratio = this.layout_height / this.layout_width;
-    this.img_size = 250;
+    that.width = bbox.width;
+    that.height = bbox.height;
+    that.layout_width = that.width - 20;
+    that.layout_height = that.height;
+    that.Website = "http://localhost";
+    that.Port = "20211";
+    that.img_padding = 10;
+    that.grid_page = 0;
+    that.x_grid_num = 7;
+    that.y_grid_num = 5;
+    that.grid_offset = 10;
+    that.grid_size = Math.min((that.layout_width - that.grid_offset) / that.x_grid_num, (that.layout_height - that.grid_offset) / that.y_grid_num) - that.grid_offset;
+    that.create_ani = Global.Animation / 4;
+    that.update_ani = Global.Animation / 4;
+    that.remove_ani = Global.Animation / 4;
+    that.detail_pos = -1;
+    that.mode = 'grid';
+    that.grid_images = [];
+    that.grid_images_showing = [];
+    that.img_grid_urls = [];
+    that.aspect_ratio = that.layout_height / that.layout_width;
+    that.img_size = 250;
 
-    this.svg = container
+    that.svg = container
       .append("svg")
       .attr("id", "image-svg")
-      .attr("width", this.width)
-      .attr("height", this.layout_height);
+      .attr("width", that.width)
+      .attr("height", that.layout_height - 10);
 
-    this.main_group = this.svg
+    that.main_group = that.svg
       .append("g")
-      .attr("id", "main-group");
+      .attr("id", "main-group")
+      .attr("transform", `translate(10,0)`);
 
-    this.detail_group = this.main_group
+    that.detail_group = that.main_group
       .append("g")
       .attr("id", "detail-group")
       .on("click", () => {
         console.log("detail group");
-        this.fetch_text_by_ids(this.selected_id);
+        that.fetch_text_by_ids(that.selected_id);
       })
 
-    this.grid_group = this.main_group
+    that.grid_group = that.main_group
       .append("g")
       .attr("id", "grid-group");
     
-    this.one_image_group = this.main_group
+    that.one_image_group = that.main_group
       .append("g")
       .attr("id", "one_image-group");
 
-    this.grid_box_group = this.main_group
+    that.grid_box_group = that.main_group
       .append("g")
       .attr("id", "grid_box-group");
 
-    this.one_image_box_group = this.main_group
+    that.one_image_box_group = that.main_group
       .append("g")
       .attr("id", "one_image_box-group");
 
-    this.cover_group = this.main_group
+    that.cover_group = that.main_group
       .append("g")
       .attr("id", "cover-group");
 
+    if ((that.grid_offset + that.grid_size) * that.x_grid_num + that.grid_offset < that.layout_width) {
+      let delta_x = that.layout_width - (that.grid_offset + that.grid_size) * that.x_grid_num - that.grid_offset;
+      that.grid_group.attr("transform", `translate(${delta_x / 2},0)`);
+      that.grid_box_group.attr("transform", `translate(${delta_x / 2},0)`);
+      that.cover_group.attr("transform", `translate(${delta_x / 2},0)`);
+    }
+    else {
+      let delta_y = that.layout_height - (that.grid_offset + that.grid_size) * that.y_grid_num - that.grid_offset;
+      that.grid_group.attr("transform", `translate(0,${delta_y / 2})`);
+      that.grid_box_group.attr("transform", `translate(0,${delta_y / 2})`);
+      that.cover_group.attr("transform", `translate(0,${delta_y / 2})`);
+    }
+    let btn_svg = d3.select("#btn-svg");
+    let btn_data = [{
+      'name': 'left',
+      'x': 0
+    }, {
+      'name': 'right',
+      'x': 30
+    }];
+    let btn_group = btn_svg.append("g")
+      .attr("id", "btn-group")
+      .attr("transform", `translate(50,0)`);
+    let arrows = btn_group.selectAll('.arrow').data(btn_data);
+    arrows.enter()
+      .append('path')
+      .attr('class', 'arrow')
+      .attr('d', d=>{
+        return Global.get_path_of_page_btn(d.x, 6, 18, 12, d.name);
+      })
+      .style('stroke', 'black')
+      .style('stroke-width', '2px')
+      .style('fill', 'none');
+    let rects = btn_group.selectAll('.btn-cover-rect').data(btn_data);
+    rects.enter()
+      .append('rect')
+      .attr('class', 'btn-cover-rect')
+      .attr('id', d => `btn-cover-rect-${d.name}`)
+      .style('x', d=>d.x - 2)
+      .style('y', 4)
+      .style('rx', 4)
+      .style('width', 22)
+      .style('height', 16)
+      .style('stroke', 'none')
+      .style('fill', 'black')
+      .style('opacity', 0)
+      .on('mouseenter', (_, d) => {
+        d3.select(`#btn-cover-rect-${d.name}`)
+          .transition()
+          .duration(that.update_ani)
+          .style('opacity', 0.3);
+      })
+      .on('mouseleave', (_, d) => {
+        d3.select(`#btn-cover-rect-${d.name}`)
+          .transition()
+          .duration(that.update_ani)
+          .style('opacity', 0);
+      })
+      .on('click', (_, d) => {
+        if (d.name === 'left') {
+          that.change_grid_page(-1);
+        }
+        else {
+          that.change_grid_page(1);
+        }
+      });
   },
 };
 </script>
