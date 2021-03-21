@@ -352,6 +352,31 @@ class WSLModel(object):
         }
         return mat
 
+    def get_kmeans_by_image_cluster_id(self, image_cluster_id, k=10):
+        kmeans_res_dir = os.path.join(self.data_root, "kmeans_res")
+        check_dir(kmeans_res_dir)
+        filepath = os.path.join(kmeans_res_dir, str(image_cluster_id) + ".pkl")
+        if os.path.exists(filepath):
+            labels = pickle_load_data(filepath)
+            return labels
+        image_ids = self.image_ids_of_clusters[image_cluster_id]
+        features = self.data.get_image_feature()[np.array(image_ids)]
+        print("features.shape", features.shape)
+        norm = (features**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_features = features / norm.reshape(-1,1)
+
+        pred = self.data.get_category_pred(image_ids, "image")
+        norm = (pred**2).sum(axis=1)
+        norm = norm ** 0.5
+        norm_pred = pred / (norm.reshape(-1,1)+1e-12)
+        cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
+
+        labels = self._kmeans(cluster_feature, k)
+        pickle_save_data(filepath, labels)
+        return labels
+
+
     def get_rank(self, image_cluster_id):
         rank_res_path = os.path.join(self.data_root, "rank_res.json")
         if str(image_cluster_id) in self.rank_res \
@@ -365,25 +390,12 @@ class WSLModel(object):
             image_ids = self.image_ids_of_clusters[image_cluster_id]
             mismatch = self.data.get_mismatch()[np.array(image_ids)].sum(axis=1)
             confidence = self.data.get_mean_confidence()[np.array(image_ids)]
-            total_score = mismatch - confidence * 100
-            np.random.seed(124)
+            total_score = mismatch #- confidence * 100
             total_score = np.random.rand(len(total_score))
-            features = self.data.get_image_feature()[np.array(image_ids)]
-            print("features.shape", features.shape)
-            norm = (features**2).sum(axis=1)
-            norm = norm ** 0.5
-            norm_features = features / norm.reshape(-1,1)
-
-            pred = self.data.get_category_pred(image_ids, "image")
-            norm = (pred**2).sum(axis=1)
-            norm = norm ** 0.5
-            norm_pred = pred / (norm.reshape(-1,1)+1e-12)
-            cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
-
-
-            k = 10
-            labels = self._kmeans(cluster_feature, k)
+            np.random.seed(124)
             top_k = []
+            k = 10
+            labels = self.get_kmeans_by_image_cluster_id(image_cluster_id, k)
             for i in range(k):
                 idxs = np.array(range(len(labels)))[labels==i]
                 score = total_score[idxs]
@@ -413,8 +425,8 @@ class WSLModel(object):
         norm = (pred**2).sum(axis=1)
         norm = norm ** 0.5
         norm_pred = pred / (norm.reshape(-1,1)+1e-12)
-        # cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
-        cluster_feature = norm_features
+        cluster_feature = np.concatenate((norm_features, norm_pred), axis=1)
+        # cluster_feature = norm_features
 
         tsne = TSNE(n_components=2,random_state=15)
         coor = tsne.fit_transform(cluster_feature)

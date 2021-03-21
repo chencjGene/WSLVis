@@ -38,6 +38,33 @@ from application.views.utils.helper_utils import json_load_data, json_save_data
 from sklearn.manifold import TSNE, MDS
 from sklearn.decomposition import PCA
 
+def intersect(box_a, box_b):
+    A = box_a.shape[0]
+    B = box_b.shape[0]
+    min_xy_a = box_a[:, :2][:, np.newaxis, :].repeat(axis=1, repeats=B)
+    min_xy_b = box_b[:, :2][np.newaxis, :, :].repeat(axis=0, repeats=A)
+    max_xy_a = box_a[:, 2:4][:, np.newaxis, :].repeat(axis=1, repeats=B)
+    max_xy_b = box_b[:, 2:4][np.newaxis, :, :].repeat(axis=0, repeats=A)
+    max_xy = np.minimum(max_xy_a, max_xy_b)
+    min_xy = np.maximum(min_xy_a, min_xy_b)
+    inter = (max_xy - min_xy).clip(0)
+    areas = inter[:, :, 0] * inter[:, :, 1]
+    return areas
+
+def jacard(box_pred, box_truth):
+    A = box_pred.shape[0]
+    B = box_truth.shape[0]
+    if B == 0:
+        return np.zeros((A, 1))
+    inter = intersect(box_pred, box_truth)
+    area_a = ((box_pred[:, 2]-box_pred[:, 0]) *
+              (box_pred[:, 3]-box_pred[:, 1]))[:, np.newaxis].repeat(axis=1, repeats=B)
+    area_b = ((box_truth[:, 2]-box_truth[:, 0]) *
+              (box_truth[:, 3]-box_truth[:, 1]))[np.newaxis, :].repeat(axis=0, repeats=A)
+    union = area_a + area_b - inter
+    return inter / union  # [A,B]
+
+
 class CoClusteringTest(unittest.TestCase):
     def test_model(self):
         m = WSLModel(dataname=config.coco17, step=1)
@@ -152,6 +179,7 @@ class CoClusteringTest(unittest.TestCase):
             data_type="image", threshold=0.5)
         text_labels = m.data.get_category_pred(label_type="all", data_type="text-only")
         gt = m.data.get_groundtruth_labels(label_type="all")
+        _, mismatch_matrix = m.get_cluster_association_matrix()
         a = 1
 
     def test_mismatch(self):
@@ -190,43 +218,52 @@ class CoClusteringTest(unittest.TestCase):
         a = 1
 
     def test_rank(self):
-        m = WSLModel(dataname=config.coco17, step=1)
+        dataname = "COCO17"
+        step = 2
+        mat = pickle_load_data("test/mismatch/network.pkl")
+        m = WSLModel(dataname=config.coco17, step=step)
+        m.update_hiera("sub1")
         m.run()
-        # res = m.get_rank(4)
-
-        image_ids = m.image_ids_of_clusters[4]
-        features = m.data.get_image_feature()[np.array(image_ids)]
-        selected_idxs = [219, 261, 478, 604, 774, 2295, 2337, 2678, 3251, 72, 94, 181, 394, 1204, 1262, 1697, 1735, 1747, 2002, 2025]
-        selected_ids = [30809, 37215, 68209, 86496, 106585, 36553, 41444, 90739, 52703, 10416, 14556, 25706, 55027, 35357, 40251, 78098, 82384, 83946, 109110, 111414]
-        # labels = [-1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        pd = pairwise_distances(features)
-        g1 = np.array(selected_idxs[:9])
-        g2 = np.array(selected_idxs[9:])
-        d1 = pd[g1,:][:,g1]
-        d2 = pd[g2,:][:,g2]
-        for i in range(len(selected_idxs)):
-            idx = selected_idxs[i]
-            d = pd[idx,:]
-            sorted_idxs = d.argsort()[:20]
-            intersec = set(selected_idxs) & set(sorted_idxs)
-            print(intersec)
-
-        # model = DBSCAN(eps=2, min_samples=2).fit(features)
-        # labels = model.labels_
-        # sio.savemat("test/feature/feature_4.mat", {"data": features})
-        # R = np.zeros((len(image_ids), 65))
-        # for idx, img_id in enumerate(image_ids):
-        #     res = m.data.get_detection_result(int(img_id))
-        #     for det in res:
-        #         if det[-2] > m.data.conf_thresh:
-        #             R[idx, det[-1]] = 1
-        # R = R / (R.sum(axis=1).reshape(-1, 1) + 1e-12)
-        # s = lap_score(R.T)
+        # for i in range(9):
+        #     m.get_kmeans_by_image_cluster_id(i)
+        # a = 1
+        rank_res = {}
+        for cluster_id in range(9):
+            # cluster_id = 5
+            rank_res[cluster_id] = []
+            image_ids = m.image_ids_of_clusters[cluster_id]
+            mismatch = m.data.get_mismatch()[np.array(image_ids)].sum(axis=1)
+            labels = m.get_kmeans_by_image_cluster_id(cluster_id)
+            for i in range(10):
+                idxs = np.array(range(len(labels)))[labels==i]
+                mm = mismatch[idxs]
+                sorted_idxs = idxs[mm.argsort()[::-1]]
+                res = []
+                for idx in sorted_idxs:
+                    img_id = image_ids[idx]
+                    det = np.array(m.data.get_detection_result(int(img_id)))
+                    det = [d for d in det if d[-2] > 0.4 and d[-2] < 0.5]
+                    if len(det) == 0:
+                        continue
+                    det = np.array(det)
+                    gt_det = np.array(m.data.get_detection_result(int(img_id)))
+                    try:
+                        iou = jacard(det, gt_det)
+                    except:
+                        a = 1
+                    # labels = (iou > 0.5).astype(int).max(axis=1)
+                    print(img_id, iou.max())
+                    if iou.max() > 0.5:
+                        res.append(img_id)
+                    if len(res) > 3:
+                        break
+                    a = 1
+                rank_res[cluster_id].append(res[-1])
         a = 1
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(CoClusteringTest("test_cluster_buffer"))
+    suite.addTest(CoClusteringTest("test_rank"))
     
     # # test all cases
     # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)

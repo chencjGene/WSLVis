@@ -115,6 +115,18 @@ const store = new Vuex.Store({
                     let s = element.all_children.map(d=>d.data.mismatch);
                     if (s) element.data.mismatch = s.reduce((a,c)=>{return a+c}, 0);
                 }
+                if (!element.data.descendants_idx){
+                    if (!element.all_children){
+                        element.data.descendants_idx = [element.data.id];
+                    }
+                    else{
+                        let idxs = [];
+                        for (let i = 0; i < element.all_children.length; i++){
+                            idxs = idxs.concat(element.all_children[i].data.descendants_idx);
+                        }
+                        element.data.descendants_idx = idxs;
+                    }
+                }
                 element.f1_api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
                 element.mm_api = element.data.mismatch / 20000;
                 element.api = state.f1_score_selected ? element.f1_api : element.mm_api;
@@ -223,6 +235,9 @@ const store = new Vuex.Store({
         },
         set_use_treecut(state, use_treecut){
             state.use_treecut = use_treecut;
+        },
+        set_f1_score_selected(state, f1_score_selected){
+            state.f1_score_selected = f1_score_selected;
         },
         set_grid_layout_data(state, data){
             console.log("set grid layout data", data);

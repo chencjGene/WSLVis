@@ -140,8 +140,8 @@ class DataBaseLoader(object):
         feature = feature[bbox[1]:bbox[3]+1, bbox[0]:bbox[2]+1]
         if np.array(feature.shape).all() == 0:
             return np.zeros(16)
-        out = feature.transpose(2, 0, 1).reshape(16, -1).mean(axis=1)
-        # output = RoIMaxPooling2d((2, 2))(feature)
+        # out = feature.transpose(2, 0, 1).reshape(16, -1).mean(axis=1)
+        output = RoIMaxPooling2d((2, 2))(feature)
         if np.isnan(out.max()):
             a = 1
         return out

@@ -108,6 +108,7 @@ export default {
             "set_words",
             "set_grid_layout_data",
             "set_use_treecut",
+            "set_f1_score_selected"
         ]),
         treecut() {
             console.log("detection treecut");
@@ -276,6 +277,21 @@ export default {
             //     .attr("x", this.set_left * 1.05)
             //     .attr("y", this.text_height / 3 + 1)
             //     .text("Detection results");
+
+            this.svg
+                .append("rect")
+                .attr("class", "treecut-rect")
+                .attr("x", 5)
+                .attr("y", 20)
+                .attr("rx", 4)
+                .attr("ry", 4)
+                .attr("width", 167)
+                .attr("height", 16)
+                .style("fill", "none")
+                .style("stroke-width", 1)
+                .style("stroke", Global.GrayColor)
+                .style("pointer-event", "none");
+
             let checkbox = this.svg
                 .append("g")
                 .attr("class", "current-label-checkbox")
@@ -288,11 +304,23 @@ export default {
                         that.set_use_treecut(false);
                         d3.select(this).select("rect")
                             .attr("fill", "white");
+                        d3.selectAll(".prec-rec-checkbox")
+                            .select("rect")
+                            .attr("fill", "white");
+                        d3.selectAll(".mismatch-checkbox")
+                            .select("rect")
+                            .attr("fill", "white");
                     }
                     else{
                         that.set_use_treecut(true);
                         d3.select(this).select("rect")
                             .attr("fill", Global.GrayColor);
+                        d3.selectAll(".prec-rec-checkbox")
+                            .select("rect")
+                            .attr("fill", that.f1_score_selected ? Global.GrayColor : "white")
+                        d3.selectAll(".mismatch-checkbox")
+                            .select("rect")
+                            .attr("fill", that.f1_score_selected ? "white" : Global.GrayColor)
                     }
                 });
             
@@ -303,16 +331,14 @@ export default {
                     (10)+","+
                     (bottom_y)+")"+ "scale(" + scale+"," + scale+")")
                 .on("click", function() {
-                    console.log("click tree cut", that.use_treecut);
-                    if (that.use_treecut){
-                        that.set_use_treecut(false);
-                        d3.select(this).select("rect")
-                            .attr("fill", "white");
-                    }
-                    else{
-                        that.set_use_treecut(true);
+                    console.log("click prec-rec-checkbox", that.f1_score_selected);
+                    if (that.use_treecut && !that.f1_score_selected){
+                        that.set_f1_score_selected(true);
                         d3.select(this).select("rect")
                             .attr("fill", Global.GrayColor);
+                        d3.selectAll(".mismatch-checkbox")
+                            .select("rect")
+                            .attr("fill", "white");
                     }
                 });
 
@@ -323,16 +349,14 @@ export default {
                     (90)+","+
                     (bottom_y)+")"+ "scale(" + scale+"," + scale+")")
                 .on("click", function() {
-                    console.log("click tree cut", that.use_treecut);
-                    if (that.use_treecut){
-                        that.set_use_treecut(false);
-                        d3.select(this).select("rect")
-                            .attr("fill", "white");
-                    }
-                    else{
-                        that.set_use_treecut(true);
+                    console.log("click prec-rec-checkbox", that.f1_score_selected);
+                    if (that.use_treecut && that.f1_score_selected){
+                        that.set_f1_score_selected(false);
                         d3.select(this).select("rect")
                             .attr("fill", Global.GrayColor);
+                        d3.selectAll(".prec-rec-checkbox")
+                            .select("rect")
+                            .attr("fill", "white");
                     }
                 });
 
@@ -498,6 +522,16 @@ export default {
         mini_remove() {},
     },
     watch: {
+        f1_score_selected(){
+            console.log("f1_score_selected");
+            this.tree.all_descendants.forEach(d => {
+                d.api = this.f1_score_selected ? d.f1_api : d.mm_api;
+            })
+            this.treecut();
+            console.log("offset", this.offset);
+            this.update_data();
+            this.update_view();
+        },
         tree() {
             console.log("tree update");
             this.treecut();
@@ -794,6 +828,12 @@ export default {
 }
 
 .current-label-checkbox{
+    cursor: pointer;
+}
+.prec-rec-checkbox{
+    cursor: pointer;
+}
+.mismatch-checkbox{
     cursor: pointer;
 }
 
