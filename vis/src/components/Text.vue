@@ -1,6 +1,6 @@
 <template>
   <v-row class="text-view fill-width mr-0">
-    <v-col cols="12" class="topname fill-width"> Text </v-col>
+
     <v-col cols="12" class="text-content pa-0">
       <v-col class="label-text pa-0 pl-2"> Selected: 
         <span id="selected-class-name">{{selected_node.curr_full_name}} </span>
@@ -20,6 +20,16 @@
                 :size-dependencies="[item.message,]"
                 :data-index="index"
               >
+                <div class="label-div" :id="item.id">
+                  <v-btn
+                    class="label-div-btn"
+                    disabled
+                    elevation="3"
+                    x-small
+                    v-for="label in ['cat', 'dog']"
+                    :key="label"
+                  >{{ label }}</v-btn>
+                </div>
               <div
                 class="text-div" 
                 :id="item.id"
@@ -279,14 +289,19 @@ export default {
 
 <style>
 .text-view {
-  height: 66%;
+  height: 57%;
 }
 
 .text-content {
   border: 1px solid #c1c1c1;
   border-radius: 5px;
-  height: calc(100% - 32px);
-  margin-bottom: 10px;
+  height: calc(100% - 16px);
+  margin: 10px;
+
+}
+
+.label-div-btn {
+  margin-left: 5px;
 }
 
 .wordcloud{

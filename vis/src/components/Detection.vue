@@ -261,176 +261,442 @@ export default {
                 .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
         },
         legend_create() {
+            /**  svg-dropdown.js - svg dropdown library  */
+            function svgDropDown(options) {
+                if (typeof options !== 'object' || options === null || !options.container) {
+                  console.error(new Error("Container not provided"));
+                  return;
+                }
+                const defaultOptions = {
+                  width: 200,
+                  members: [],
+                  fontSize: 12,
+                  color: "#333",
+                  fontFamily: "Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif",
+                  x: 0,
+                  y: 0,
+                  changeHandler: function() {}
+                };
+
+                options = { ...defaultOptions,
+                  ...options
+                };
+
+                options.optionHeight = options.fontSize * 2;
+                options.height = options.fontSize + 8;
+                options.padding = 5;
+                options.hoverColor = "#0c56f5";
+                options.hoverTextColor = "#fff";
+                options.bgColor = "#fff";
+                options.width = options.width - 2;
+
+                const g = options.container
+                  .append("svg")
+                  .attr("x", options.x)
+                  .attr("y", options.y)
+                  .attr("shape-rendering", "crispEdges")
+                  .append("g")
+                  .attr("transform", "translate(1,1)")
+                  .attr("font-family", options.fontFamily);
+
+                let selectedOption =
+                  options.members.length === 0 ? {
+                    label: "",
+                    value: ""
+                  } :
+                  options.members[2];
+
+                /** Rendering Select Field */
+                const selectField = g.append("g");
+
+                // background
+                selectField
+                  .append("rect")
+                  .attr("width", options.width)
+                  .attr("height", options.height)
+                  .attr("class", "option select-field")
+                  .attr("fill", options.bgColor)
+                  .style("stroke", "#a0a0a0")
+                  .style("stroke-width", "1");
+
+                // text
+                const activeText = selectField
+                  .append("text")
+                  .text(selectedOption.label)
+                  .attr("x", options.padding)
+                  .attr("y", options.height / 2 + options.fontSize / 3)
+                  .attr("font-size", options.fontSize)
+                  .attr("fill", options.color);
+
+                // arrow symbol at the end of the select box
+                selectField
+                  .append("text")
+                  .text("▼")
+                  .attr("x", options.width - options.fontSize - options.padding)
+                  .attr("y", options.height / 2 + (options.fontSize - 2) / 3)
+                  .attr("font-size", options.fontSize - 2)
+                  .attr("fill", options.color);
+
+                // transparent surface to capture actions
+                selectField
+                  .append("rect")
+                  .attr("width", options.width)
+                  .attr("height", options.height)
+                  .style("fill", "transparent")
+                  .on("click", handleSelectClick);
+
+                /** rendering options */
+                const optionGroup = g
+                  .append("g")
+                  .attr("transform", `translate(0, ${options.height})`)
+                  .attr("opacity", 0); //.attr("display", "none"); Issue in IE/Firefox: Unable to calculate textLength when display is none.
+
+                // Rendering options group
+                const optionEnter = optionGroup
+                  .selectAll("g")
+                  .data(options.members)
+                  .enter()
+                  .append("g")
+                  .on("click", handleOptionClick);
+
+                // Rendering background
+                optionEnter
+                  .append("rect")
+                  .attr("width", options.width)
+                  .attr("height", options.optionHeight)
+                  .attr("y", function(d, i) {
+                    return i * options.optionHeight;
+                  })
+                  .attr("class", "option")
+                  .style("stroke", options.hoverColor)
+                  .style("stroke-dasharray", (d, i) => {
+                    let stroke = [
+                      0,
+                      options.width,
+                      options.optionHeight,
+                      options.width,
+                      options.optionHeight
+                    ];
+                    if (i === 0) {
+                      stroke = [
+                        options.width + options.optionHeight,
+                        options.width,
+                        options.optionHeight
+                      ];
+                    } else if (i === options.members.length - 1) {
+                      stroke = [0, options.width, options.optionHeight * 2 + options.width];
+                    }
+                    return stroke.join(" ");
+                  })
+                  .style("stroke-width", 1)
+                  .style("fill", options.bgColor);
+
+                // Rendering option text
+                optionEnter
+                  .append("text")
+                  .attr("x", options.padding)
+                  .attr("y", function(d, i) {
+                    return (
+                      i * options.optionHeight +
+                      options.optionHeight / 2 +
+                      options.fontSize / 3
+                    );
+                  })
+                  .text(function(d) {
+                    return d.label;
+                  })
+                  .attr("font-size", options.fontSize)
+                  .attr("fill", options.color)
+                  .each(wrap);
+
+                // Rendering option surface to take care of events
+                optionEnter
+                  .append("rect")
+                  .attr("width", options.width)
+                  .attr("height", options.optionHeight)
+                  .attr("y", function(d, i) {
+                    return i * options.optionHeight;
+                  })
+                  .style("fill", "transparent")
+                  .on("mouseover", handleMouseOver)
+                  .on("mouseout", handleMouseOut);
+
+                //once the textLength gets calculated, change opacity to 1 and display to none
+                optionGroup.attr("display", "none").attr("opacity", 1);
+
+                d3.select("body").on("click", function() {
+                  optionGroup.attr("display", "none");
+                });
+
+                // Utility Methods
+                function handleMouseOver(event) {
+                  d3.select(event.target.parentNode)
+                    .select(".option")
+                    .style("fill", options.hoverColor);
+
+                  d3.select(event.target.parentNode)
+                    .select("text")
+                    .style("fill", options.hoverTextColor);
+                }
+
+                function handleMouseOut(event) {
+                  d3.select(event.target.parentNode)
+                    .select(".option")
+                    .style("fill", options.bgColor);
+
+                  d3.select(event.target.parentNode)
+                    .select("text")
+                    .style("fill", options.color);
+                }
+
+                function handleOptionClick(event, d) {
+                  event.stopPropagation();
+                  selectedOption = d;
+                  activeText.text(selectedOption.label).each(wrap);
+                  typeof options.changeHandler === 'function' && options.changeHandler.call(this, d);
+                  optionGroup.attr("display", "none");
+                }
+
+                function handleSelectClick(event) {
+                    console.log(event);
+                  event.stopPropagation();
+                  const visibility = optionGroup.attr("display") === "block" ? "none" : "block";
+                  optionGroup.attr("display", visibility);
+                }
+
+                // wraps words
+                function wrap() {
+                  const width = options.width;
+                  const padding = options.padding;
+                  const self = d3.select(this);
+                  let textLength = self.node().getComputedTextLength();
+                  let text = self.text();
+                  const textArr = text.split(/\s+/);
+                  let lastWord = "";
+                  while (textLength > width - 2 * padding && text.length > 0) {
+                    lastWord = textArr.pop();
+                    text = textArr.join(" ");
+                    self.text(text);
+                    textLength = self.node().getComputedTextLength();
+                  }
+                  self.text(text + " " + lastWord);
+
+                  // providing ellipsis to last word in the text
+                  if (lastWord) {
+                    textLength = self.node().getComputedTextLength();
+                    text = self.text();
+                    while (textLength > width - 2 * padding && text.length > 0) {
+                      text = text.slice(0, -1);
+                      self.text(text + "...");
+                      textLength = self.node().getComputedTextLength();
+                    }
+                  }
+                }
+              }
+
             let that = this;
-            let scale = 0.8;
             let top_y = 4;
-            let bottom_y = 22;
-            // this.svg
-            //     .append("text")
-            //     .attr("class", "topname")
-            //     .attr("x", this.layer_height / 2)
-            //     .attr("y", this.text_height / 3 + 1)
-            //     .text("Category labels");
-            // this.svg
-            //     .append("text")
-            //     .attr("class", "topname")
-            //     .attr("x", this.set_left * 1.05)
-            //     .attr("y", this.text_height / 3 + 1)
-            //     .text("Detection results");
+            let drop_down_width = 100;
+            let start_x = 15;
 
-            this.svg
-                .append("rect")
-                .attr("class", "treecut-rect")
-                .attr("x", 5)
-                .attr("y", 20)
-                .attr("rx", 4)
-                .attr("ry", 4)
-                .attr("width", 167)
-                .attr("height", 16)
-                .style("fill", "none")
-                .style("stroke-width", 1)
-                .style("stroke", Global.GrayColor)
-                .style("pointer-event", "none");
-
-            let checkbox = this.svg
+            // 1.treecut: dropdown-list
+             let treecut_g = that.svg
                 .append("g")
                 .attr("class", "current-label-checkbox")
-                .attr("transform", "translate("+ 
-                    (45)+","+
-                    (top_y)+")" + "scale(" + 1+"," + 1+")")
-                .on("click", function() {
-                    console.log("click tree cut", that.use_treecut);
-                    if (that.use_treecut){
-                        that.set_use_treecut(false);
-                        d3.select(this).select("rect")
-                            .attr("fill", "white");
-                        d3.selectAll(".prec-rec-checkbox")
-                            .select("rect")
-                            .attr("fill", "white");
-                        d3.selectAll(".mismatch-checkbox")
-                            .select("rect")
-                            .attr("fill", "white");
-                    }
-                    else{
-                        that.set_use_treecut(true);
-                        d3.select(this).select("rect")
-                            .attr("fill", Global.GrayColor);
-                        d3.selectAll(".prec-rec-checkbox")
-                            .select("rect")
-                            .attr("fill", that.f1_score_selected ? Global.GrayColor : "white")
-                        d3.selectAll(".mismatch-checkbox")
-                            .select("rect")
-                            .attr("fill", that.f1_score_selected ? "white" : Global.GrayColor)
-                    }
-                });
-            
-            let prec_rec_checkbox = this.svg
-                .append("g")
-                .attr("class", "prec-rec-checkbox")
-                .attr("transform", "translate("+ 
-                    (10)+","+
-                    (bottom_y)+")"+ "scale(" + scale+"," + scale+")")
-                .on("click", function() {
-                    console.log("click prec-rec-checkbox", that.f1_score_selected);
-                    if (that.use_treecut && !that.f1_score_selected){
-                        that.set_f1_score_selected(true);
-                        d3.select(this).select("rect")
-                            .attr("fill", Global.GrayColor);
-                        d3.selectAll(".mismatch-checkbox")
-                            .select("rect")
-                            .attr("fill", "white");
-                    }
-                });
-
-            let mismatch_checkbox = this.svg
-                .append("g")
-                .attr("class", "mismatch-checkbox")
-                .attr("transform", "translate("+ 
-                    (90)+","+
-                    (bottom_y)+")"+ "scale(" + scale+"," + scale+")")
-                .on("click", function() {
-                    console.log("click prec-rec-checkbox", that.f1_score_selected);
-                    if (that.use_treecut && that.f1_score_selected){
-                        that.set_f1_score_selected(false);
-                        d3.select(this).select("rect")
-                            .attr("fill", Global.GrayColor);
-                        d3.selectAll(".prec-rec-checkbox")
-                            .select("rect")
-                            .attr("fill", "white");
-                    }
-                });
-
-            checkbox.append("rect")
-                .attr("x", 0)
-                .attr("y", 0)
-                .attr("width", 14)
-                .attr("height", 14)
-                .attr("rx", 3.5)
-                .attr("ry", 3.5)
-                .attr("fill", Global.GrayColor)
-                .attr("stroke", Global.GrayColor);
-            checkbox.append("text")
-                .style("stroke", "white")
-                .style("fill", "white")
-                .attr("text-anchor", "middle")
-                .attr("font-size", "12px")
-                .attr("x", 14 / 2)
-                .attr("y", 14 / 2 + 5)
-                .text("\u2714")
-            checkbox.append("text")
+                .attr("transform", "translate("+
+                    (start_x)+","+
+                    (top_y)+")" + "scale(" + 1+"," + 1+")");
+             treecut_g.append("text")
                 .attr("text-anchor", "start")
                 .attr("x", 14 + 2)
-                .attr("y", 12)
+                .attr("y", 20)
                 .attr("font-size", "18px")
                 .text("Treecut");
+             let members = [{
+                  label: "None",
+                  value: 1
+                },
+                {
+                  label: "F1 score",
+                  value: 2
+                },
+                {
+                  label: "Mismatch",
+                  value: 3
+                }
+             ];
 
-            prec_rec_checkbox.append("rect")
+             let config = {
+                width: drop_down_width,
+                container: treecut_g,
+                members,
+                fontSize: 18,
+                color: "#333",
+                fontFamily: "calibri",
+                x: 80,
+                y: 0,
+                changeHandler: function(option) {
+                    if(option.label==="None") {
+                        console.log("click tree cut", that.use_treecut);
+                        if (that.use_treecut){
+                            that.set_use_treecut(false);
+                            d3.select(this).select("rect")
+                                .attr("fill", "white");
+                            d3.selectAll(".prec-rec-checkbox")
+                                .select("rect")
+                                .attr("fill", "white");
+                            d3.selectAll(".mismatch-checkbox")
+                                .select("rect")
+                                .attr("fill", "white");
+                        }
+                        else{
+                            that.set_use_treecut(true);
+                            d3.select(this).select("rect")
+                                .attr("fill", Global.GrayColor);
+                            d3.selectAll(".prec-rec-checkbox")
+                                .select("rect")
+                                .attr("fill", that.f1_score_selected ? Global.GrayColor : "white")
+                            d3.selectAll(".mismatch-checkbox")
+                                .select("rect")
+                                .attr("fill", that.f1_score_selected ? "white" : Global.GrayColor)
+                        }
+                    } else if(option.label==="F1 score") {
+                        console.log("click prec-rec-checkbox", that.f1_score_selected);
+                        if (that.use_treecut && !that.f1_score_selected){
+                            that.set_f1_score_selected(true);
+                            d3.select(this).select("rect")
+                                .attr("fill", Global.GrayColor);
+                            d3.selectAll(".mismatch-checkbox")
+                                .select("rect")
+                                .attr("fill", "white");
+                        }
+                    } else if(option.label==="Mismatch") {
+                        console.log("click prec-rec-checkbox", that.f1_score_selected);
+                        if (that.use_treecut && that.f1_score_selected){
+                            that.set_f1_score_selected(false);
+                            d3.select(this).select("rect")
+                                .attr("fill", Global.GrayColor);
+                            d3.selectAll(".prec-rec-checkbox")
+                                .select("rect")
+                                .attr("fill", "white");
+                        }
+                    } else {
+                        console.log("ERROR: no option named", option.label)
+                    }
+                }
+             };
+             svgDropDown(config);
+
+            // 2. precision & recall legend
+            let precision_color = "rgb(201, 130, 206)";
+            let recall_color = "rgb(79, 167, 255)";
+            let rect_size = 6;
+            let precision_recall_legend_startx = start_x+drop_down_width+80+30;
+            let pc_group = that.svg
+                .append("g")
+                .attr("class", "precision-recall-legend")
+                .attr("transform", "translate("+
+                    (precision_recall_legend_startx)+","+
+                    (top_y)+")" + "scale(" + 1+"," + 1+")");
+            pc_group.append("rect")
                 .attr("x", 0)
-                .attr("y", 0)
-                .attr("width", 14)
-                .attr("height", 14)
-                .attr("rx", 3.5)
-                .attr("ry", 3.5)
-                .attr("fill", that.f1_score_selected ? Global.GrayColor : "white")
-                .attr("stroke", Global.GrayColor);
-            prec_rec_checkbox.append("text")
-                .style("stroke", "white")
-                .style("fill", "white")
-                .attr("text-anchor", "middle")
-                .attr("font-size", "12px")
-                .attr("x", 14 / 2)
-                .attr("y", 14 / 2 + 5)
-                .text("\u2714")
-            prec_rec_checkbox.append("text")
+                .attr("y", rect_size+10)
+                .attr("rx", 1.5)
+                .attr("ry", 1.5)
+                .attr("width", rect_size)
+                .attr("height", rect_size)
+                .attr("stroke-width", 1)
+                .attr("stroke", precision_color)
+                .attr("fill", precision_color);
+            pc_group.append("rect")
+                .attr("x", 0)
+                .attr("y", 10)
+                .attr("rx", 1.5)
+                .attr("ry", 1.5)
+                .attr("width", rect_size)
+                .attr("height", rect_size*2)
+                .attr("stroke-width", 1)
+                .attr("stroke", precision_color)
+                .attr("fill", "none");
+
+            pc_group.append("rect")
+                .attr("x", rect_size+93)
+                .attr("y", rect_size+10)
+                .attr("rx", 1.5)
+                .attr("ry", 1.5)
+                .attr("width", rect_size)
+                .attr("height", rect_size)
+                .attr("stroke-width", 1)
+                .attr("stroke", recall_color)
+                .attr("fill", recall_color);
+            pc_group.append("rect")
+                .attr("x", rect_size+93)
+                .attr("y", 10)
+                .attr("rx", 1.5)
+                .attr("ry", 1.5)
+                .attr("width", rect_size)
+                .attr("height", rect_size*2)
+                .attr("stroke-width", 1)
+                .attr("stroke", recall_color)
+                .attr("fill", "none");
+
+            pc_group.append("text")
                 .attr("text-anchor", "start")
-                .attr("x", 14 + 2)
-                .attr("y", 12)
+                .attr("x", rect_size+5)
+                .attr("y", 22)
                 .attr("font-size", "18px")
-                .text("F1 score");
-            mismatch_checkbox.append("rect")
-                .attr("x", 0)
-                .attr("y", 0)
-                .attr("width", 14)
-                .attr("height", 14)
-                .attr("rx", 3.5)
-                .attr("ry", 3.5)
-                .attr("fill", that.f1_score_selected ? "white" : Global.GrayColor)
-                .attr("stroke", Global.GrayColor);
-            mismatch_checkbox.append("text")
-                .style("stroke", "white")
-                .style("fill", "white")
-                .attr("text-anchor", "middle")
-                .attr("font-size", "12px")
-                .attr("x", 14 / 2)
-                .attr("y", 14 / 2 + 5)
-                .text("\u2714")
-            mismatch_checkbox.append("text")
+                .text("Precision");
+
+            pc_group.append("text")
                 .attr("text-anchor", "start")
-                .attr("x", 14 + 2)
-                .attr("y", 12)
+                .attr("x", rect_size*2+98)
+                .attr("y", 22)
+                .attr("font-size", "18px")
+                .text("Recall");
+
+            // 3. match & mismatch line legend
+            let match_color = "#D3D3E5";
+            let mistach_color = "#ED2939";
+            let line_stroke = 1;
+            let line_length = 30;
+            let match_mismatch_legend_startx = precision_recall_legend_startx+160+30;
+            let match_group = that.svg
+                .append("g")
+                .attr("class", "match-mismatch-legend")
+                .attr("transform", "translate("+
+                    (match_mismatch_legend_startx)+","+
+                    (top_y)+")" + "scale(" + 1+"," + 1+")");
+
+            match_group.append("line")
+                .attr("x1", 0)
+                .attr("y1", 15)
+                .attr("x2", line_length)
+                .attr("y2", 15)
+                .attr("stroke-width", line_stroke)
+                .attr("stroke", match_color);
+
+            match_group.append("line")
+                .attr("x1", 100)
+                .attr("y1", 15)
+                .attr("x2", line_length+100)
+                .attr("y2", 15)
+                .attr("stroke-dasharray", "5,5")
+                .attr("stroke-width", line_stroke)
+                .attr("stroke", mistach_color);
+
+            match_group.append("text")
+                .attr("text-anchor", "start")
+                .attr("x", 3+line_length)
+                .attr("y", 22)
+                .attr("font-size", "18px")
+                .text("Match");
+
+            match_group.append("text")
+                .attr("text-anchor", "start")
+                .attr("x", line_length+100)
+                .attr("y", 22)
                 .attr("font-size", "18px")
                 .text("Mismatch");
-            
         },
         expand_icon_create() {
             // this.expanded_icon_group.on("click", () => {
@@ -625,7 +891,7 @@ export default {
             .attr("width", this.bbox_width)
             .attr("height", this.bbox_height)
             .style("padding-top", "5px");
-        this.legend_create();
+
         this.expanded_icon_group = this.svg
             .append("g")
             .attr("id", "expanded-icon-group")
@@ -704,7 +970,7 @@ export default {
                 "transform",
                 "translate(" + 0 + ", " + this.text_height + ")"
             );
-
+        this.legend_create();
         this.tree_layout = new tree_layout(
             [this.node_width, this.layer_height],
             this.layout_height
