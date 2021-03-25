@@ -15,6 +15,8 @@ from ..utils.helper_utils import check_dir, pickle_load_data, pickle_save_data
 
 from .gridlayout import grid_layout
 
+from annoy import AnnoyIndex
+
 SO_PATH = os.path.join(config.dll_root)
 
 class Sampler(object):
