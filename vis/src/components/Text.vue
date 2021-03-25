@@ -289,7 +289,7 @@ export default {
 
 <style>
 .text-view {
-  height: 66%;
+  height: 57%;
 }
 
 .text-content {

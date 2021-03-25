@@ -1,7 +1,24 @@
 <template>
   <v-row class="image-view fill-width mr-0">
 
-    <v-col cols="12" class="image-content pa-0"> <svg id="btn-svg" width="100px" height="24px"></svg> </v-col>
+    <v-col cols="12" class="image-content pa-0">
+      <v-row>
+        <span
+            class=""
+            v-text="'Confidence: '+confidence/100"
+            style="margin: 3px 0 0 20px; width: 120px; height: 30px"
+          ></span>
+
+        <v-slider
+          v-model="confidence"
+          max="100"
+          style="margin: 0 20px 0 20px; height: 30px"
+        ></v-slider>
+
+        <svg id="btn-svg" width="100px" height="24px" style="margin-right: 20px"></svg>
+      </v-row>
+
+    </v-col>
   </v-row>
 </template>
 
@@ -12,7 +29,9 @@
   import * as Global from "../plugins/global";
 export default {
   name: "DetImage",
-  data: () => ({}),
+  data: () => ({
+    confidence: 50
+  }),
   watch: {
     selected_images(){
       let that = this;
@@ -184,7 +203,7 @@ export default {
           .attr("class", "one-grid-image")
           .attr("xlink:href", d => that.Website + ":" + that.Port + `/image/image?filename=${d.id}.jpg`)
           .attr("x", (d, i) => that.img_padding + (i % that.x_grid_num) * (that.grid_size + that.grid_offset))
-          .attr("y", (d, i) => that.img_padding + Math.floor(i / that.x_grid_num) * (that.grid_size + that.grid_offset))
+          .attr("y", (d, i) => that.img_padding + Math.floor(i / that.x_grid_num) * (that.grid_size + that.grid_offset)-30)
           .attr("width", that.grid_size)
           .attr("height", that.grid_size);
 
@@ -475,12 +494,12 @@ export default {
     let that = this;
     let container = d3.select(".image-content");
     // console.log("container", container);
-    container.style('height', `${Global.WindowHeight * 0.31}px`);
+    container.style('height', `${Global.WindowHeight * 0.4}px`);
     let bbox = container.node().getBoundingClientRect();
     that.width = bbox.width;
     that.height = bbox.height;
     that.layout_width = that.width - 20;
-    that.layout_height = that.height;
+    that.layout_height = that.height-40;
     that.Website = "http://localhost";
     that.Port = "20211";
     that.img_padding = 10;
