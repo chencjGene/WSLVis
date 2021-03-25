@@ -1,7 +1,7 @@
 <template>
   <v-row class="image-view fill-width mr-0">
-    <v-col cols="12" class="topname fill-width"> Image <svg id="btn-svg" width="100px" height="24px"></svg></v-col>
-    <v-col cols="12" class="image-content pa-0"> </v-col>
+
+    <v-col cols="12" class="image-content pa-0"> <svg id="btn-svg" width="100px" height="24px"></svg> </v-col>
   </v-row>
 </template>
 
@@ -475,7 +475,7 @@ export default {
     let that = this;
     let container = d3.select(".image-content");
     // console.log("container", container);
-    container.style('height', `${Global.WindowHeight * 0.34 - 24}px`);
+    container.style('height', `${Global.WindowHeight * 0.31}px`);
     let bbox = container.node().getBoundingClientRect();
     that.width = bbox.width;
     that.height = bbox.height;
@@ -504,7 +504,7 @@ export default {
       .append("svg")
       .attr("id", "image-svg")
       .attr("width", that.width)
-      .attr("height", that.layout_height - 10);
+      .attr("height", that.layout_height - 40);
 
     that.main_group = that.svg
       .append("g")
@@ -617,6 +617,7 @@ export default {
 .image-content {
   border: 1px solid #c1c1c1;
   border-radius: 5px;
+  margin: 10px;
   /* height: calc(100% - 24px); */
   overflow-y: auto;
   overflow-x: hidden;

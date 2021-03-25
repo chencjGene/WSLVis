@@ -3,11 +3,19 @@
     <v-main>
         <v-container fluid class="main-background fill-height pa-0">
           <app-detection></app-detection>
-          <v-col cols="3" class="other-view fill-height">
+          <v-col cols="3" style="height: 97.5%" align-self="start">
+<!--            <v-row>-->
+            <v-col cols="12" class="topname fill-width"> Information </v-col>
+            <v-col cols="12" class="other-view fill-height">
             <!-- <app-action-trail></app-action-trail> -->
-            <app-text></app-text>
-            <app-image></app-image>
+
+                <app-text></app-text>
+                <app-image></app-image>
+              </v-col>
+<!--          </v-row>-->
           </v-col>
+
+
       </v-container>
     </v-main>
   </v-app>
@@ -71,7 +79,12 @@ export default {
   padding: 0px 0px 0px 0px;
 }
 
-
+.other-view {
+  border: 1px solid #c1c1c1;
+  padding-bottom: 0;
+  padding-top: 0;
+  border-radius: 5px;
+}
 
 
 /* .action-trail-view {
