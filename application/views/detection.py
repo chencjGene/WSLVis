@@ -53,28 +53,31 @@ def app_get_grid_layout():
 # for debug
 @detection.route("/detection/Embedding", methods=["GET", "POST"])
 def app_get_embedding():
-    port = init_model("COCO17", "step2")
+    port = init_model("COCO17", "step3")
     m = port.model
+    m.update_hiera("sub1")
     m.run()
-    cluster_id = 5
-    class_id = 59
+    cluster_id = 3
+    class_id = 7
     image_ids = m.image_ids_of_clusters[cluster_id]
     image_labels = m.data.get_category_pred(label_type="all", \
         data_type="image", threshold=0.5)
     text_labels = m.data.get_category_pred(label_type="all", data_type="text-only")
     gt = m.data.get_groundtruth_labels(label_type="all")
-    mismatch = (image_labels!=text_labels)[np.array(image_ids)].sum(axis=1)
-    # [:, class_id]
+    mismatch = (image_labels!=text_labels)[np.array(image_ids)][:, class_id]
     selected_img = image_labels[np.array(image_ids)][:,class_id]
     selected_text = text_labels[np.array(image_ids)][:,class_id]
     selected_gt = gt[np.array(image_ids)][:,class_id]
-    # mismatch = m.data.get_mismatch()[np.array(image_ids)][:, 2]
 
-    # mismatch = mismatch.astype(int)
-    # for i, id in enumerate(image_ids):
-    #     if mismatch[i]:
-    #         if selected_img[i] != selected_gt[i]:
-    #             mismatch[i] = 2
+    mismatch = mismatch.astype(int)
+    for i, id in enumerate(image_ids):
+        if mismatch[i]:
+            if selected_img[i] != selected_gt[i] and selected_img[i] == 1:
+                mismatch[i] = 3
+            elif selected_img[i] != selected_gt[i] and selected_img[i] == 0:
+                mismatch[i] = 4
+            elif selected_text[i] != selected_gt[i] and selected_text[i] == 0:
+                mismatch[i] = 2
 
     coor = m.get_tsne_of_image_cluster(cluster_id)
     print("tsne shape", coor.shape)

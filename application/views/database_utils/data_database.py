@@ -137,14 +137,15 @@ class DataBaseLoader(object):
         bbox = np.array(bbox) / np.array([width, height, width, height])
         feature_map_size = feature.shape[0]
         bbox = (bbox * feature_map_size + 0.49).astype(int)
+        bbox[bbox < 0] = 0
         feature = feature[bbox[1]:bbox[3]+1, bbox[0]:bbox[2]+1]
         if np.array(feature.shape).all() == 0:
             return np.zeros(16)
         # out = feature.transpose(2, 0, 1).reshape(16, -1).mean(axis=1)
-        output = RoIMaxPooling2d((2, 2))(feature)
-        if np.isnan(out.max()):
-            a = 1
-        return out
+        output = RoIMaxPooling2d((2, 2))(feature).reshape(-1)
+        # if np.isnan(out.max()):
+        #     a = 1
+        return output
 
 
 
@@ -244,10 +245,10 @@ class Data(DataBaseLoader):
         fp = []
         fn = []
         label_type = "labeled"
-        if self.step <= 2:
-            preds = self.get_category_pred(label_type=label_type, data_type="text-only")
-        else:
-            preds = self.get_category_pred(label_type=label_type, data_type="text")
+        # if self.step <= 2:
+        #     preds = self.get_category_pred(label_type=label_type, data_type="text-only")
+        # else:
+        preds = self.get_category_pred(label_type=label_type, data_type="text")
         gt = self.get_groundtruth_labels(label_type=label_type)
         for idx in self.labeled_idx:
             label = gt[idx]

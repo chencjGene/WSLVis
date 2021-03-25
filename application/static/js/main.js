@@ -5,10 +5,10 @@ let Port = "20211"
 let EmbeddingApi = "/detection/Embedding"
 let CategoryColor = [
     "#777777",
-    "#ff7f0e", // orange
-    "#d62728", // red
-    "#9467bd",
-    "#8c564b",
+    "#ff7f0e", // orange, text false pos
+    "#9467bd", // violet, text false neg // 这种是要找到 bounding box的
+    "#d62728", // red, image false pos // 这种是要去掉bounding box的
+    "#8c564b", //brown, image false neg
     "#1f77b4",
     "#2ca02c",
     "#e377c2",
