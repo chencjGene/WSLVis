@@ -600,7 +600,7 @@ export default {
                     (top_y)+")" + "scale(" + 1+"," + 1+")");
             pc_group.append("rect")
                 .attr("x", 0)
-                .attr("y", 0)
+                .attr("y", rect_size+10)
                 .attr("rx", 1.5)
                 .attr("ry", 1.5)
                 .attr("width", rect_size)
@@ -608,10 +608,20 @@ export default {
                 .attr("stroke-width", 1)
                 .attr("stroke", precision_color)
                 .attr("fill", precision_color);
-
             pc_group.append("rect")
                 .attr("x", 0)
-                .attr("y", rect_size+15)
+                .attr("y", 10)
+                .attr("rx", 1.5)
+                .attr("ry", 1.5)
+                .attr("width", rect_size)
+                .attr("height", rect_size*2)
+                .attr("stroke-width", 1)
+                .attr("stroke", precision_color)
+                .attr("fill", "none");
+
+            pc_group.append("rect")
+                .attr("x", rect_size+93)
+                .attr("y", rect_size+10)
                 .attr("rx", 1.5)
                 .attr("ry", 1.5)
                 .attr("width", rect_size)
@@ -619,19 +629,29 @@ export default {
                 .attr("stroke-width", 1)
                 .attr("stroke", recall_color)
                 .attr("fill", recall_color);
+            pc_group.append("rect")
+                .attr("x", rect_size+93)
+                .attr("y", 10)
+                .attr("rx", 1.5)
+                .attr("ry", 1.5)
+                .attr("width", rect_size)
+                .attr("height", rect_size*2)
+                .attr("stroke-width", 1)
+                .attr("stroke", recall_color)
+                .attr("fill", "none");
 
             pc_group.append("text")
                 .attr("text-anchor", "start")
-                .attr("x", rect_size+3)
-                .attr("y", 7)
-                .attr("font-size", "12px")
+                .attr("x", rect_size+5)
+                .attr("y", 22)
+                .attr("font-size", "18px")
                 .text("Precision");
 
             pc_group.append("text")
                 .attr("text-anchor", "start")
-                .attr("x", rect_size+3)
-                .attr("y", rect_size+22)
-                .attr("font-size", "12px")
+                .attr("x", rect_size*2+98)
+                .attr("y", 22)
+                .attr("font-size", "18px")
                 .text("Recall");
 
             // 3. match & mismatch line legend
@@ -639,7 +659,7 @@ export default {
             let mistach_color = "#ED2939";
             let line_stroke = 1;
             let line_length = 30;
-            let match_mismatch_legend_startx = precision_recall_legend_startx+50+30;
+            let match_mismatch_legend_startx = precision_recall_legend_startx+160+30;
             let match_group = that.svg
                 .append("g")
                 .attr("class", "match-mismatch-legend")
@@ -649,17 +669,17 @@ export default {
 
             match_group.append("line")
                 .attr("x1", 0)
-                .attr("y1", 2)
+                .attr("y1", 15)
                 .attr("x2", line_length)
-                .attr("y2", 2)
+                .attr("y2", 15)
                 .attr("stroke-width", line_stroke)
                 .attr("stroke", match_color);
 
             match_group.append("line")
-                .attr("x1", 0)
-                .attr("y1", 23)
-                .attr("x2", line_length)
-                .attr("y2", 23)
+                .attr("x1", 100)
+                .attr("y1", 15)
+                .attr("x2", line_length+100)
+                .attr("y2", 15)
                 .attr("stroke-dasharray", "5,5")
                 .attr("stroke-width", line_stroke)
                 .attr("stroke", mistach_color);
@@ -667,15 +687,15 @@ export default {
             match_group.append("text")
                 .attr("text-anchor", "start")
                 .attr("x", 3+line_length)
-                .attr("y", 7)
-                .attr("font-size", "12px")
+                .attr("y", 22)
+                .attr("font-size", "18px")
                 .text("Match");
 
             match_group.append("text")
                 .attr("text-anchor", "start")
-                .attr("x", 3+line_length)
-                .attr("y", rect_size+22)
-                .attr("font-size", "12px")
+                .attr("x", line_length+100)
+                .attr("y", 22)
+                .attr("font-size", "18px")
                 .text("Mismatch");
         },
         expand_icon_create() {
