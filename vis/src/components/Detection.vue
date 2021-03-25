@@ -591,7 +591,7 @@ export default {
             let precision_color = "rgb(201, 130, 206)";
             let recall_color = "rgb(79, 167, 255)";
             let rect_size = 6;
-            let precision_recall_legend_startx = start_x+drop_down_width+80+30;
+            let precision_recall_legend_startx = start_x+drop_down_width+80+50;
             let pc_group = that.svg
                 .append("g")
                 .attr("class", "precision-recall-legend")
@@ -659,7 +659,7 @@ export default {
             let mistach_color = "#ED2939";
             let line_stroke = 1;
             let line_length = 30;
-            let match_mismatch_legend_startx = precision_recall_legend_startx+160+30;
+            let match_mismatch_legend_startx = precision_recall_legend_startx+160+60;
             let match_group = that.svg
                 .append("g")
                 .attr("class", "match-mismatch-legend")
@@ -676,9 +676,9 @@ export default {
                 .attr("stroke", match_color);
 
             match_group.append("line")
-                .attr("x1", 100)
+                .attr("x1", 220)
                 .attr("y1", 15)
-                .attr("x2", line_length+100)
+                .attr("x2", line_length+220)
                 .attr("y2", 15)
                 .attr("stroke-dasharray", "5,5")
                 .attr("stroke-width", line_stroke)
@@ -689,14 +689,14 @@ export default {
                 .attr("x", 3+line_length)
                 .attr("y", 22)
                 .attr("font-size", "18px")
-                .text("Match");
+                .text("Matched cluster pair");
 
             match_group.append("text")
                 .attr("text-anchor", "start")
-                .attr("x", line_length+100)
+                .attr("x", line_length+220)
                 .attr("y", 22)
                 .attr("font-size", "18px")
-                .text("Mismatch");
+                .text("Mismatched cluster pair");
         },
         expand_icon_create() {
             // this.expanded_icon_group.on("click", () => {
