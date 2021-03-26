@@ -5,7 +5,11 @@
       <v-col class="label-text pa-0 pl-2"> Selected: 
         <span id="selected-class-name">{{selected_node.curr_full_name}} </span>
         </v-col>
-      <v-col class="label-text pa-0 pl-2" id="wordcloud-name"> Word cloud: </v-col>
+        <v-row style="margin-left: 1px">
+            <v-col class="label-text pa-0 pl-2" id="wordcloud-name"> Word cloud: </v-col>
+            <svg v-on:click="remove_word()" class="wordcloud-recyclebin" height="20" viewBox="0 0 74 74" width="20" xmlns="http://www.w3.org/2000/svg"><path d="m51.512 71.833h-28.723a4.661 4.661 0 0 1 -4.631-4.3l-2.858-39.146a1 1 0 1 1 1.995-.146l2.854 39.142a2.652 2.652 0 0 0 2.636 2.45h28.727a2.651 2.651 0 0 0 2.635-2.45l2.853-39.142a1 1 0 0 1 2 .146l-2.857 39.142a4.661 4.661 0 0 1 -4.631 4.304z"/><path d="m58.741 29.314h-43.184a3.072 3.072 0 0 1 -3.069-3.068v-4.468a3.072 3.072 0 0 1 3.069-3.068h43.184a3.071 3.071 0 0 1 3.068 3.068v4.468a3.071 3.071 0 0 1 -3.068 3.068zm-43.184-8.6a1.07 1.07 0 0 0 -1.069 1.068v4.468a1.071 1.071 0 0 0 1.069 1.068h43.184a1.07 1.07 0 0 0 1.068-1.068v-4.472a1.069 1.069 0 0 0 -1.068-1.068z"/><path d="m58 20.71h-41.7a1 1 0 0 1 -.944-1.329l5.035-14.464a4.6 4.6 0 0 1 4.338-3.084h24.839a4.6 4.6 0 0 1 4.339 3.084l5.034 14.464a1 1 0 0 1 -.941 1.329zm-40.289-2h38.879l-4.572-13.136a2.6 2.6 0 0 0 -2.45-1.741h-24.839a2.6 2.6 0 0 0 -2.449 1.741z"/><path d="m51.5 20.71h-28.7a1 1 0 0 1 -.944-1.329l3.314-9.515a2.294 2.294 0 0 1 2.165-1.538h19.627a2.293 2.293 0 0 1 2.165 1.538l3.312 9.515a1 1 0 0 1 -.939 1.329zm-27.285-2h25.873l-2.85-8.187a.292.292 0 0 0 -.276-.2h-19.627a.292.292 0 0 0 -.276.2z"/><path d="m27.345 52.7a1 1 0 0 1 -.977-.79 11.029 11.029 0 0 1 18.814-9.887 1 1 0 1 1 -1.457 1.37 8.943 8.943 0 0 0 -6.576-2.842 9.038 9.038 0 0 0 -9.028 9.028 9.133 9.133 0 0 0 .2 1.911 1 1 0 0 1 -.767 1.187.953.953 0 0 1 -.209.023z"/><path d="m37.149 60.6a11.072 11.072 0 0 1 -8.033-3.473 1 1 0 1 1 1.457-1.37 8.944 8.944 0 0 0 6.576 2.843 9.038 9.038 0 0 0 9.028-9.028 9.157 9.157 0 0 0 -.119-1.47 1 1 0 0 1 1.974-.321 11.19 11.19 0 0 1 .145 1.791 11.042 11.042 0 0 1 -11.028 11.028z"/><path d="m40.083 44.563a1 1 0 0 1 -.192-1.98l3.388-.668-.667-3.388a1 1 0 0 1 1.962-.387l.861 4.369a1 1 0 0 1 -.788 1.175l-4.37.86a.918.918 0 0 1 -.194.019z"/><path d="m30.7 61.814a1 1 0 0 1 -.98-.807l-.861-4.369a1 1 0 0 1 .787-1.175l4.37-.86a1 1 0 1 1 .387 1.961l-3.389.668.668 3.389a1 1 0 0 1 -.782 1.179.989.989 0 0 1 -.2.014z"/></svg>
+        </v-row>
+
       <v-col class="wordcloud-col pa-0"> </v-col>
       <v-col class="label-text pa-0 pl-2" id="caption-name"> Captions: </v-col>
       <v-col class="text-col pa-0">
@@ -107,12 +111,20 @@ export default {
       });
     },
     update_data() {
-      this.min_value = Math.min(...this.words.map((d) => d.value));
-      this.max_value = Math.max(...this.words.map((d) => d.value));
+      let words = Global.deepCopy(this.words);
+      let removed_words = this.$store.state.word_cloud_recycled[this.selected_node.curr_full_name];
+      if(removed_words!==undefined) {
+        for(let word of removed_words) {
+          let idx = words.findIndex(d => d.text===word);
+          if(idx !== -1) words.splice(idx, 1);
+        }
+      }
+      this.min_value = Math.min(...words.map((d) => d.value));
+      this.max_value = Math.max(...words.map((d) => d.value));
       this.sizeScale = d3.scaleSqrt([this.min_value, this.max_value], [10, 45]);
       this.wordclouds = wordcloud()
         .size([this.wordcloud_width, this.wordcloud_height])
-        .data(Global.deepCopy(this.words))
+        .data(words)
         .padding(4)
         .font(this.fontFamily)
         .fontSize((d) => this.sizeScale(d.value))
@@ -136,7 +148,20 @@ export default {
       this.remove();
       this.adapt_wordcloud_height();
     },
+    remove_word() {
 
+        let that = this;
+        let node = that.selected_node.curr_full_name;
+        let removed_word = that.focus_word.text;
+        console.log("click removed word", node, removed_word);
+        if(that.$store.state.word_cloud_recycled[node]===undefined) {
+          that.$store.state.word_cloud_recycled[node] = []
+        }
+        that.$store.state.word_cloud_recycled[node].push(removed_word);
+        // re render
+      that.update_data();
+      that.update_view();
+    },
     adapt_wordcloud_height() {
       let bbox = this.wordcloud_group.node().getBBox();
       this.wordcloud_group
@@ -187,7 +212,7 @@ export default {
         .style("font-family", (d) => d.font)
         .text((d) => d.text);
       word_groups
-        .attr("opacity", 0)
+        .attr("opacity", 1)
         .transition()
         .duration(this.create_ani)
         .delay(this.remove_ani + this.update_ani)
@@ -292,9 +317,13 @@ export default {
   height: 57%;
 }
 
+.wordcloud-recyclebin {
+  margin: 15px 50px 0 0;
+  cursor: pointer;
+}
+
 .text-content {
   border: 0;
-  border-radius: 5px;
   height: calc(100% - 16px);
   margin: 10px;
     border-bottom: 1px solid #c1c1c1;

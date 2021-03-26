@@ -49,6 +49,9 @@ const store = new Vuex.Store({
           show: false,
           width: 0,
           content: '',
+        },
+        word_cloud_recycled: {
+
         }
     },
     getters: {
