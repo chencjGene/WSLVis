@@ -135,6 +135,7 @@ export default {
             }
             else{
                 if (!this.focus_node) {
+                    this.tree.all_descendants.forEach(d => d.children = []);
                     this.tree.children = this.tree.all_children;
                 }
                 else if(this.focus_node[0].type == 0){
@@ -154,6 +155,12 @@ export default {
             console.log(this.tree, this.image_cluster_list);
 
             // tree layout
+            if (!this.use_treecut){
+                this.tree_layout.update_layout_by_num(this.tree.descendants().length - 1);
+            }
+            else{
+                this.tree_layout.reset_layout();
+            }
             this.nodes = this.tree_layout.layout_with_rest_node(
                 this.tree,
                 this.expand_tree
@@ -538,28 +545,29 @@ export default {
                 changeHandler: function(option) {
                     if(option.label==="None") {
                         console.log("click tree cut", that.use_treecut);
-                        if (that.use_treecut){
-                            that.set_use_treecut(false);
-                            d3.select(this).select("rect")
-                                .attr("fill", "white");
-                            d3.selectAll(".prec-rec-checkbox")
-                                .select("rect")
-                                .attr("fill", "white");
-                            d3.selectAll(".mismatch-checkbox")
-                                .select("rect")
-                                .attr("fill", "white");
-                        }
-                        else{
-                            that.set_use_treecut(true);
-                            d3.select(this).select("rect")
-                                .attr("fill", Global.GrayColor);
-                            d3.selectAll(".prec-rec-checkbox")
-                                .select("rect")
-                                .attr("fill", that.f1_score_selected ? Global.GrayColor : "white")
-                            d3.selectAll(".mismatch-checkbox")
-                                .select("rect")
-                                .attr("fill", that.f1_score_selected ? "white" : Global.GrayColor)
-                        }
+                        that.set_use_treecut(false);
+                        // if (that.use_treecut){
+                        //     that.set_use_treecut(false);
+                        //     // d3.select(this).select("rect")
+                        //     //     .attr("fill", "white");
+                        //     // d3.selectAll(".prec-rec-checkbox")
+                        //     //     .select("rect")
+                        //     //     .attr("fill", "white");
+                        //     // d3.selectAll(".mismatch-checkbox")
+                        //     //     .select("rect")
+                        //     //     .attr("fill", "white");
+                        // }
+                        // else{
+                        //     that.set_use_treecut(true);
+                        //     // d3.select(this).select("rect")
+                        //     //     .attr("fill", Global.GrayColor);
+                        //     // d3.selectAll(".prec-rec-checkbox")
+                        //     //     .select("rect")
+                        //     //     .attr("fill", that.f1_score_selected ? Global.GrayColor : "white")
+                        //     // d3.selectAll(".mismatch-checkbox")
+                        //     //     .select("rect")
+                        //     //     .attr("fill", that.f1_score_selected ? "white" : Global.GrayColor)
+                        // }
                     } else if(option.label==="F1 score") {
                         console.log("click prec-rec-checkbox", that.f1_score_selected);
                         if (that.use_treecut && !that.f1_score_selected){
@@ -800,6 +808,13 @@ export default {
         },
         tree() {
             console.log("tree update");
+            this.treecut();
+            console.log("offset", this.offset);
+            this.update_data();
+            this.update_view();
+        },
+        use_treecut(){
+            console.log("use_treecut");
             this.treecut();
             console.log("offset", this.offset);
             this.update_data();

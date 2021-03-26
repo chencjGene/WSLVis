@@ -127,15 +127,14 @@ class CoClusteringTest(unittest.TestCase):
 
 
     def test_model(self):
-        m = WSLModel(dataname=config.coco17, step=1)
+        dataname = "COCO17"
+        step = 0
+        mat = pickle_load_data("test/mismatch/network.pkl")
+        m = WSLModel(dataname=config.coco17, step=step)
+        m.update_hiera("sub3")
         m.run()
-        class_name = m.data.class_name[1:]
-        row_labels = m.text_labels
-        col_labels = m.image_labels
-        for i in range(m.config["text_k"]):
-            selected = row_labels==i
-            # print("total num of selected", sum(selected))
-            print(np.array(class_name)[selected])
+
+        
         a = 1
 
 

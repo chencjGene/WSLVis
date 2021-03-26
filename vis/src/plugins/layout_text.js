@@ -76,9 +76,11 @@ const mini_tree_layout = function(Size){
 
 const tree_layout = function(nodeSize, layout_height){
     let that = this;
+    that.nodeSize = nodeSize;
     that.x_delta = nodeSize[0];
     that.y_delta = nodeSize[1];
     that.layout_height = layout_height;
+    that.max_num = parseInt(that.layout_height / that.y_delta);
 
     this.layout = function(data, expand_tree){
         if (expand_tree === false){
@@ -89,6 +91,18 @@ const tree_layout = function(nodeSize, layout_height){
         }
     };
 
+    this.update_layout_by_num = function(num){
+        if (num < that.max_num){
+            that.y_delta = that.layout_height / num;
+        }
+        else{
+            that.y_delta = that.nodeSize[1];
+        }
+    };
+
+    this.reset_layout = function(){
+        that.y_delta = that.nodeSize[1];
+    };
     this.layout_with_nodes = function(data, expand_tree){
         if (expand_tree === false){
             return that._aligned_layout(data);
