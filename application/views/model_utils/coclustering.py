@@ -200,6 +200,25 @@ def DTPP(V, k1, k2):
 
     a =  1
 
+def reordering(matrix):
+    row_order = np.array(range(matrix.shape[0]))
+    column_order = np.array(range(matrix.shape[1]))
+    for _ in range(10):
+        tmp_matrix = matrix[row_order, :][:, column_order]
+        x = np.dot(tmp_matrix, \
+            np.array(range(tmp_matrix.shape[1])).reshape(-1, 1))
+        x = x.reshape(-1)
+        x = x / (tmp_matrix.sum(axis=1) + 1e-12)
+        row_order = row_order[x.argsort()]
+
+        tmp_matrix = matrix[row_order, :][:, column_order]
+        y = np.dot(np.array(range(tmp_matrix.shape[0])).reshape(1, -1),\
+            tmp_matrix)
+        y = y.reshape(-1)
+        y = y / (tmp_matrix.sum(axis=0) + 1e-12)
+        column_order = column_order[y.argsort()]
+    return row_order, column_order
+
 
 class CoClustering(object):
     def __init__(self, k1, k2, w_t = 1, n_iter=100, verbose=1):

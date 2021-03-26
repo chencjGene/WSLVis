@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import json
 
 from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.manifold import TSNE
@@ -15,12 +16,16 @@ try:
 except:
     None
     
-from .coclustering import CoClustering
+from .coclustering import CoClustering, reordering
 from .tree_helper import TextTreeHelper, TreeHelper, ImageTreeHelper
 from .ranker import ImageRanker
 from .sampler import Sampler
 
 
+filter_mask = '[[1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]]'
+
+filter_mask = json.loads(filter_mask)
+filter_mask = np.array(filter_mask)
 class WSLModel(object):
     def __init__(self, dataname=None, step=0, config=None):
         self.dataname = dataname
@@ -301,21 +306,29 @@ class WSLModel(object):
 
         mismatch = self.data.get_mismatch()
         mismatch_matrix = []
-        mat = []
+        origin_cam_mat = []
         for i in range(len(self.image_cluster_list)):
             v = origin_mat[:, np.array(self.image_cluster_list[i]["cluster_idxs"])]
             v = v.sum(axis=1)
             m = mismatch[np.array(self.image_ids_of_clusters[i])].sum(axis=0)
             mismatch_matrix.append(m)
-            mat.append(v)
+            origin_cam_mat.append(v)
         # descendants = self.text_tree_helper\
         #     .get_all_leaf_descendants(self.text_tree_helper.tree)
         # text_labels = [d["id"] for d in descendants[::-1]]
         mismatch_matrix = np.array(mismatch_matrix)
-        mat = np.array(mat).T
+        mat = np.array(origin_cam_mat).T
+        origin_cam_mat = np.array(origin_cam_mat).T
         for idx, m in enumerate(mat):
             v = (m > m.mean() * 2).astype(int)
             mat[idx] = v
+
+        mat = mat * filter_mask
+        for i in range(1, mat.shape[0]):
+            if mat.sum(axis=1)[i] == 0:
+                idx = origin_cam_mat[i].argsort()[::-1][0]
+                mat[i, idx] = 1
+
 
         return mat.T, mismatch_matrix
 
@@ -327,25 +340,41 @@ class WSLModel(object):
         self.text_tree_helper.assign_mismatch(mismatch)
 
         # reordering
-        leaf_nodes = self.text_tree_helper.get_all_leaf_descendants(self.text_tree_helper.tree)
-        leaf_nodes = leaf_nodes[::-1]
-        pos = []
-        for i in range(cam_matrix.shape[0]):
-            p = 0
-            count = 0 
-            for j in range(len(leaf_nodes)):
-                idx = leaf_nodes[j]["id"]
-                if cam_matrix[i][idx] > 0:
-                    p = p + j
-                    count += 1
-            pos.append(p/count)
-        sorted_idxs = np.array(pos).argsort()
-        cam_matrix = cam_matrix[sorted_idxs, :]
-        mismatch = mismatch[sorted_idxs, :]
+        # leaf_nodes = self.text_tree_helper.get_all_leaf_descendants(self.text_tree_helper.tree)
+        # leaf_nodes = leaf_nodes[::-1]
+        # pos = []
+        # for i in range(cam_matrix.shape[0]):
+        #     p = 0
+        #     count = 0 
+        #     for j in range(len(leaf_nodes)):
+        #         idx = leaf_nodes[j]["id"]
+        #         if cam_matrix[i][idx] > 0:
+        #             p = p + j
+        #             count += 1
+        #     pos.append(p/count)
+        # sorted_idxs = np.array(pos).argsort()
+        # cam_matrix = cam_matrix[sorted_idxs, :]
+        # mismatch = mismatch[sorted_idxs, :]
+        childrens = [self.text_tree_helper.get_all_leaf_descendants(d) 
+            for d in self.text_tree_helper.tree["children"]]
+        cluster_res = [[i["cat_id"] for i in d]  for d in childrens]
+        slim_cam_matrix = []
+        for ids in cluster_res:
+            row = cam_matrix[:, np.array(ids)].sum(axis=1)
+            slim_cam_matrix.append(row)
+        slim_cam_matrix = np.array(slim_cam_matrix).T
+        row_order, column_order = reordering(slim_cam_matrix)
+        cam_matrix = cam_matrix[row_order, :]
+        mismatch = mismatch[row_order, :]
+        childrens = [self.text_tree_helper.tree["children"][column_order[i]] \
+            for i in range(len(column_order))]
+        self.text_tree_helper.tree["children"] = childrens
+
+
 
         mat = {
-            "text_tree": self.text_tree,
-            "image_cluster_list": [self.image_cluster_list[i] for i in sorted_idxs],
+            "text_tree": self.text_tree_helper.tree,
+            "image_cluster_list": [self.image_cluster_list[i] for i in row_order],
             "mismatch": mismatch.tolist(),
             "cluster_association_matrix": cam_matrix.tolist(),
             "vis_image_per_cluster": {i: self.get_rank(i) for i in range(len(self.image_cluster_list))}

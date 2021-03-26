@@ -37,7 +37,7 @@ const ConnectionLayout = function(parent, cluster_association_mat){
         that.text_nodes = text_nodes;
         that.image_nodes = image_nodes;
         let text_idxs = text_nodes.map(d => d.data.descendants_idx ? d.data.descendants_idx: [d.id]);
-
+        console.log("text_idxs", text_idxs);
         let image_idxs = image_nodes.map(d => d.cluster_idxs);
         let text_num = text_idxs.length;
         let image_num = image_idxs.length;

@@ -25,6 +25,7 @@ from application.views.database_utils.spectral_biclustering import \
 from application.views.database_utils.utils import multiclass_precision_and_recall
 from application.views.utils.config_utils import config
 from application.views.utils.helper_utils import pickle_load_data, pickle_save_data
+from application.views.utils.helper_utils import json_save_data, json_load_data
 from application.views.database_utils.utils import decoding_categories, encoding_categories
 from application.views.model_utils import WSLModel
 
@@ -126,15 +127,46 @@ class CoClusteringTest(unittest.TestCase):
         a = 1 
 
 
-    def test_model(self):
+    def test_filter(self):
         dataname = "COCO17"
         step = 0
-        mat = pickle_load_data("test/mismatch/network.pkl")
+        class_mat = pickle_load_data("test/mismatch/network.pkl")
         m = WSLModel(dataname=config.coco17, step=step)
         m.update_hiera("sub3")
         m.run()
 
-        
+        origin_mat = m.get_R(False)
+        origin_mat[0, :] = 0
+        mat = []
+        for i in range(len(m.image_cluster_list)):
+            v = origin_mat[:, np.array(m.image_cluster_list[i]["cluster_idxs"])]
+            v = v.sum(axis=1)
+            # m = mismatch[np.array(self.image_ids_of_clusters[i])].sum(axis=0)
+            # mismatch_matrix.append(m)
+            mat.append(v)
+        mat = np.array(mat).T
+
+        cluster_res = [m.text_tree_helper.get_all_leaf_descendants(d) for d in m.text_tree_helper.tree["children"]]
+        cluster_res = [ [i["cat_id"] for i in d]  for d in cluster_res]
+
+        origin_slim_mat = []
+        for ids in cluster_res:
+            row = mat[np.array(ids),:].sum(axis=0)
+            origin_slim_mat.append(row)
+        origin_slim_mat = np.array(origin_slim_mat)
+
+        slim_mat = origin_slim_mat + 0.01
+        slim_mat[np.array(range(10)), slim_mat.argmax(axis=1)] = 0
+        slim_mat[np.array(range(10)), slim_mat.argmax(axis=1)] = 0
+        slim_mat[8, 0] = 0.01
+
+        index_mat = slim_mat == 0
+
+        index_expand_mat = np.zeros((65, 9))
+        for i, ids in enumerate(cluster_res):
+            index_expand_mat[np.array(ids), :] = index_mat[i]
+
+
         a = 1
 
 
@@ -172,7 +204,7 @@ class CoClusteringTest(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(CoClusteringTest("test_cv"))
+    suite.addTest(CoClusteringTest("test_filter"))
     
     # # test all cases
     # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)
