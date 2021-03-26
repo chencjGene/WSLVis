@@ -25,14 +25,10 @@
                 :data-index="index"
               >
                 <div class="label-div" :id="item.id">
-                  <v-btn
-                    class="label-div-btn"
-                    disabled
-                    elevation="3"
-                    x-small
-                    v-for="label in ['cat', 'dog']"
-                    :key="label"
-                  >{{ label }}</v-btn>
+                  <svg :width="30+label.length*8.1" height="32" v-for="label in ['cat', 'this is a long name']" :key="label" style="margin: 3px; margin-top: 10px">
+                    <rect class="background" rx="3.3333333333333335" ry="3.3333333333333335" x="0" y="0" height="32" :width="30+label.length*8.1" style="fill: rgb(235, 235, 243); fill-opacity: 1;"></rect>
+                    <text class="node-name" text-anchor="start" x="15" y="16" font-size="18px" dy=".3em" style="opacity: 1;">{{ label }}</text>
+                  </svg>
                 </div>
               <div
                 class="text-div" 
@@ -368,11 +364,12 @@ export default {
   font-size: 16px;
   margin-left: 8px;
   margin-right: 8px;
-  padding-top: 8px;
+  /*padding-top: 8px;*/
   padding-bottom: 8px;
   padding-left: 3px;
   border-bottom: 1px solid #ddd;
   word-break: break-all;
+
 }
 .text-div:hover {
   background: #ddd;
