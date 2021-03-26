@@ -3,7 +3,7 @@ const DarkGray = "rgb(211, 211, 229)";
 const LightGray = "#EBEBF3";
 const Orange = "#ffa953";
 const Red = "rgb(237, 41, 57)";
-const BoxRed = "#EB6352";
+const BoxRed = "#93ff2f";
 const Animation = 1000; 
 const WindowHeight = window.innerHeight - 10;
 

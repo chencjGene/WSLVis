@@ -37,7 +37,7 @@ class Sampler(object):
         self.image_ids = image_ids
         self.train_idx = np.array(range(len(image_ids)))
         self.embed_X = embed_X
-        self.mismatch = mismatch.astype(int).mean(axis=1)
+        self.mismatch = mismatch.astype(int).sum(axis=1)
         self.train_tree = None
         self.train_tree_data = {}
         self.train_focus_node = None
@@ -242,7 +242,7 @@ class Sampler(object):
                     'id': int(id),
                     'img_id': self.image_ids[int(id)],
                     'pos': grid_x[idx].tolist(),
-                    'mismatch': self.mismatch[int(id)]
+                    'mismatch': int(self.mismatch[int(id)])
                 })
             if old_node_id == "root":
                 pickle_save_data(buffer_path, [idx, sampled_idx, self.current_grid_layout, hiera, res])
@@ -338,7 +338,8 @@ class DensityBasedSampler(object):
         if knn + 1 > M:
             knn = int((M - 1) / 2)
 
-        X2 = X[mismatch]
+        X2 = X[mismatch] 
+        # X2 = X[mismatch > 0]
         mismatch_index = [i for i in range(len(mismatch)) if mismatch[i]]
         _, mis_dist = Knn(X2, M, D, knn + 1, 1, 1, int(M))
         self.radius_of_k_mis_neighbor = dist[:, -1].copy()
