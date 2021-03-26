@@ -311,7 +311,7 @@ export default {
                     label: "",
                     value: ""
                   } :
-                  options.members[2];
+                  options.members[options.initMember];
 
                 /** Rendering Select Field */
                 const selectField = g.append("g");
@@ -506,7 +506,7 @@ export default {
             let drop_down_width = 100;
             let start_x = 15;
 
-            // 1.treecut: dropdown-list
+            // treecut: dropdown-list
              let treecut_g = that.svg
                 .append("g")
                 .attr("class", "current-label-checkbox")
@@ -536,12 +536,13 @@ export default {
              let config = {
                 width: drop_down_width,
                 container: treecut_g,
-                members,
+                members: members,
                 fontSize: 18,
                 color: "#333",
                 fontFamily: "calibri",
                 x: 80,
                 y: 0,
+                 initMember:2,
                 changeHandler: function(option) {
                     if(option.label==="None") {
                         console.log("click tree cut", that.use_treecut);
@@ -595,11 +596,56 @@ export default {
              };
              svgDropDown(config);
 
-            // 2. precision & recall legend
+             // co-occurrence: dropdown-list
+            let cooccurence_x = start_x+drop_down_width+80+30;
+            let cooccurrence_dropdown_width = 150;
+            let cooccurence_g = that.svg
+                .append("g")
+                .attr("class", "current-label-checkbox")
+                .attr("transform", "translate("+
+                    (cooccurence_x)+","+
+                    (top_y)+")" + "scale(" + 1+"," + 1+")");
+             cooccurence_g.append("text")
+                .attr("text-anchor", "start")
+                .attr("x", 14 + 2)
+                .attr("y", 20)
+                .attr("font-size", "18px")
+                .text("Co-occurrence");
+             let cooccurrenceMembers = [{
+                  label: "Extracted labels",
+                  value: 5
+                },
+                {
+                  label: "Detected objects",
+                  value: 6
+                }
+             ];
+
+             let cooccurrenceConfig = {
+                width: cooccurrence_dropdown_width,
+                container: cooccurence_g,
+                members: cooccurrenceMembers,
+                fontSize: 18,
+                color: "#333",
+                fontFamily: "calibri",
+                x: 140,
+                y: 0,
+                initMember:0,
+                changeHandler: function(option) {
+                    if(option.label==="Extracted labels") {
+                        console.log("select option: Extracted labels")
+                    } else if(option.label==="Detected objects") {
+                        console.log("select option: Detected objects")
+                    }
+                }
+             };
+             svgDropDown(cooccurrenceConfig);
+
+            // precision & recall legend
             let precision_color = "rgb(201, 130, 206)";
             let recall_color = "rgb(79, 167, 255)";
             let rect_size = 6;
-            let precision_recall_legend_startx = start_x+drop_down_width+80+50;
+            let precision_recall_legend_startx = cooccurence_x+cooccurrence_dropdown_width+140+50;
             let pc_group = that.svg
                 .append("g")
                 .attr("class", "precision-recall-legend")
@@ -662,7 +708,7 @@ export default {
                 .attr("font-size", "18px")
                 .text("Recall");
 
-            // 3. match & mismatch line legend
+            // match & mismatch line legend
             let match_color = "#D3D3E5";
             let mistach_color = "#ED2939";
             let line_stroke = 1;

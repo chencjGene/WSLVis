@@ -293,10 +293,11 @@ export default {
 }
 
 .text-content {
-  border: 1px solid #c1c1c1;
+  border: 0;
   border-radius: 5px;
   height: calc(100% - 16px);
   margin: 10px;
+    border-bottom: 1px solid #c1c1c1;
 
 }
 

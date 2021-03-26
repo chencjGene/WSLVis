@@ -494,7 +494,7 @@ export default {
     let that = this;
     let container = d3.select(".image-content");
     // console.log("container", container);
-    container.style('height', `${Global.WindowHeight * 0.4}px`);
+    container.style('height', `${Global.WindowHeight * 0.405}px`);
     let bbox = container.node().getBoundingClientRect();
     that.width = bbox.width;
     that.height = bbox.height;
@@ -634,7 +634,7 @@ export default {
 }
 
 .image-content {
-  border: 1px solid #c1c1c1;
+  border: 0;
   border-radius: 5px;
   margin: 10px;
   /* height: calc(100% - 24px); */
