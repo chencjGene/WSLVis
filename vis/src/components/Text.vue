@@ -154,6 +154,7 @@ export default {
           that.$store.state.word_cloud_recycled[node] = []
         }
         that.$store.state.word_cloud_recycled[node].push(removed_word);
+        that.set_focus_word(null);
         // re render
       that.update_data();
       that.update_view();
