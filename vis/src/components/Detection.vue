@@ -612,11 +612,11 @@ export default {
                 .attr("font-size", "18px")
                 .text("Co-occurrence");
              let cooccurrenceMembers = [{
-                  label: "Extracted labels",
+                  label: "Detected objects",
                   value: 5
                 },
                 {
-                  label: "Detected objects",
+                  label: "Extracted labels",
                   value: 6
                 }
              ];
