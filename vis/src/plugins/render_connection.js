@@ -13,6 +13,10 @@ const TextImageConnection = function (parent) {
 
     this.mismatch_threshold = 1500;
 
+    this.get_expand_set_id = function(){
+        return that.parent.expand_set_id;
+    };
+    
     that.sub_component_update = function (set_links) {
         // update state
 
@@ -49,7 +53,10 @@ const TextImageConnection = function (parent) {
             .transition()
             .duration(that.create_ani)
             .delay(that.update_ani + that.remove_ani)
-            .style("opacity", 1);
+            .style("opacity", d => {
+                let id = that.get_expand_set_id();
+                return id === -1 || id === d.target.id ? 1 : 0;
+            });
     };
 
     that.update = function () {
@@ -60,7 +67,11 @@ const TextImageConnection = function (parent) {
             .attr("d", 
             d3.linkHorizontal()
                 .x((d) => d.x)
-                .y((d) => d.y));
+                .y((d) => d.y))
+            .style("opacity", d => {
+                let id = that.get_expand_set_id();
+                return id === -1 || id === d.target.id ? 1 : 0;
+            });
     };
 
     that.remove = function () {

@@ -1,10 +1,9 @@
-// import * as d3 from "d3"
+import * as d3 from "d3"
 // import {TreeCut} from "./treecut"
 
 const image_cluster_list_layout = function(parent){
     let that = this;
     that.parent = parent;
-
 
     this.get_set_layout_from_parent = function(){
         that.layout_height = that.parent.layout_height;
@@ -30,7 +29,13 @@ const image_cluster_list_layout = function(parent){
         that.parent.set_num = data.length;
         that.parent.set_height = that.layout_height / that.parent.set_num - 2;
         that.parent.image_height = that.parent.set_height * 0.9;
-        that.parent.mini_set_height = 20;
+        // that.parent.mini_set_height = 20;
+        that.parent.mini_set_height = 0;
+        if (that.get_expand_set_id() !== -1) {
+            that.parent.set_margin = 0;
+        } else {
+            that.parent.set_margin = 6;
+        }
         that.parent.large_set_height = that.layout_height - 
             (that.parent.set_num - 1) * that.parent.mini_set_height;
     };
@@ -76,7 +81,18 @@ const image_cluster_list_layout = function(parent){
         });
         let grids = [];
         let pos = {};
-        if (that.get_expand_set_id()!==-1) [grids, pos] = that.grid_layout(data);
+        if (that.get_expand_set_id()!==-1) {
+            [grids, pos] = that.grid_layout(data);
+            d3.select("#grid-control")
+                .style("display", "block");
+            d3.select("#grid-legend-group")
+                .style("visibility", "visible");
+        } else {
+            d3.select("#grid-control")
+                .style("display", "none");
+            d3.select("#grid-legend-group")
+                .style("visibility", "hidden");
+        }
         return [data, grids, pos];
     }
 
@@ -96,7 +112,9 @@ const image_cluster_list_layout = function(parent){
             offset_x = that.set_left + (grid_width - grid_height) / 2;
             side_length = grid_height;
         }
+        // let control_panel_width = (grid_width - grid_height);
         side_length = side_length - that.set_margin * 2;
+        // offset_x -= control_panel_width / 2;
         offset_y = offset_y + that.set_margin / 3;
         offset_y = offset_y + data.filter(d => d.id === that.get_expand_set_id())[0].y;
         console.log("offset_x, offset_y", offset_x, offset_y);
