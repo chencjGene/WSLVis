@@ -47,7 +47,8 @@ def app_get_grid_layout():
     print("image_cluster_id: {}, right_x {}, "
                 "top_y {}, width {}, height {}, node id: {}"
                 .format(image_cluster_id, left_x, top_y, width, height, node_id))
-    return get_grid_layout(image_cluster_id, left_x, top_y, width, height, node_id)
+    grid_layout = get_grid_layout(image_cluster_id, left_x, top_y, width, height, node_id)
+    return grid_layout
 
 
 # for debug

@@ -487,8 +487,15 @@ class WSLModel(object):
 
     def get_grid_layout(self, left_x, top_y, width, height, node_id):
         # node_id for navigation 
-        return self.current_sampler.get_grid_layout(left_x, top_y, \
+        grid_layout_res = self.current_sampler.get_grid_layout(left_x, top_y, \
             width, height, node_id)
+        image_info = [self.data.get_detection_result_for_vis(cell['img_id']) for cell in grid_layout_res["layout"]]
+        grid_layout_with_image_info = {
+            "id": grid_layout_res["id"],
+            "layout": grid_layout_res["layout"],
+            "image_info": image_info,
+        }
+        return grid_layout_with_image_info
 
     def set_focus_image_cluster(self, id):
         # self.current_sampler = self.samples[id]

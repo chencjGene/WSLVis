@@ -24,6 +24,11 @@ const image_cluster_list_layout = function(parent){
         return that.parent.grid_data;
     }
 
+    this.get_grid_image_info = function() {
+        return that.parent.grid_image_info;
+    };
+      
+
     this.update_parent_set_layout = function(data){
         console.log("update_parent_set_layout");
         that.parent.set_num = data.length;
