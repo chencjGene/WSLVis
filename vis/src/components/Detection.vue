@@ -8,6 +8,7 @@
             :content="tooltip.content"
         >
         </info-tooltip>
+        <v-col cols="12" class="topname fill-width"> Sample </v-col>
         <v-col cols="12" class="main-content pa-0">
             <div id="grid-control" style="position: absolute; padding-left: 600px; padding-top: 10px; display: none;" >
                 <div id="cropping" class="waves-effect waves-light btn-floating grey" title="Zoom in">
@@ -576,7 +577,10 @@ export default {
                         // }
                     } else if(option.label==="F1 score") {
                         console.log("click prec-rec-checkbox", that.f1_score_selected);
-                        if (that.use_treecut && !that.f1_score_selected){
+                        if (!that.f1_score_selected){
+                            that.use_treecut = true;
+                            console.log("use_treecut, f1 score", 
+                                that.use_treecut, that.f1_score_selected);
                             that.set_f1_score_selected(true);
                             d3.select(this).select("rect")
                                 .attr("fill", Global.GrayColor);
@@ -586,7 +590,8 @@ export default {
                         }
                     } else if(option.label==="Mismatch") {
                         console.log("click prec-rec-checkbox", that.f1_score_selected);
-                        if (that.use_treecut && that.f1_score_selected){
+                        if (that.f1_score_selected){
+                            that.use_treecut = true;
                             that.set_f1_score_selected(false);
                             d3.select(this).select("rect")
                                 .attr("fill", Global.GrayColor);
@@ -985,9 +990,9 @@ export default {
         this.set_height = 0;
         this.image_height = 0;
         this.set_left = this.layer_height * 3 + 230;
-        this.set_width = this.layout_width - this.set_left;
-        this.set_margin = 6;
-        this.image_margin = this.set_margin;
+        this.set_width = this.layout_width - this.set_left - 12;
+        this.set_margin = 3;
+        this.image_margin = 5;
 
         // animation
         this.create_ani = Global.Animation;
@@ -1172,7 +1177,7 @@ export default {
     background: rgb(255, 255, 255);
     border: 1px solid #c1c1c1;
     border-radius: 5px;
-    height: 100%;
+    height: calc(100% - 24px);
 }
 
 .topname {
