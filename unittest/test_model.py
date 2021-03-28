@@ -184,10 +184,10 @@ class CoClusteringTest(unittest.TestCase):
 
     def test_mismatch(self):
         dataname = "COCO17"
-        step = 0
+        step = 3
         mat = pickle_load_data("test/mismatch/network.pkl")
         m = WSLModel(dataname=config.coco17, step=step)
-        m.update_hiera("sub3")
+        m.update_hiera("sub1")
         m.run()
 
         cluster_id = 3
@@ -200,11 +200,8 @@ class CoClusteringTest(unittest.TestCase):
         
         _, mismatch_matrix = m.get_cluster_association_matrix()
         # hist, bins = np.histogram(mismatch_matrix.reshape(-1), bins=51, range=(0, 5100))
-        plt.hist(mismatch_matrix.reshape(-1), bins = list(range(0, 5200, 100)))
+        # plt.hist(mismatch_matrix.reshape(-1), bins = list(range(0, 5200, 100)))
         # plt.show()
-
-        res = pickle_load_data("test/detection/add_annos.pkl")
-
 
         a = 1
 
@@ -263,7 +260,7 @@ class CoClusteringTest(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(CoClusteringTest("test_cluster_buffer"))
+    suite.addTest(CoClusteringTest("test_mismatch"))
     
     # # test all cases
     # suite =  unittest.TestLoader().loadTestsFromTestCase(CoClusteringTest)
