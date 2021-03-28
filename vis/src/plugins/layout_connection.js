@@ -51,7 +51,10 @@ const ConnectionLayout = function(parent, cluster_association_mat){
                 let mm_element = 0;
                 for (let s = 0; s < text_idxs[i].length; s++){
                         element += that.get_cluster_association_mat()[j][text_idxs[i][s]];
-                        mm_element += that.get_mismatch()[j][text_idxs[i][s]];
+                        // mm_element += that.get_mismatch()[j][text_idxs[i][s]];
+                        if (that.get_mismatch()[j][text_idxs[i][s]] > 1000){
+                            mm_element += 1;
+                        }
                 }
                 that.matrix[i].push(element);
                 that.mismatch[i].push(mm_element);
