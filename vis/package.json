@@ -11,6 +11,7 @@
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "d3": "^6.2.0",
+    "d3-context-menu": "^2.1.0",
     "simplebar-vue": "^1.6.0",
     "vue": "^2.6.11",
     "vue-virtual-scroll-list": "^2.3.2",

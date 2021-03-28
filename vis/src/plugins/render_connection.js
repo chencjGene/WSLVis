@@ -11,7 +11,8 @@ const TextImageConnection = function (parent) {
     that.update_ani = that.parent.update_ani;
     that.remove_ani = that.parent.remove_ani;
 
-    this.mismatch_threshold = 1500;
+    // this.mismatch_threshold = 1500;
+    this.mismatch_threshold = 0.5;
 
     this.get_expand_set_id = function(){
         return that.parent.expand_set_id;
