@@ -30,6 +30,7 @@
 <script>
   import {mapActions, mapMutations, mapState} from "vuex"
   import * as d3 from 'd3'
+  import * as d3ContextMenu from "d3-context-menu"
   import * as Global from "../plugins/global";
 export default {
   name: "DetImage",
@@ -37,7 +38,7 @@ export default {
     confidence: 50,
     selectRect: null,
     mode: "grid",
-    isEditing: false
+    isEditing: false,
   }),
   watch: {
     selected_images(){
@@ -480,6 +481,7 @@ export default {
 
             that.one_image_boxes.on('mousedown.drag', null);
             that.selectRect.call(drag);
+
           });
       }
     },
@@ -718,6 +720,24 @@ export default {
       this.isEditing = true;
       that.one_image_boxes.attr("cursor", "default");
       that.selectRect.attr("cursor", "move");
+      // add context menu
+      let menuOptions = [
+                {
+                    title: 'Confirm',
+                    action: function() {
+                      console.log('Confirm!');
+                      // TODO: send confirm msg
+
+
+                      that.isEditing = false;
+                      that.one_image_boxes.attr("cursor", "default");
+                      that.main_group.selectAll("#drag-bar-g").remove();
+                      that.selectRect.on('contextmenu', "none");
+                      that.selectRect = null;
+                    },
+                }
+      ];
+      that.selectRect.on('contextmenu', d3ContextMenu(menuOptions));
     },
     removeBoundingBox() {
       let that = this;
@@ -885,4 +905,5 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
 </style>
