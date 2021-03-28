@@ -287,6 +287,9 @@ const ImageCards = function(parent) {
   };
 
   this.grid_create = function() {
+    let match_color = "#D3D3E5";
+    let mistach_color = "#ED2939";
+
     let grid_groups = that.e_grids
       .enter()
       .append("g")
@@ -302,6 +305,13 @@ const ImageCards = function(parent) {
         d3.select(this)
           .select("rect")
           .style("stroke-width", 0.0);
+      })
+      .on("click", (_, d) => {
+        console.log("click image", d);
+        // that.set_focus_image(d);
+        that.parent.fetch_single_image_detection_for_focus_text({
+          image_id: d.img_id
+        })
       });
     // TOOD: mouseover, mouseout
     grid_groups
@@ -318,7 +328,7 @@ const ImageCards = function(parent) {
       .attr("y", 0)
       .attr("width", (d) => d.width)
       .attr("height", (d) => d.width)
-      .style("fill", (d) => (d.mismatch > 0 ? Global.Orange : Global.GrayColor))
+      .style("fill", (d) => (d.mismatch > 0 ? mistach_color : match_color))
       .style("stroke", "black")
       .style("stroke-width", 0)
       .style("stroke-opacity", 1);
@@ -387,7 +397,14 @@ const ImageCards = function(parent) {
         .attr("y", d => d.label.y + offset_y)
         .attr("width", d => d.label.w)
         .attr("height", d => d.label.h)
-        .attr("xlink:href", d => that.server_url + `/image/image?filename=${d.img_id}.jpg`);
+        .attr("xlink:href", d => that.server_url + `/image/image?filename=${d.img_id}.jpg`)
+        .on("click", (_, d) => {
+          console.log("click image", d);
+          // that.set_focus_image(d);
+          that.parent.fetch_single_image_detection_for_focus_text({
+            image_id: d.img_id
+          })
+        });
     
     let box_groups = label_group.selectAll("rect.box").data((d) => {
       let dets = d.d;
