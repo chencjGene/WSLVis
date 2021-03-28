@@ -22,7 +22,7 @@ def get_current_hypergraph():
 
 def get_grid_layout(image_cluster_id, cat_ids, left_x, top_y, width, height, node_id):
     port.model.set_focus_image_cluster(image_cluster_id, cat_ids)
-    res = port.model.get_grid_layout(left_x, top_y, width, height, node_id)
+    res = port.model.get_grid_layout(left_x, top_y, width, height, node_id, cat_ids)
     return jsonify(res)
 
 def get_rank(image_cluster_id):

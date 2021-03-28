@@ -149,25 +149,35 @@ class DataBaseLoader(object):
 
 
 
-    def get_detection_result_for_vis(self, idx, conf_thresh=None):
+    def get_detection_result_for_vis(self, idx, conf_thresh=None, cats_ids=None):
         if conf_thresh is None:
             conf_thresh = self.conf_thresh
         w, h = self.width_height[idx]
         detection = self.get_detection_result(idx)
         detection = np.array(detection)
         conf_detection = detection[detection[:, -2] > conf_thresh].astype(np.float32)
+        conf_detection[:, 4:6] = conf_detection[:, -2:]
+        conf_detection = conf_detection[:, :6]
+        # if cats_ids is not None:
+        #     conf_detection = conf_detection.tolist()
+        #     conf_detection = [d for d in conf_detection if d[-1] in cats_ids]
+        #     conf_detection = np.array(conf_detection)
         gt_d = self.get_anno_bbox_result(idx)
-        conf_detection[:, 0] /= w
-        conf_detection[:, 2] /= w # width
-        conf_detection[:, 1] /= h
-        conf_detection[:, 3] /= h # height
-        # conf_detection[:, 2] += conf_detection[:, 0] # max x
-        # conf_detection[:, 3] += conf_detection[:, 1] # max y
-        conf_detection = np.clip(conf_detection, 0, 1)
-        # conf_detection[:, 2] -= conf_detection[:, 0] # width
-        # conf_detection[:, 3] -= conf_detection[:, 1] # height
-        conf_detection = np.round(conf_detection, 3)
-        return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist(), "gt_d": gt_d}
+        if len(conf_detection) > 0:
+            conf_detection[:, 0] /= w
+            conf_detection[:, 2] /= w # width
+            conf_detection[:, 1] /= h
+            conf_detection[:, 3] /= h # height
+            # conf_detection[:, 2] += conf_detection[:, 0] # max x
+            # conf_detection[:, 3] += conf_detection[:, 1] # max y
+            conf_detection = np.clip(conf_detection, 0, 1)
+            # conf_detection[:, 2] -= conf_detection[:, 0] # width
+            # conf_detection[:, 3] -= conf_detection[:, 1] # height
+            conf_detection = np.round(conf_detection, 3)
+            conf_detection = conf_detection.tolist()
+        else:
+            conf_detection = []
+        return {"idx": idx, "w": w, "h": h, "d": conf_detection, "gt_d": gt_d}
 
 
 class Data(DataBaseLoader):

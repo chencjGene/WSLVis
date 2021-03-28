@@ -29,6 +29,9 @@ const ImageCards = function(parent) {
   that.update_ani = that.parent.update_ani;
   that.remove_ani = that.parent.remove_ani;
 
+  let match_color = "#D3D3E5";
+  let mismatch_color = "#ED2939";
+
   //
   that.boundingbox_width = 3;
 
@@ -287,8 +290,6 @@ const ImageCards = function(parent) {
   };
 
   this.grid_create = function() {
-    let match_color = "#D3D3E5";
-    let mistach_color = "#ED2939";
 
     let grid_groups = that.e_grids
       .enter()
@@ -328,7 +329,7 @@ const ImageCards = function(parent) {
       .attr("y", 0)
       .attr("width", (d) => d.width)
       .attr("height", (d) => d.width)
-      .style("fill", (d) => (d.mismatch > 0 ? mistach_color : match_color))
+      .style("fill", (d) => (d.mismatch > 0 ? mismatch_color : match_color))
       .style("stroke", "black")
       .style("stroke-width", 0)
       .style("stroke-opacity", 1);
@@ -336,10 +337,10 @@ const ImageCards = function(parent) {
     grid_groups
       .append("image")
       .attr("class", "display")
-      .attr("x", 0.5 * that.boundingbox_width)
-      .attr("y", 0.5 * that.boundingbox_width)
-      .attr("width", (d) => d.width - that.boundingbox_width)
-      .attr("height", (d) => d.width - that.boundingbox_width)
+      .attr("x", 1 * that.boundingbox_width)
+      .attr("y", 1 * that.boundingbox_width)
+      .attr("width", (d) => d.width - 2 * that.boundingbox_width)
+      .attr("height", (d) => d.width - 2 * that.boundingbox_width)
       .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
         `/image/image?filename=${d.img_id}.jpg`)
       .style("pointer-events", "none");
@@ -406,32 +407,32 @@ const ImageCards = function(parent) {
           })
         });
     
-    let box_groups = label_group.selectAll("rect.box").data((d) => {
-      let dets = d.d;
-      let res = [];
-      for (let i = 0; i < dets.length; i++) {
-        let x = d.label.x + offset_x + d.label.w * dets[i][0];
-        let width = d.grid.w * (dets[i][2] - dets[i][0]);
-        let y = d.label.y + offset_y + d.label.h * dets[i][1];
-        let height = d.grid.h * (dets[i][3] - dets[i][1]);
-        res.push({ x, y, width, height });
-      }
-      return res;
-    });
+    // let box_groups = label_group.selectAll("rect.box").data((d) => {
+    //   let dets = d.d;
+    //   let res = [];
+    //   for (let i = 0; i < dets.length; i++) {
+    //     let x = d.label.x + offset_x + d.label.w * dets[i][0];
+    //     let width = d.grid.w * (dets[i][2] - dets[i][0]);
+    //     let y = d.label.y + offset_y + d.label.h * dets[i][1];
+    //     let height = d.grid.h * (dets[i][3] - dets[i][1]);
+    //     res.push({ x, y, width, height });
+    //   }
+    //   return res;
+    // });
 
-    box_groups
-      .enter()
-      .append("rect")
-      .attr("class", "box")
-      .attr("x", (d) => d.x)
-      .attr("y", (d) => d.y)
-      .attr("width", (d) => d.width)
-      .attr("height", (d) => d.height)
-      .style("fill", "none")
-      .style("stroke", Global.BoxRed)
-      .style("stroke-width", 1)
-      .style("opacity", that.get_expand_set_id() > -1 ? 1 : 0)
-      .style("pointer-events", that.get_expand_set_id() > -1 ? 1 : "none");
+    // box_groups
+    //   .enter()
+    //   .append("rect")
+    //   .attr("class", "box")
+    //   .attr("x", (d) => d.x)
+    //   .attr("y", (d) => d.y)
+    //   .attr("width", (d) => d.width)
+    //   .attr("height", (d) => d.height)
+    //   .style("fill", "none")
+    //   .style("stroke", Global.BoxRed)
+    //   .style("stroke-width", 1)
+    //   .style("opacity", that.get_expand_set_id() > -1 ? 1 : 0)
+    //   .style("pointer-events", that.get_expand_set_id() > -1 ? 1 : "none");
   }
 
   this.nav_create = function(){
@@ -539,7 +540,7 @@ const ImageCards = function(parent) {
       .attr("width", (d) => d.width)
       .attr("height", (d) => d.width)
       .style("fill", (d) =>
-        d.mismatch > 0 ? Global.Orange : Global.GrayColor
+        d.mismatch > 0 ? mismatch_color : match_color 
       );
 
     that.e_grids
@@ -593,13 +594,13 @@ const ImageCards = function(parent) {
         .attr("width", d => d.label.w)
         .attr("height", d => d.label.h)
         .attr("xlink:href", d => that.server_url + `/image/image?filename=${d.img_id}.jpg`);
-    that.e_labels
-        .selectAll("rect.box")
-        .transition()
-        .duration(that.update_ani)
-        .delay(that.remove_ani)
-        .style("opacity", that.get_expand_set_id() > -1 ? 1 : 0)
-        .style("pointer-events", that.get_expand_set_id() > -1 ? 1 : "none");
+    // that.e_labels
+    //     .selectAll("rect.box")
+    //     .transition()
+    //     .duration(that.update_ani)
+    //     .delay(that.remove_ani)
+    //     .style("opacity", that.get_expand_set_id() > -1 ? 1 : 0)
+    //     .style("pointer-events", that.get_expand_set_id() > -1 ? 1 : "none");
   }
 
   this.nav_update = function(){
