@@ -473,7 +473,8 @@ class Data(DataBaseLoader):
     def get_text(self, query):
         cursor = self.conn.cursor()
         sql = "select (cap) from annos where id = ?"
-        ids = np.array(query["ids"])
+        ids = np.array(query["ids"]).tolist()
+        labels = self.get_category_pred(label_type=ids, data_type="text-only")
         texts = []
         for i, idx in enumerate(ids):
             # anno = self.annos[idx]
@@ -481,12 +482,14 @@ class Data(DataBaseLoader):
             result = cursor.execute(sql, (int(idx),))
             result = cursor.fetchall()[0]
             caps = result[0]
+            label = labels[i]
             # caps = [c + " " for c in caps]
             # caps = "".join(caps)
             text = {
                 "message": caps,
                 "active": True,
                 "id": int(idx),
+                "c": np.array(self.class_name)[label.astype(bool)].tolist()
             }
             texts.append(text)
         return texts

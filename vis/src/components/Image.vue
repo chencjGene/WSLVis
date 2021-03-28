@@ -245,7 +245,11 @@ export default {
           .attr("y", d => d.y)
           .attr("width", d => d.width)
           .attr("height", d => d.height)
-          .attr("href", d => that.server_url + `/image/origin_image?filename=${d.idx}.jpg`);
+          .attr("href", d => that.server_url + `/image/origin_image?filename=${d.idx}.jpg`)
+          .on("click", (_, d) => {
+              console.log("click single images");        
+              that.fetch_text_by_ids([d.idx]);
+          })
         that.one_image_boxes.enter()
           .append("rect")
           .attr("class", "info-box")
