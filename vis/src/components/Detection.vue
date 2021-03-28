@@ -733,7 +733,7 @@ export default {
 
             // match & mismatch line legend
             let match_color = "#D3D3E5";
-            let mistach_color = "#ED2939";
+            let mismatch_color = "#ED2939";
             let line_stroke = 1;
             let line_length = 30;
             let match_mismatch_legend_startx = precision_recall_legend_startx+60+50;
@@ -751,7 +751,7 @@ export default {
                 .attr("class", "match-mismatch-legend")
                 .each(function(d, i) {
                     let group = d3.select(this);
-                    group.append("line").attr("x1", 0).attr("y1", 20 * i + 7.5).attr("x2", line_length).attr("y2", 20 * i + 7.5).attr("stroke-dasharray", i === 0 ? "5,5" : "5,0").style("stroke-width", line_stroke).style("stroke", i === 0 ? mistach_color : match_color);
+                    group.append("line").attr("x1", 0).attr("y1", 20 * i + 7.5).attr("x2", line_length).attr("y2", 20 * i + 7.5).attr("stroke-dasharray", i === 0 ? "5,5" : "5,0").style("stroke-width", line_stroke).style("stroke", i === 0 ? mismatch_color : match_color);
                     group.append("text").attr("x", 40).attr("y", 20 * i).text(d).style("dominant-baseline", "hanging");
                 });
             // match_group.append("line")
@@ -769,7 +769,7 @@ export default {
             //     .attr("y2", 15)
             //     .attr("stroke-dasharray", "5,5")
             //     .attr("stroke-width", line_stroke)
-            //     .attr("stroke", mistach_color);
+            //     .attr("stroke", mismatch_color);
 
             // match_group.append("text")
             //     .attr("text-anchor", "start")
@@ -802,7 +802,7 @@ export default {
                 .attr("class", "grid-legend")
                 .each(function(d, i) {
                     let group = d3.select(this);
-                    group.append("rect").attr("x", 0).attr("y", 20 * i).attr("width", 15).attr("height", 15).style("fill", i === 0 ? "rgb(255, 169, 83)" : Global.GrayColor);
+                    group.append("rect").attr("x", 0).attr("y", 20 * i).attr("width", 15).attr("height", 15).style("fill", i === 0 ? mismatch_color : match_color);
                     group.append("text").attr("x", 20).attr("y", 20 * i).text(d).style("dominant-baseline", "hanging");
                 });
             d3.select("#grid-control")
