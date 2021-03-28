@@ -24,7 +24,7 @@
 
 
 <script>
-  import {mapActions, mapState} from "vuex"
+  import {mapActions, mapMutations, mapState} from "vuex"
   import * as d3 from 'd3'
   import * as Global from "../plugins/global";
 export default {
@@ -53,13 +53,22 @@ export default {
       that.mode = 'focus-text';
       that.update_data();
       that.update_view();
+    },
+    confidence(){
+      console.log("confidence change");
+      // this.one_image_boxes_threshold = this.confidence / 100;
+      this.set_one_image_boxes_threshold(this.confidence / 100);
+      this.update_data();
+      this.update_view();
     }
   },
   computed: {
-    ...mapState(["server_url", "selected_images", "focus_image", "focus_text"])
+    ...mapState(["server_url", "selected_images", 
+      "focus_image", "focus_text", "one_image_boxes_threshold"])
   },
   methods: {
     ...mapActions(["fetch_text_by_ids"]),
+    ...mapMutations(["set_one_image_boxes_threshold"]),
     update_data() {
       let that = this;
       if (that.mode === 'grid') {
@@ -113,8 +122,9 @@ export default {
           let w = width * (dets[i][2] - dets[i][0]);
           let y = height * dets[i][1] + image_y;
           let h = height * (dets[i][3] - dets[i][1]);
+          let conf = dets[i][4];
           let idx = that.focus_image.idx + "-" + i;
-          boxes.push({x, y, w, h, idx});
+          boxes.push({x, y, w, h, conf, idx});
         }
         this.one_image_data = {width, height, "idx": that.focus_image.idx, "x":image_x, "y": image_y};
         this.one_image_box_data = boxes;
@@ -146,13 +156,17 @@ export default {
           let w = width * (dets[i][2] - dets[i][0]);
           let y = height * dets[i][1] + image_y;
           let h = height * (dets[i][3] - dets[i][1]);
+          let conf = dets[i][4];
           let idx = that.focus_text.idx + "-" + i;
-          boxes.push({x, y, w, h, idx});
+          boxes.push({x, y, w, h, conf, idx});
         }
         this.one_image_data = {width, height, "idx": that.focus_text.idx, "x":image_x, "y": image_y};
         this.one_image_box_data = boxes;
       }
       
+      this.one_image_box_data = this.one_image_box_data.filter(d =>
+        d.conf > that.one_image_boxes_threshold)
+
       that.update_view();
       that.show_detail(null, -1);
     },
@@ -245,7 +259,11 @@ export default {
           .attr("y", d => d.y)
           .attr("width", d => d.width)
           .attr("height", d => d.height)
-          .attr("href", d => that.server_url + `/image/origin_image?filename=${d.idx}.jpg`);
+          .attr("href", d => that.server_url + `/image/origin_image?filename=${d.idx}.jpg`)
+          .on("click", (_, d) => {
+              console.log("click single images");        
+              that.fetch_text_by_ids([d.idx]);
+          })
         that.one_image_boxes.enter()
           .append("rect")
           .attr("class", "info-box")

@@ -8,19 +8,25 @@
             :content="tooltip.content"
         >
         </info-tooltip>
-        <v-col cols="12" class="main-content pa-0"> 
-            <!-- <div style="position: absolute; padding-left: 600px; padding-top: 3px" >
+        <v-col cols="12" class="topname fill-width"> Sample </v-col>
+        <v-col cols="12" class="main-content pa-0">
+            <div id="grid-control" style="position: absolute; padding-left: 600px; padding-top: 10px; display: none;" >
                 <div id="cropping" class="waves-effect waves-light btn-floating grey" title="Zoom in">
                     <svg class="icon" width="24px" height="24px" transform="translate(2.6, 2.6)" viewBox="0 0 1024 1024">
                         <path fill="white" d="M136 384h56c4.4 0 8-3.6 8-8V200h176c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-37.6 0-68 30.4-68 68v180c0 4.4 3.6 8 8 8zM648 200h176v176c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V196c0-37.6-30.4-68-68-68H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM376 824H200V648c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v180c0 37.6 30.4 68 68 68h180c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM888 640h-56c-4.4 0-8 3.6-8 8v176H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h180c37.6 0 68-30.4 68-68V648c0-4.4-3.6-8-8-8zM904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z" />
                     </svg>
                 </div>
-                <div  style="margin-left: 3px" id="selecting" class="waves-effect waves-light btn-floating grey" title="Select">
+                <div id="selecting" style="margin-left: 3px" class="waves-effect waves-light btn-floating grey" title="Select">
                     <svg class="icon" width="24px" height="24px" transform="translate(2.6, 2.6)"  viewBox="0 0 1024 1024">
                         <path fill="white" d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h360c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H184V184h656v320c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V144c0-17.7-14.3-32-32-32zM653.3 599.4l52.2-52.2c4.7-4.7 1.9-12.8-4.7-13.6l-179.4-21c-5.1-0.6-9.5 3.7-8.9 8.9l21 179.4c0.8 6.6 8.9 9.4 13.6 4.7l52.4-52.4 256.2 256.2c3.1 3.1 8.2 3.1 11.3 0l42.4-42.4c3.1-3.1 3.1-8.2 0-11.3L653.3 599.4z" />
                     </svg>
                 </div>
-            </div> -->
+                <div id="home" style="margin-left: 3px" class="waves-effect waves-light btn-floating grey" title="Home">
+                    <svg class="icon" width="24px" height="24px" transform="translate(2.6, 2.6)"  viewBox="0 0 1024 1024">
+                        <path fill="white" d="M1057.756543 566.281052a44.505707 44.505707 0 0 1-62.953323 0L535.326296 108.094795 150.99726 491.311188h27.927332a89.011415 89.011415 0 0 1 89.011414 89.011415v47.287314l0.244782 268.057876c3.004135 28.817446 13.173689 36.828473 44.950764 39.076011 39.276287-2.892871 43.571088-14.976171 43.971639-64.17723l-0.15577-113.06675a89.011415 89.011415 0 0 1 89.011415-88.165806h44.505707v-1.09039l89.011415-0.133517v1.223907h44.505708a89.011415 89.011415 0 0 1 89.011414 89.011415v47.287314h0.15577v56.010432l0.133517-14.953917c0 69.718191-0.445057 84.560844 44.105156 87.921025 37.451553-2.981882 43.660099-14.442102 44.639225-57.85742l-0.400551 58.346982h0.667585v-73.92398c0 5.629972 0 10.770381-0.178023 15.576998l0.178023-26.102597-0.289287-272.352677a44.505707 44.505707 0 0 1 89.011415 0l0.31154 309.314667h-0.31154V934.988585a89.011415 89.011415 0 0 1-89.011415 89.011415h-89.011415a88.833392 88.833392 0 0 1-88.655369-85.450958L624.159688 823.724317l-0.378298-17.668766c0.15577 2.358802 0.267034 5.029145 0.378298 7.610476L623.981666 756.965756h-24.47814l23.120715 0.15577 1.068137 48.956278c-2.737101-39.165023-13.551988-47.287314-53.896411-48.956278h-73.634693c-37.362541 1.891493-47.376326 10.169554-50.002162 44.928511l0.979125-44.8395h-1.179401v46.441706c0-0.556321 0-1.068137 0.133517-1.602206l-0.133517 5.741236 0.133517 79.798734h-0.133517V934.988585a89.011415 89.011415 0 0 1-89.011415 89.011415h-89.011415a88.833392 88.833392 0 0 1-88.633116-85.183924l-0.378298-359.761886h-18.848168 17.535249l0.400552 59.504131c-1.045884-47.665613-7.855257-57.523627-50.714254-59.548636l-80.288296 0.200275a43.59334 43.59334 0 0 1-11.126427-0.845608l-1.045884-0.200276A40.055137 40.055137 0 0 1 0.901762 544.228474c0-0.289287-0.111264-0.600827-0.15577-0.890114a43.103778 43.103778 0 0 1-0.289287-14.241826 48.956278 48.956278 0 0 1 3.315675-12.305828 44.260926 44.260926 0 0 1 7.944269-11.949783c0.244781-0.244781 0.289287-0.556321 0.534068-0.801103L500.411569 17.258646a47.376326 47.376326 0 0 1 2.781607-4.20579 44.505707 44.505707 0 0 1 62.953323 0l0.645333 0.645333 490.897952 489.562782a44.505707 44.505707 0 0 1 0.066759 63.020081zM713.349126 935.300125h21.140211l-21.140211-0.133517v0.178023z m-445.057074 0h21.117958l-21.117958-0.133517v0.178023zM178.034477 638.714091c0.178023 9.145923 0.200276 19.560258 0.200276 31.710317z" />
+                    </svg>
+                </div>
+            </div>
         </v-col>
     </v-col>
 </template>
@@ -95,7 +101,8 @@ export default {
         // }
     },
     methods: {
-        ...mapActions(["fetch_hypergraph", "fetch_word", "fetch_image", "fetch_grid_layout"]),
+        ...mapActions(["fetch_hypergraph", "fetch_word", "fetch_image", 
+        "fetch_grid_layout", "fetch_single_image_detection_for_focus_text"]),
         ...mapMutations([
             "set_selected_flag",
             "set_focus_node",
@@ -571,7 +578,10 @@ export default {
                         // }
                     } else if(option.label==="F1 score") {
                         console.log("click prec-rec-checkbox", that.f1_score_selected);
-                        if (that.use_treecut && !that.f1_score_selected){
+                        if (!that.f1_score_selected){
+                            that.use_treecut = true;
+                            console.log("use_treecut, f1 score", 
+                                that.use_treecut, that.f1_score_selected);
                             that.set_f1_score_selected(true);
                             d3.select(this).select("rect")
                                 .attr("fill", Global.GrayColor);
@@ -581,7 +591,8 @@ export default {
                         }
                     } else if(option.label==="Mismatch") {
                         console.log("click prec-rec-checkbox", that.f1_score_selected);
-                        if (that.use_treecut && that.f1_score_selected){
+                        if (that.f1_score_selected){
+                            that.use_treecut = true;
                             that.set_f1_score_selected(false);
                             d3.select(this).select("rect")
                                 .attr("fill", Global.GrayColor);
@@ -612,11 +623,11 @@ export default {
                 .attr("font-size", "18px")
                 .text("Co-occurrence");
              let cooccurrenceMembers = [{
-                  label: "Extracted labels",
+                  label: "Detected objects",
                   value: 5
                 },
                 {
-                  label: "Detected objects",
+                  label: "Extracted labels",
                   value: 6
                 }
              ];
@@ -654,7 +665,8 @@ export default {
                     (top_y)+")" + "scale(" + 1+"," + 1+")");
             pc_group.append("rect")
                 .attr("x", 0)
-                .attr("y", rect_size+10)
+                .attr("y", rect_size)
+                // .attr("y", rect_size+10)
                 .attr("rx", 1.5)
                 .attr("ry", 1.5)
                 .attr("width", rect_size)
@@ -664,7 +676,8 @@ export default {
                 .attr("fill", precision_color);
             pc_group.append("rect")
                 .attr("x", 0)
-                .attr("y", 10)
+                .attr("y", 0)
+                // .attr("y", 10)
                 .attr("rx", 1.5)
                 .attr("ry", 1.5)
                 .attr("width", rect_size)
@@ -674,8 +687,10 @@ export default {
                 .attr("fill", "none");
 
             pc_group.append("rect")
-                .attr("x", rect_size+93)
-                .attr("y", rect_size+10)
+                // .attr("x", rect_size+93)
+                .attr("x", 0)
+                .attr("y", rect_size+20)
+                // .attr("y", rect_size+10)
                 .attr("rx", 1.5)
                 .attr("ry", 1.5)
                 .attr("width", rect_size)
@@ -684,8 +699,10 @@ export default {
                 .attr("stroke", recall_color)
                 .attr("fill", recall_color);
             pc_group.append("rect")
-                .attr("x", rect_size+93)
-                .attr("y", 10)
+                // .attr("x", rect_size+93)
+                .attr("x", 0)
+                .attr("y", 20)
+                // .attr("y", 10)
                 .attr("rx", 1.5)
                 .attr("ry", 1.5)
                 .attr("width", rect_size)
@@ -697,15 +714,20 @@ export default {
             pc_group.append("text")
                 .attr("text-anchor", "start")
                 .attr("x", rect_size+5)
-                .attr("y", 22)
-                .attr("font-size", "18px")
+                .attr("y", 0)
+                // .attr("y", 22)
+                // .attr("font-size", "18px")
+                .style("dominant-baseline", "hanging")
                 .text("Precision");
 
             pc_group.append("text")
                 .attr("text-anchor", "start")
-                .attr("x", rect_size*2+98)
-                .attr("y", 22)
-                .attr("font-size", "18px")
+                .attr("x", rect_size+5)
+                // .attr("x", rect_size*2+98)
+                .attr("y", 20)
+                // .attr("y", 22)
+                // .attr("font-size", "18px")
+                .style("dominant-baseline", "hanging")
                 .text("Recall");
 
             // match & mismatch line legend
@@ -713,44 +735,77 @@ export default {
             let mistach_color = "#ED2939";
             let line_stroke = 1;
             let line_length = 30;
-            let match_mismatch_legend_startx = precision_recall_legend_startx+160+60;
+            let match_mismatch_legend_startx = precision_recall_legend_startx+60+50;
             let match_group = that.svg
                 .append("g")
-                .attr("class", "match-mismatch-legend")
+                .attr("id", "match-mismatch-legend-group")
                 .attr("transform", "translate("+
                     (match_mismatch_legend_startx)+","+
                     (top_y)+")" + "scale(" + 1+"," + 1+")");
+            match_group  
+                .selectAll(".match-mismatch-legend")
+                .data(["Mismatched cluster pair", "Matched cluster pair"])
+                .enter()
+                .append("g")
+                .attr("class", "match-mismatch-legend")
+                .each(function(d, i) {
+                    let group = d3.select(this);
+                    group.append("line").attr("x1", 0).attr("y1", 20 * i + 7.5).attr("x2", line_length).attr("y2", 20 * i + 7.5).attr("stroke-dasharray", i === 0 ? "5,5" : "5,0").style("stroke-width", line_stroke).style("stroke", i === 0 ? mistach_color : match_color);
+                    group.append("text").attr("x", 40).attr("y", 20 * i).text(d).style("dominant-baseline", "hanging");
+                });
+            // match_group.append("line")
+            //     .attr("x1", 0)
+            //     .attr("y1", 15)
+            //     .attr("x2", line_length)
+            //     .attr("y2", 15)
+            //     .attr("stroke-width", line_stroke)
+            //     .attr("stroke", match_color);
 
-            match_group.append("line")
-                .attr("x1", 0)
-                .attr("y1", 15)
-                .attr("x2", line_length)
-                .attr("y2", 15)
-                .attr("stroke-width", line_stroke)
-                .attr("stroke", match_color);
+            // match_group.append("line")
+            //     .attr("x1", 220)
+            //     .attr("y1", 15)
+            //     .attr("x2", line_length+220)
+            //     .attr("y2", 15)
+            //     .attr("stroke-dasharray", "5,5")
+            //     .attr("stroke-width", line_stroke)
+            //     .attr("stroke", mistach_color);
 
-            match_group.append("line")
-                .attr("x1", 220)
-                .attr("y1", 15)
-                .attr("x2", line_length+220)
-                .attr("y2", 15)
-                .attr("stroke-dasharray", "5,5")
-                .attr("stroke-width", line_stroke)
-                .attr("stroke", mistach_color);
+            // match_group.append("text")
+            //     .attr("text-anchor", "start")
+            //     .attr("x", 3+line_length)
+            //     .attr("y", 22)
+            //     .attr("font-size", "18px")
+            //     .text("Matched cluster pair");
 
-            match_group.append("text")
-                .attr("text-anchor", "start")
-                .attr("x", 3+line_length)
-                .attr("y", 22)
-                .attr("font-size", "18px")
-                .text("Matched cluster pair");
+            // match_group.append("text")
+            //     .attr("text-anchor", "start")
+            //     .attr("x", line_length+220)
+            //     .attr("y", 22)
+            //     .attr("font-size", "18px")
+            //     .text("Mismatched cluster pair");
 
-            match_group.append("text")
-                .attr("text-anchor", "start")
-                .attr("x", line_length+220)
-                .attr("y", 22)
-                .attr("font-size", "18px")
-                .text("Mismatched cluster pair");
+            // 4. Grid_layout legend and buttons
+            let grid_legend_startx = match_mismatch_legend_startx + 200 + 50;
+            let grid_legend_group = this.svg
+                .append("g")
+                .attr("id", "grid-legend-group")
+                .attr("transform", "translate("+
+                    (grid_legend_startx)+","+
+                    (top_y)+")" + "scale(" + 1+"," + 1+")")
+                .style("visibility", "hidden");
+            grid_legend_group  
+                .selectAll(".grid-legend")
+                .data(["Mismatched Samples", "Matched Samples"])
+                .enter()
+                .append("g")
+                .attr("class", "grid-legend")
+                .each(function(d, i) {
+                    let group = d3.select(this);
+                    group.append("rect").attr("x", 0).attr("y", 20 * i).attr("width", 15).attr("height", 15).style("fill", i === 0 ? "rgb(255, 169, 83)" : Global.GrayColor);
+                    group.append("text").attr("x", 20).attr("y", 20 * i).text(d).style("dominant-baseline", "hanging");
+                });
+            d3.select("#grid-control")
+                .style("padding-left", (grid_legend_startx + 200) + "px");
         },
         expand_icon_create() {
             // this.expanded_icon_group.on("click", () => {
@@ -936,9 +991,9 @@ export default {
         this.set_height = 0;
         this.image_height = 0;
         this.set_left = this.layer_height * 3 + 230;
-        this.set_width = this.layout_width - this.set_left;
-        this.set_margin = 6;
-        this.image_margin = this.set_margin;
+        this.set_width = this.layout_width - this.set_left - 12;
+        this.set_margin = 3;
+        this.image_margin = 5;
 
         // animation
         this.create_ani = Global.Animation;
@@ -1023,7 +1078,7 @@ export default {
                 "transform",
                 "translate(" + 0 + ", " + 0 + ")"
             );
-
+        this.nav_group.style("visibility", "hidden");
         this.set_link_group = this.svg
             .append("g")
             .attr("id", "set-link-group")
@@ -1123,7 +1178,7 @@ export default {
     background: rgb(255, 255, 255);
     border: 1px solid #c1c1c1;
     border-radius: 5px;
-    height: 100%;
+    height: calc(100% - 24px);
 }
 
 .topname {

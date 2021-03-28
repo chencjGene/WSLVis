@@ -21,7 +21,7 @@ const ImageCards = function(parent) {
         "translate(" + that.nav_offset_x + ", " + that.nav_offset_y + ")"
     );
   that.nav_group.append("rect").attr("class", "nav-rect")
-    .attr("width", 0).attr("height", 5).attr("y", -2.5)
+    .attr("width", 5).attr("height", 0).attr("x", -2.5)
     .attr("fill", Global.GrayColor);
 
   // animation
@@ -36,7 +36,7 @@ const ImageCards = function(parent) {
   let img_width = 40;
 
   let margin_size = 20;
-  let margin_top_size = 100;
+  // let margin_top_size = 100;
   let plot_width = 800;
   let plot_height = 800;
   var offset_x = 0; // position of the left grid when the mode is "juxtaposition"
@@ -136,8 +136,10 @@ const ImageCards = function(parent) {
         that.click_ids.push({id: that.get_nav_id(), 
             layout: Global.deepCopy(grids)});
         that.click_ids.forEach((d, i) => {
-            d.x = i * that.nav_margin;
-            d.y = 0;
+            // d.x = i * that.nav_margin;
+            // d.y = 0;
+            d.x = 0;
+            d.y = i * that.nav_margin;
             d.last_one = i === (that.click_ids.length - 1) ? true : false;
         })
     }
@@ -241,7 +243,10 @@ const ImageCards = function(parent) {
       )
       .on("click", (_, d) => {
         console.log("click image", d);
-        that.set_focus_image(d);
+        // that.set_focus_image(d);
+        that.parent.fetch_single_image_detection_for_focus_text({
+          image_id: d.idx
+        })
       });
 
     that.box_groups = g_image_groups.selectAll("rect.box").data((d) => {
@@ -424,7 +429,20 @@ const ImageCards = function(parent) {
         d.id === that.get_expand_set_id()
           ? Global.minus_path_d(-11, 0, 10, 10, 2)
           : Global.plus_path_d(-11, 0, 10, 10, 2)
+      )
+      .style("opacity", d =>
+        that.get_expand_set_id() === -1 || that.get_expand_set_id() === d.id
+          ? 1
+          : 0
       );
+
+      that.e_sets
+        .select(".expand-rect")
+        .style("opacity", d =>
+          that.get_expand_set_id() === -1 || that.get_expand_set_id() === d.id
+            ? 1
+            : 0
+        );
   };
 
   this.grid_update = function() {
@@ -492,7 +510,7 @@ const ImageCards = function(parent) {
         .transition()
         .duration(that.update_ani)
         .delay(that.remove_ani)
-        .attr("width", that.click_ids.length === 0 ? 
+        .attr("height", that.click_ids.length === 0 ? 
             0 : that.nav_margin * (that.click_ids.length - 1));
   }
 
@@ -653,6 +671,14 @@ const ImageCards = function(parent) {
       that.set_mode(mode);
     });
 
+    d3.select("#home").on("click", () => {
+      console.log("home buttom click");
+      let i = 0;
+      let d = that.click_ids[0];
+      that.click_ids = that.click_ids.slice(0, i);
+      that.set_grid_layout_data(d);
+    });
+
     function adjust_sampling_area(area) {
       that.relative_sampling_area = area;
       // console.log("relative_sampling are", that.relative_sampling_area);
@@ -775,11 +801,12 @@ const ImageCards = function(parent) {
           (that.relative_sampling_area.x + that.relative_sampling_area.w) *
             plot_width +
           margin_size +
-          offset_x;
+          offset_x - 10;
         let button_y =
           (that.relative_sampling_area.y + that.relative_sampling_area.h) *
             plot_height +
-          margin_top_size +
+          // margin_top_size +
+          that.text_height + 
           offset_y;
         that.confirm_button
           .attr("transform", "translate(" + button_x + ", " + button_y + ")")
