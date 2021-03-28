@@ -101,7 +101,8 @@ export default {
         // }
     },
     methods: {
-        ...mapActions(["fetch_hypergraph", "fetch_word", "fetch_image", "fetch_grid_layout"]),
+        ...mapActions(["fetch_hypergraph", "fetch_word", "fetch_image", 
+        "fetch_grid_layout", "fetch_single_image_detection_for_focus_text"]),
         ...mapMutations([
             "set_selected_flag",
             "set_focus_node",

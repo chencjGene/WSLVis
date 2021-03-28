@@ -158,9 +158,14 @@ class DataBaseLoader(object):
         conf_detection = detection[detection[:, -2] > conf_thresh].astype(np.float32)
         gt_d = self.get_anno_bbox_result(idx)
         conf_detection[:, 0] /= w
-        conf_detection[:, 2] /= w
+        conf_detection[:, 2] /= w # width
         conf_detection[:, 1] /= h
-        conf_detection[:, 3] /= h
+        conf_detection[:, 3] /= h # height
+        # conf_detection[:, 2] += conf_detection[:, 0] # max x
+        # conf_detection[:, 3] += conf_detection[:, 1] # max y
+        conf_detection = np.clip(conf_detection, 0, 1)
+        # conf_detection[:, 2] -= conf_detection[:, 0] # width
+        # conf_detection[:, 3] -= conf_detection[:, 1] # height
         conf_detection = np.round(conf_detection, 3)
         return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist(), "gt_d": gt_d}
 
