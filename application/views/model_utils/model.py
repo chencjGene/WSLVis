@@ -497,12 +497,15 @@ class WSLModel(object):
         }
         return grid_layout_with_image_info
 
-    def set_focus_image_cluster(self, id):
+    def set_focus_image_cluster(self, id, cat_ids):
         # self.current_sampler = self.samples[id]
+        # import IPython; IPython.embed()
         if hasattr(self, "current_sampler") and \
             self.current_sampler.id == id:
+            self.current_sampler.update_cat_ids(cat_ids)
             return 
         self.current_sampler = Sampler(id=id)
+        self.current_sampler.update_cat_ids(cat_ids)
         image_ids = self.image_ids_of_clusters[id]
         mismatch = self.data.get_mismatch()
         mismatch = mismatch[np.array(image_ids)]

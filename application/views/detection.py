@@ -39,6 +39,7 @@ def app_get_rank():
 def app_get_grid_layout():
     data = json.loads(request.data)
     image_cluster_id = data.get("image_cluster_id", 4)
+    cat_ids = data.get("cat_ids", [7])
     left_x = data.get("left-x", 0)
     top_y = data.get("top-y", 0)
     width = data.get("width", 1)
@@ -47,7 +48,7 @@ def app_get_grid_layout():
     print("image_cluster_id: {}, right_x {}, "
                 "top_y {}, width {}, height {}, node id: {}"
                 .format(image_cluster_id, left_x, top_y, width, height, node_id))
-    grid_layout = get_grid_layout(image_cluster_id, left_x, top_y, width, height, node_id)
+    grid_layout = get_grid_layout(image_cluster_id, cat_ids, left_x, top_y, width, height, node_id)
     return grid_layout
 
 
@@ -71,14 +72,14 @@ def app_get_embedding():
     selected_gt = gt[np.array(image_ids)][:,class_id]
 
     mismatch = mismatch.astype(int)
-    for i, id in enumerate(image_ids):
-        if mismatch[i]:
-            if selected_img[i] != selected_gt[i] and selected_img[i] == 1:
-                mismatch[i] = 3
-            elif selected_img[i] != selected_gt[i] and selected_img[i] == 0:
-                mismatch[i] = 4
-            elif selected_text[i] != selected_gt[i] and selected_text[i] == 0:
-                mismatch[i] = 2
+    # for i, id in enumerate(image_ids):
+    #     if mismatch[i]:
+    #         if selected_img[i] != selected_gt[i] and selected_img[i] == 1:
+    #             mismatch[i] = 3
+    #         elif selected_img[i] != selected_gt[i] and selected_img[i] == 0:
+    #             mismatch[i] = 4
+    #         elif selected_text[i] != selected_gt[i] and selected_text[i] == 0:
+    #             mismatch[i] = 2
 
     coor = m.get_tsne_of_image_cluster(cluster_id)
     print("tsne shape", coor.shape)

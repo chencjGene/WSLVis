@@ -171,9 +171,10 @@ export default {
         this.one_image_data = {width, height, "idx": that.focus_text.idx, "x":image_x, "y": image_y};
         this.one_image_box_data = boxes;
       }
-      
-      this.one_image_box_data = this.one_image_box_data.filter(d =>
-        d.conf > that.one_image_boxes_threshold)
+      if (this.one_image_box_data){
+        this.one_image_box_data = this.one_image_box_data.filter(d =>
+          d.conf > that.one_image_boxes_threshold)
+      }
 
       that.update_view();
       that.show_detail(null, -1);

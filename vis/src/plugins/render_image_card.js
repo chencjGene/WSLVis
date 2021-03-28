@@ -291,7 +291,7 @@ const ImageCards = function(parent) {
       .enter()
       .append("g")
       .attr("class", "grid")
-      .attr("id", (d) => "grid-id-" + d.img_id)
+      .attr("id", (d) => "grid-id-" + d.img_id + "-" + d.id)
       .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
       .on("mouseover", function() {
         d3.select(this)
@@ -928,12 +928,14 @@ const ImageCards = function(parent) {
         that.click_count = that.click_ids.slice(-1)[0].id;
         // that.click_ids.push(that.click_count);
         let query = {
+          // "image_cluster_id": that.expand_set_id,
+          "cat_ids": that.parent.selected_node.node_ids,
           "left-x": that.relative_sampling_area.x,
           "top-y": that.relative_sampling_area.y,
           width: that.relative_sampling_area.w,
           height: that.relative_sampling_area.h,
           "node-id": that.click_count,
-          image_cluster_id: that.get_expand_set_id,
+          image_cluster_id: that.get_expand_set_id(),
         };
         that.fetch_grid_layout(query);
       } else if (that.get_mode() === "selecting") {

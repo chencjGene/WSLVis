@@ -26,18 +26,21 @@ class Sampler(object):
         self.sampling_square_len = sampling_square_len
         self.sampling_num = sampling_num
         self.id = id
+        self.cat_ids = []
 
         self.min_adding_len = 0.05
         self.current_count = 1
         logger.info("time cost before self._init {}".format(time.time() - t))
 
+    def update_cat_ids(self, cat_ids):
+        self.cat_ids = cat_ids
 
     def init(self, embed_X, image_ids, mismatch, data_root):
         self.data_root = data_root
         self.image_ids = image_ids
         self.train_idx = np.array(range(len(image_ids)))
         self.embed_X = embed_X
-        self.mismatch = mismatch.astype(int).sum(axis=1)
+        self.mismatch = mismatch.astype(int)
         self.train_tree = None
         self.train_tree_data = {}
         self.train_focus_node = None
@@ -60,7 +63,7 @@ class Sampler(object):
         # print("process_idx", idx)
         t = time.time()
         X = self.embed_X[np.array(idx)]
-        mismatch = self.mismatch[np.array(idx)] 
+        # mismatch = self.mismatch[np.array(idx)] 
         if len(idx) < self.sampling_num:
             sampled_idx = idx
             unsampled_idx = []
@@ -174,12 +177,12 @@ class Sampler(object):
         }
 
     def _get_sampler(self, selected_list, selected_pos, current_hiera, old_node_id):
-        idx = []
+        idxs = []
         print("selected idx len", len(selected_list))
         for id in selected_list:
-            idx.extend(current_hiera[id]["c"] + [id])
+            idxs.extend(current_hiera[id]["c"] + [id])
 
-        print("all idx len:", len(idx))
+        print("all idx len:", len(idxs))
         print("selected list", selected_list)
 
 
@@ -192,36 +195,48 @@ class Sampler(object):
         buffer_path = os.path.join(self.data_root, "heirarchy", "heira_" + str(self.id) + ".pkl")
 
         if os.path.exists(buffer_path) and old_node_id == "root":
+        # if 0:
             logger.info("using hiera buffer!!!")
-            idx, sampled_idx, self.current_grid_layout, hiera, res = pickle_load_data(buffer_path)
+            idxs, sampled_idx, self.current_grid_layout, hiera, res = pickle_load_data(buffer_path)
             self.current_sampled_idx = sampled_idx
             grid_x = self.current_grid_layout[0]
 
         else:
-            X = self.embed_X[np.array(idx)]
-            mismatch = self.mismatch[np.array(idx)]
-            if len(idx) < self.sampling_num:
-                sampled_idx = np.array(idx)
+            idxs.sort()
+            X = self.embed_X[np.array(idxs)]
+            mismatch = self.mismatch[:, np.array(self.cat_ids)].sum(axis=1)
+            selected_mismatch = mismatch[np.array(idxs)]
+            if len(idxs) < self.sampling_num:
+                sampled_idx = np.array(idxs)
                 sampled_X = X
                 unsampled_idx = []
             else:
-                print("total instances needed to sampled: ", len(idx))
-                intersection_idx = list(set(idx).intersection(set(selected_list)))
-                selection = np.zeros(len(idx), dtype=bool)
+                print("total instances needed to sampled: ", len(idxs))
+                intersection_idx = list(set(idxs).intersection(set(selected_list)))
+                selection = np.zeros(len(idxs), dtype=bool)
                 for id in intersection_idx:
-                    selection[idx.index(id)] = True
+                    selection[idxs.index(id)] = True
+                import IPython; IPython.embed(); exit()
+                # mat = pickle_load_data("test/sampling/data.pkl")
                 sampler = DensityBasedSampler(n_samples=self.sampling_num)
-                res = sampler.fit_sample(X, mismatch=mismatch, selection=np.array(selection))
-                sampled_idx = np.array(idx)[res[0]]
+                res = sampler.fit_sample(X, mismatch=selected_mismatch.astype(bool), selection=np.array(selection))
+                
+                # sampler = DensityBasedSampler(n_samples = 2025)
+                # res = sampler.fit_sample(X, mismatch=selected_mismatch.astype(bool), selection=np.array(selection))
+                sampled_idx = np.array(idxs)[res[0]]
+                # sampled_idx = np.array(range(len(res[0])))[res[0]]
+                # if old_node_id == "root":
+                #     sampled_idx = mat["idxs"]
+                # import IPython; IPython.embed(); exit()
                 print("sampled idx",sampled_idx)
-                sampled_X = X[res[0], :]
-                unsampled_idx = np.array(idx)[np.array(1-res[0]).astype(bool)]
+                sampled_X = X[np.array(sampled_idx), :]
+                unsampled_idx = np.array(idxs)[np.array(1-res[0]).astype(bool)]
             self.current_sampled_idx = sampled_idx
             self.current_history_idx = sampled_idx.copy()
             self.current_sampled_x = sampled_X
             test_sampled_X = sampled_X.copy()
             self.current_grid_layout = grid_layout(sampled_idx, sampled_X,
-                selected_list, selected_pos, self.mismatch)
+                selected_list, selected_pos, mismatch)
             res = []
             grid_x = self.current_grid_layout[0]
 
@@ -242,12 +257,12 @@ class Sampler(object):
                     'id': int(id),
                     'img_id': self.image_ids[int(id)],
                     'pos': grid_x[idx].tolist(),
-                    'mismatch': int(self.mismatch[int(id)])
+                    'mismatch': int(mismatch[int(id)])
                 })
             if old_node_id == "root":
-                pickle_save_data(buffer_path, [idx, sampled_idx, self.current_grid_layout, hiera, res])
+                pickle_save_data(buffer_path, [idxs, sampled_idx, self.current_grid_layout, hiera, res])
 
-        return idx, sampled_idx, grid_x, hiera, res
+        return idxs, sampled_idx, grid_x, hiera, res
 
 def Knn(X1, N, D, n_neighbors, forest_size, subdivide_variance_size, leaf_number):
     forest = AnnoyIndex(X1.shape[1], 'euclidean')

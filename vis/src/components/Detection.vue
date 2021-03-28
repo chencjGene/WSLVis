@@ -947,7 +947,12 @@ export default {
                 this.update_view();
             }
             else{
-                this.fetch_grid_layout({});
+                let selected_ids = this.selected_node.node_ids;
+                let image_cluster_id = this.expand_set_id;
+                this.fetch_grid_layout({
+                    "cat_ids": selected_ids,
+                    "image_cluster_id": image_cluster_id
+                });
             }
         },
         grid_data(){
