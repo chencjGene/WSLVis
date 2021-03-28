@@ -15,9 +15,13 @@
           style="margin: 0 20px 0 20px; height: 30px"
         ></v-slider>
 
-        <svg id="btn-svg" width="100px" height="24px" style="margin-right: 20px"></svg>
+        <svg id="btn-svg" width="100px" height="24px" style="margin-right: 20px">
+        </svg>
       </v-row>
-
+      <svg id="image-svg">
+        <svg id="btn-edit" :hidden="mode=='grid'" v-on:click="beginEditBoundingBox()" height="20px" viewBox="0 0 512 511" width="20px"><rect x="0" width="512" y="0" height="512" fill="black" fill-opacity="0"></rect><path d="m405.332031 256.484375c-11.796875 0-21.332031 9.558594-21.332031 21.332031v170.667969c0 11.753906-9.558594 21.332031-21.332031 21.332031h-298.667969c-11.777344 0-21.332031-9.578125-21.332031-21.332031v-298.667969c0-11.753906 9.554687-21.332031 21.332031-21.332031h170.667969c11.796875 0 21.332031-9.558594 21.332031-21.332031 0-11.777344-9.535156-21.335938-21.332031-21.335938h-170.667969c-35.285156 0-64 28.714844-64 64v298.667969c0 35.285156 28.714844 64 64 64h298.667969c35.285156 0 64-28.714844 64-64v-170.667969c0-11.796875-9.539063-21.332031-21.335938-21.332031zm0 0"/><path d="m200.019531 237.050781c-1.492187 1.492188-2.496093 3.390625-2.921875 5.4375l-15.082031 75.4375c-.703125 3.496094.40625 7.101563 2.921875 9.640625 2.027344 2.027344 4.757812 3.113282 7.554688 3.113282.679687 0 1.386718-.0625 2.089843-.210938l75.414063-15.082031c2.089844-.429688 3.988281-1.429688 5.460937-2.925781l168.789063-168.789063-75.414063-75.410156zm0 0"/><path d="m496.382812 16.101562c-20.796874-20.800781-54.632812-20.800781-75.414062 0l-29.523438 29.523438 75.414063 75.414062 29.523437-29.527343c10.070313-10.046875 15.617188-23.445313 15.617188-37.695313s-5.546875-27.648437-15.617188-37.714844zm0 0"/></svg>
+        <svg id="btn-remove" :hidden="mode=='grid'" v-on:click="removeBoundingBox()" height="20px" viewBox="0 0 74 74" width="20px"><rect x="0" width="80" y="0" height="80" fill="black" fill-opacity="0"></rect><path d="m51.512 71.833h-28.723a4.661 4.661 0 0 1 -4.631-4.3l-2.858-39.146a1 1 0 1 1 1.995-.146l2.854 39.142a2.652 2.652 0 0 0 2.636 2.45h28.727a2.651 2.651 0 0 0 2.635-2.45l2.853-39.142a1 1 0 0 1 2 .146l-2.857 39.142a4.661 4.661 0 0 1 -4.631 4.304z"/><path d="m58.741 29.314h-43.184a3.072 3.072 0 0 1 -3.069-3.068v-4.468a3.072 3.072 0 0 1 3.069-3.068h43.184a3.071 3.071 0 0 1 3.068 3.068v4.468a3.071 3.071 0 0 1 -3.068 3.068zm-43.184-8.6a1.07 1.07 0 0 0 -1.069 1.068v4.468a1.071 1.071 0 0 0 1.069 1.068h43.184a1.07 1.07 0 0 0 1.068-1.068v-4.472a1.069 1.069 0 0 0 -1.068-1.068z"/><path d="m58 20.71h-41.7a1 1 0 0 1 -.944-1.329l5.035-14.464a4.6 4.6 0 0 1 4.338-3.084h24.839a4.6 4.6 0 0 1 4.339 3.084l5.034 14.464a1 1 0 0 1 -.941 1.329zm-40.289-2h38.879l-4.572-13.136a2.6 2.6 0 0 0 -2.45-1.741h-24.839a2.6 2.6 0 0 0 -2.449 1.741z"/><path d="m51.5 20.71h-28.7a1 1 0 0 1 -.944-1.329l3.314-9.515a2.294 2.294 0 0 1 2.165-1.538h19.627a2.293 2.293 0 0 1 2.165 1.538l3.312 9.515a1 1 0 0 1 -.939 1.329zm-27.285-2h25.873l-2.85-8.187a.292.292 0 0 0 -.276-.2h-19.627a.292.292 0 0 0 -.276.2z"/><path d="m27.345 52.7a1 1 0 0 1 -.977-.79 11.029 11.029 0 0 1 18.814-9.887 1 1 0 1 1 -1.457 1.37 8.943 8.943 0 0 0 -6.576-2.842 9.038 9.038 0 0 0 -9.028 9.028 9.133 9.133 0 0 0 .2 1.911 1 1 0 0 1 -.767 1.187.953.953 0 0 1 -.209.023z"/><path d="m37.149 60.6a11.072 11.072 0 0 1 -8.033-3.473 1 1 0 1 1 1.457-1.37 8.944 8.944 0 0 0 6.576 2.843 9.038 9.038 0 0 0 9.028-9.028 9.157 9.157 0 0 0 -.119-1.47 1 1 0 0 1 1.974-.321 11.19 11.19 0 0 1 .145 1.791 11.042 11.042 0 0 1 -11.028 11.028z"/><path d="m40.083 44.563a1 1 0 0 1 -.192-1.98l3.388-.668-.667-3.388a1 1 0 0 1 1.962-.387l.861 4.369a1 1 0 0 1 -.788 1.175l-4.37.86a.918.918 0 0 1 -.194.019z"/><path d="m30.7 61.814a1 1 0 0 1 -.98-.807l-.861-4.369a1 1 0 0 1 .787-1.175l4.37-.86a1 1 0 1 1 .387 1.961l-3.389.668.668 3.389a1 1 0 0 1 -.782 1.179.989.989 0 0 1 -.2.014z"/></svg>
+      </svg>
     </v-col>
   </v-row>
 </template>
@@ -31,7 +35,9 @@ export default {
   name: "DetImage",
   data: () => ({
     confidence: 50,
-    selectRect: null
+    selectRect: null,
+    mode: "grid",
+    isEditing: false
   }),
   watch: {
     selected_images(){
@@ -268,6 +274,7 @@ export default {
         // drag events
         let dragbarw = 5;
         let dragmove = function(event, d) {
+          if(!that.isEditing) return;
           if (isXChecked) {
               that.selectRect
                   .attr("x", d.x = Math.max(0, event.x))
@@ -294,6 +301,7 @@ export default {
           }
         };
         let ldragresize = function(event) {
+          if(!that.isEditing) return;
           let d = that.selectRect.datum();
            if (isXChecked) {
               var oldx = d.x;
@@ -318,6 +326,7 @@ export default {
         }
 
         let rdragresize = function(event) {
+          if(!that.isEditing) return;
           let d = that.selectRect.datum();
            if (isXChecked) {
              //Max x on the left is x - width
@@ -343,6 +352,7 @@ export default {
         }
 
         let tdragresize = function(event) {
+          if(!that.isEditing) return;
           let d = that.selectRect.datum();
            if (isYChecked) {
               var oldy = d.y;
@@ -367,6 +377,7 @@ export default {
         }
 
         let bdragresize = function(event) {
+          if(!that.isEditing) return;
           let d = that.selectRect.datum();
            if (isYChecked) {
              //Max x on the left is x - width
@@ -406,10 +417,11 @@ export default {
           .style("stroke", Global.BoxRed)
           .style("stroke-width", 1)
           .on("click", function (event, d) {
+            if(that.isEditing) return;
             that.selectRect = d3.select(this);
             console.log(that.selectRect);
             // add dragbar
-            that.main_group.select("#drag-bar-g").remove();
+            that.main_group.selectAll("#drag-bar-g").remove();
             let new_g = that.main_group.append("g").attr("id", "drag-bar-g");
             let dragright = d3.drag()
                 .on("drag", rdragresize);
@@ -466,8 +478,8 @@ export default {
                   .attr("cursor", "ns-resize")
                   .call(dragbottom);
 
-            that.one_image_boxes.on('mousedown.drag', null).attr("cursor", "default");
-            that.selectRect.attr("cursor", "move").call(drag);
+            that.one_image_boxes.on('mousedown.drag', null);
+            that.selectRect.call(drag);
           });
       }
     },
@@ -543,7 +555,7 @@ export default {
         }, that.update_ani);
       }
     }, 
-    show_detail(d, i){
+    show_detail(d, i) {
       let that = this;
       that.selected_id = d ? [d.id] : [];
       
@@ -700,6 +712,23 @@ export default {
         that.update_view();
         that.show_detail(null, -1);
       }
+    },
+    beginEditBoundingBox() {
+      let that = this;
+      this.isEditing = true;
+      that.one_image_boxes.attr("cursor", "default");
+      that.selectRect.attr("cursor", "move");
+    },
+    removeBoundingBox() {
+      let that = this;
+      that.isEditing = false;
+      that.main_group.selectAll("#drag-bar-g").remove();
+      // TODO: add 'deleting bounding box' code here
+      // let removedBoundBox = that.selectRect.datum();
+
+
+      that.selectRect.remove();
+      that.selectRect = null;
     }
   },
   async mounted() {
@@ -733,10 +762,12 @@ export default {
     that.img_size = 250;
 
     that.svg = container
-      .append("svg")
-      .attr("id", "image-svg")
+      .select("#image-svg")
       .attr("width", that.width)
       .attr("height", that.layout_height - 40);
+
+    that.svg.select("#btn-edit").attr("x", that.width-80).attr("y", 0);
+    that.svg.select("#btn-remove").attr("x", that.width-50).attr("y", 0);
 
     that.main_group = that.svg
       .append("g")
