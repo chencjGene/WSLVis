@@ -448,6 +448,7 @@ class Data(DataBaseLoader):
         cat_ids = np.array(query["cat_id"])
         idxs = self.current_wordcloud[word]
         idxs = list(set(idxs))
+        labels = self.get_category_pred(label_type=idxs, data_type="text-only")
         correctness = self.correctness[np.array(idxs)][:, cat_ids]
         correctness = correctness.sum(axis=1)
         texts = []
@@ -457,13 +458,14 @@ class Data(DataBaseLoader):
             result = cursor.execute(sql, (idx,))
             result = cursor.fetchall()[0]
             caps = result[0]
+            label = labels[i]
             # caps = [c + " " for c in caps]
             # caps = "".join(caps)
             text = {
                 "message": caps,
                 "active": True,
                 "id": idx,
-                "c": int(correctness[i])
+                "c": np.array(self.class_name)[label.astype(bool)].tolist()
             }
             texts.append(text)
         return texts
