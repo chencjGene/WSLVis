@@ -33,13 +33,13 @@ const image_cluster_list_layout = function(parent){
         console.log("update_parent_set_layout");
         that.parent.set_num = data.length;
         that.parent.set_height = that.layout_height / that.parent.set_num - 2;
-        that.parent.image_height = that.parent.set_height * 0.9;
+        that.parent.image_height = that.parent.set_height * 0.92;
         // that.parent.mini_set_height = 20;
         that.parent.mini_set_height = 0;
         if (that.get_expand_set_id() !== -1) {
             that.parent.set_margin = 0;
         } else {
-            that.parent.set_margin = 6;
+            that.parent.set_margin = 3;
         }
         that.parent.large_set_height = that.layout_height - 
             (that.parent.set_num - 1) * that.parent.mini_set_height;

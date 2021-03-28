@@ -26,6 +26,7 @@ const store = new Vuex.Store({
         grid_data: [],
         grid_image_info: [],
         nav_id: [],
+        one_image_boxes_threshold: 0.5,
         label_layout_mode: null,
         cluster_association_mat: [],
         focus_node: null,
@@ -253,6 +254,10 @@ const store = new Vuex.Store({
                 d.d = state.grid_image_info[i].d;
             })
         },
+        set_one_image_boxes_threshold(state, data){
+            console.log("set one_image_boxes_threshold", data);
+            state.one_image_boxes_threshold = data;
+        },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 
             state.tooltip.left = left 
@@ -335,6 +340,7 @@ const store = new Vuex.Store({
         },
         async fetch_single_image_detection_for_focus_text({commit, state}, query){
             console.log("fetch_single_image_detection_for_focus_text", query);
+            query.conf = 0.1;
             const resp = await axios.post(`${state.server_url}/image/SingleImageDetection`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_focus_text", JSON.parse(JSON.stringify(resp.data)));
         },

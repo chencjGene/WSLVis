@@ -170,7 +170,7 @@ class CoClusteringTest(unittest.TestCase):
 
     def test_cluster_buffer(self):
         dataname = "COCO17"
-        step = 3
+        step = 1
         mat = pickle_load_data("test/mismatch/network.pkl")
         m = WSLModel(dataname=config.coco17, step=step)
         m.update_hiera("sub1")
@@ -239,7 +239,7 @@ class CoClusteringTest(unittest.TestCase):
                 mm = mismatch[idxs]
                 sorted_idxs = idxs[mm.argsort()[::-1]]
                 res = []
-                for idx in sorted_idxs:
+                for idx in sorted_idxs[5:]:
                     img_id = image_ids[idx]
                     det = np.array(m.data.get_detection_result(int(img_id)))
                     det = [d for d in det if d[-2] > 0.4 and d[-2] < 0.5]

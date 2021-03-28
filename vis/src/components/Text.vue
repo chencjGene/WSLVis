@@ -25,7 +25,7 @@
                 :data-index="index"
               >
                 <div class="label-div" :id="item.id">
-                  <svg :width="30+label.length*8.1" height="32" v-for="label in ['cat', 'this is a long name']" :key="label" style="margin: 3px; margin-top: 10px">
+                  <svg :width="30+label.length*8.1" height="32" v-for="label in item.c" :key="label" style="margin: 3px; margin-top: 10px">
                     <rect class="background" rx="3.3333333333333335" ry="3.3333333333333335" x="0" y="0" height="32" :width="30+label.length*8.1" style="fill: rgb(235, 235, 243); fill-opacity: 1;"></rect>
                     <text class="node-name" text-anchor="start" x="15" y="16" font-size="18px" dy=".3em" style="opacity: 1;">{{ label }}</text>
                   </svg>

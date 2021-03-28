@@ -158,9 +158,14 @@ class DataBaseLoader(object):
         conf_detection = detection[detection[:, -2] > conf_thresh].astype(np.float32)
         gt_d = self.get_anno_bbox_result(idx)
         conf_detection[:, 0] /= w
-        conf_detection[:, 2] /= w
+        conf_detection[:, 2] /= w # width
         conf_detection[:, 1] /= h
-        conf_detection[:, 3] /= h
+        conf_detection[:, 3] /= h # height
+        # conf_detection[:, 2] += conf_detection[:, 0] # max x
+        # conf_detection[:, 3] += conf_detection[:, 1] # max y
+        conf_detection = np.clip(conf_detection, 0, 1)
+        # conf_detection[:, 2] -= conf_detection[:, 0] # width
+        # conf_detection[:, 3] -= conf_detection[:, 1] # height
         conf_detection = np.round(conf_detection, 3)
         return {"idx": idx, "w": w, "h": h, "d": conf_detection.tolist(), "gt_d": gt_d}
 
@@ -448,6 +453,7 @@ class Data(DataBaseLoader):
         cat_ids = np.array(query["cat_id"])
         idxs = self.current_wordcloud[word]
         idxs = list(set(idxs))
+        labels = self.get_category_pred(label_type=idxs, data_type="text-only")
         correctness = self.correctness[np.array(idxs)][:, cat_ids]
         correctness = correctness.sum(axis=1)
         texts = []
@@ -457,13 +463,14 @@ class Data(DataBaseLoader):
             result = cursor.execute(sql, (idx,))
             result = cursor.fetchall()[0]
             caps = result[0]
+            label = labels[i]
             # caps = [c + " " for c in caps]
             # caps = "".join(caps)
             text = {
                 "message": caps,
                 "active": True,
                 "id": idx,
-                "c": int(correctness[i])
+                "c": np.array(self.class_name)[label.astype(bool)].tolist()
             }
             texts.append(text)
         return texts
@@ -471,7 +478,8 @@ class Data(DataBaseLoader):
     def get_text(self, query):
         cursor = self.conn.cursor()
         sql = "select (cap) from annos where id = ?"
-        ids = np.array(query["ids"])
+        ids = np.array(query["ids"]).tolist()
+        labels = self.get_category_pred(label_type=ids, data_type="text-only")
         texts = []
         for i, idx in enumerate(ids):
             # anno = self.annos[idx]
@@ -479,12 +487,14 @@ class Data(DataBaseLoader):
             result = cursor.execute(sql, (int(idx),))
             result = cursor.fetchall()[0]
             caps = result[0]
+            label = labels[i]
             # caps = [c + " " for c in caps]
             # caps = "".join(caps)
             text = {
                 "message": caps,
                 "active": True,
                 "id": int(idx),
+                "c": np.array(self.class_name)[label.astype(bool)].tolist()
             }
             texts.append(text)
         return texts

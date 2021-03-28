@@ -253,7 +253,10 @@ const ImageCards = function(parent) {
       )
       .on("click", (_, d) => {
         console.log("click image", d);
-        that.set_focus_image(d);
+        // that.set_focus_image(d);
+        that.parent.fetch_single_image_detection_for_focus_text({
+          image_id: d.idx
+        })
       });
 
     that.box_groups = g_image_groups.selectAll("rect.box").data((d) => {
