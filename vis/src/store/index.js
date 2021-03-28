@@ -24,6 +24,7 @@ const store = new Vuex.Store({
         expand_tree: true,
         expand_set_id: -1,
         grid_data: [],
+        grid_image_info: [],
         nav_id: [],
         label_layout_mode: null,
         cluster_association_mat: [],
@@ -166,7 +167,8 @@ const store = new Vuex.Store({
         },
         set_focus_image(state, image){
             console.log("set focus image");
-             state.focus_image = image;
+            state.focus_image = image;
+            console.log(image);
         }, 
         set_selected_node(state, node) {
             console.log("set selected node");
@@ -245,7 +247,11 @@ const store = new Vuex.Store({
         set_grid_layout_data(state, data){
             console.log("set grid layout data", data);
             state.grid_data = data.layout;
+            state.grid_image_info = data.image_info;
             state.nav_id = data.id;
+            state.grid_data.forEach((d, i) => {
+                d.d = state.grid_image_info[i].d;
+            })
         },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 

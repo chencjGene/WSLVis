@@ -93,6 +93,10 @@ const ImageCards = function(parent) {
     return that.parent.grid_data;
   };
 
+  this.get_grid_image_info = function() {
+    return that.parent.grid_image_info;
+  };
+
   this.get_nav_id = function(){
       return that.parent.nav_id;
   }
@@ -128,6 +132,12 @@ const ImageCards = function(parent) {
     });
     that.labels = that.label_layout(Global.deepCopy(that.grids), 
         plot_width, that.labels);
+    // let grid_image_info = that.get_grid_image_info();
+    // that.labels.forEach(d => {
+    //   let info = grid_image_info.find(info => info.idx === d.img_id);
+    //   d.d = info.d;
+    // })
+
     that.use_label_layout = that.labels.length ? 1 : 0;
     if (that.get_expand_set_id() < 0){
         that.click_ids = [];
@@ -320,6 +330,31 @@ const ImageCards = function(parent) {
       .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
         `/image/image?filename=${d.img_id}.jpg`)
       .style("pointer-events", "none");
+
+    let box_groups = grid_groups.selectAll("rect.box").data((d) => {
+        let dets = d.d;
+        let res = [];
+        for (let i = 0; i < dets.length; i++) {
+          let tmp = dets[i].slice(0, 4);
+          tmp.width = d.width;
+          res.push(tmp);
+        }
+        return res;
+    });
+    box_groups
+      .enter()
+      .append("rect")
+      .attr("class", "box")
+      .attr("x", (d) => 0.5 * that.boundingbox_width + (d.width - that.boundingbox_width) * d[0])
+      .attr("y", (d) => 0.5 * that.boundingbox_width +  (d.width - that.boundingbox_width) * d[1])
+      .attr("width", (d) => (d.width - that.boundingbox_width) * (d[2] - d[0]))
+      .attr("height", (d) => (d.width - that.boundingbox_width) * (d[3] - d[1]))
+      .style("fill", "none")
+      .style("stroke", Global.BoxRed)
+      .style("stroke-width", 1)
+      .style("opacity", (!that.use_label_layout) && that.get_expand_set_id() > -1 ? 1 : 0)
+      .style("pointer-events", (!that.use_label_layout) && that.get_expand_set_id() > -1 ? 1 : "none");
+
   };
 
   this.label_create = function(){
@@ -350,6 +385,33 @@ const ImageCards = function(parent) {
         .attr("width", d => d.label.w)
         .attr("height", d => d.label.h)
         .attr("xlink:href", d => that.server_url + `/image/image?filename=${d.img_id}.jpg`);
+    
+    let box_groups = label_group.selectAll("rect.box").data((d) => {
+      let dets = d.d;
+      let res = [];
+      for (let i = 0; i < dets.length; i++) {
+        let x = d.label.x + offset_x + d.label.w * dets[i][0];
+        let width = d.grid.w * (dets[i][2] - dets[i][0]);
+        let y = d.label.y + offset_y + d.label.h * dets[i][1];
+        let height = d.grid.h * (dets[i][3] - dets[i][1]);
+        res.push({ x, y, width, height });
+      }
+      return res;
+    });
+
+    box_groups
+      .enter()
+      .append("rect")
+      .attr("class", "box")
+      .attr("x", (d) => d.x)
+      .attr("y", (d) => d.y)
+      .attr("width", (d) => d.width)
+      .attr("height", (d) => d.height)
+      .style("fill", "none")
+      .style("stroke", Global.BoxRed)
+      .style("stroke-width", 1)
+      .style("opacity", that.get_expand_set_id() > -1 ? 1 : 0)
+      .style("pointer-events", that.get_expand_set_id() > -1 ? 1 : "none");
   }
 
   this.nav_create = function(){
@@ -469,6 +531,28 @@ const ImageCards = function(parent) {
       .attr("height", (d) => d.width - that.boundingbox_width)
       .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
         `/image/image?filename=${d.img_id}.jpg`);
+
+    that.e_grids
+      .selectAll("rect.box")
+      .data((d) => {
+        let dets = d.d;
+        let res = [];
+        for (let i = 0; i < dets.length; i++) {
+          let tmp = dets[i].slice(0, 4);
+          tmp.width = d.width;
+          res.push(tmp);
+        }
+        return res;
+      })
+      .transition()
+      .duration(that.update_ani)
+      .delay(that.remove_ani)
+      .attr("x", (d) => 0.5 * that.boundingbox_width + (d.width - that.boundingbox_width) * d[0])
+      .attr("y", (d) => 0.5 * that.boundingbox_width +  (d.width - that.boundingbox_width) * d[1])
+      .attr("width", (d) => (d.width - that.boundingbox_width) * (d[2] - d[0]))
+      .attr("height", (d) => (d.width - that.boundingbox_width) * (d[3] - d[1]))
+      .style("opacity", (!that.use_label_layout) && that.get_expand_set_id() > -1 ? 1 : 0)
+      .style("pointer-events", (!that.use_label_layout) && that.get_expand_set_id() > -1 ? 1 : "none");
   };
 
   this.label_update = function(){
@@ -489,8 +573,13 @@ const ImageCards = function(parent) {
         .attr("width", d => d.label.w)
         .attr("height", d => d.label.h)
         .attr("xlink:href", d => that.server_url + `/image/image?filename=${d.img_id}.jpg`);
-
-
+    that.e_labels
+        .selectAll("rect.box")
+        .transition()
+        .duration(that.update_ani)
+        .delay(that.remove_ani)
+        .style("opacity", that.get_expand_set_id() > -1 ? 1 : 0)
+        .style("pointer-events", that.get_expand_set_id() > -1 ? 1 : "none");
   }
 
   this.nav_update = function(){

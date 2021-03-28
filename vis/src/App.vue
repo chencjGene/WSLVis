@@ -65,7 +65,7 @@ export default {
     await this.$store.dispatch("fetch_manifest", 
     {"step": "step1", "dataset": "COCO17"});
     await this.$store.dispatch("fetch_hypergraph", 1);
-    // await this.$store.dispatch("fetch_grid_layout", {});
+    // await this.$store.dispatch("fetch_grid_", {});
     // this.$store.dispatch("fetch_history", 1);
   }
 };

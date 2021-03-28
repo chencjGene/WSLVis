@@ -90,6 +90,7 @@ export default {
             "expand_tree",
             "expand_set_id",
             "grid_data",
+            "grid_image_info",
             "nav_id",
             "tooltip",
             "server_url",
