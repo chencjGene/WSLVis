@@ -30,7 +30,8 @@
 export default {
   name: "DetImage",
   data: () => ({
-    confidence: 50
+    confidence: 50,
+    selectRect: null
   }),
   watch: {
     selected_images(){
@@ -263,7 +264,136 @@ export default {
           .on("click", (_, d) => {
               console.log("click single images");        
               that.fetch_text_by_ids([d.idx]);
-          })
+          });
+        // drag events
+        let dragbarw = 5;
+        let dragmove = function(event, d) {
+          if (isXChecked) {
+              that.selectRect
+                  .attr("x", d.x = Math.max(0, event.x))
+              that.dragbarleft
+                  .attr("x", d.x - (dragbarw/2))
+              that.dragbarright
+                  .attr("x", d.x + d.w - (dragbarw/2))
+              that.dragbartop
+                  .attr("x", d.x + (dragbarw/2))
+              that.dragbarbottom
+                  .attr("x", d.x + (dragbarw/2))
+          }
+          if (isYChecked) {
+              that.selectRect
+                  .attr("y", d.y = Math.max(0, event.y));
+              that.dragbarleft
+                  .attr("y", d.y + (dragbarw/2));
+              that.dragbarright
+                  .attr("y", d.y + (dragbarw/2));
+              that.dragbartop
+                  .attr("y", d.y - (dragbarw/2));
+              that.dragbarbottom
+                  .attr("y", d.y + d.h - (dragbarw/2))
+          }
+        };
+        let ldragresize = function(event) {
+          let d = that.selectRect.datum();
+           if (isXChecked) {
+              var oldx = d.x;
+             //Max x on the right is x + width - dragbarw
+             //Max x on the left is 0 - (dragbarw/2)
+              d.x = Math.max(0, Math.min(d.x + d.w - (dragbarw / 2), event.x));
+              d.w = d.w + (oldx - d.x);
+              that.dragbarleft
+                .attr("x", d.x - (dragbarw / 2));
+
+              that.selectRect
+                .attr("x", d.x)
+                .attr("width", d.w);
+
+             that.dragbartop
+                .attr("x", d.x + (dragbarw/2))
+                .attr("width", d.w - dragbarw)
+             that.dragbarbottom
+                .attr("x", d.x + (dragbarw/2))
+                .attr("width", d.w - dragbarw)
+          }
+        }
+
+        let rdragresize = function(event) {
+          let d = that.selectRect.datum();
+           if (isXChecked) {
+             //Max x on the left is x - width
+             //Max x on the right is width of screen + (dragbarw/2)
+             var dragx = Math.max(d.x + (dragbarw/2), d.x + d.w + event.dx);
+
+             //recalculate width
+             d.w = dragx - d.x;
+
+             //move the right drag handle
+             that.dragbarright
+                .attr("x", dragx - (dragbarw/2));
+
+             //resize the drag rectangle
+             //as we are only resizing from the right, the x coordinate does not need to change
+             that.selectRect
+                .attr("width", d.w);
+             that.dragbartop
+                .attr("width", d.w - dragbarw)
+             that.dragbarbottom
+                .attr("width", d.w - dragbarw)
+          }
+        }
+
+        let tdragresize = function(event) {
+          let d = that.selectRect.datum();
+           if (isYChecked) {
+              var oldy = d.y;
+             //Max x on the right is x + width - dragbarw
+             //Max x on the left is 0 - (dragbarw/2)
+              d.y = Math.max(0, Math.min(d.y + d.h - (dragbarw / 2), event.y));
+              d.h = d.h + (oldy - d.y);
+              that.dragbartop
+                .attr("y", d.y - (dragbarw / 2));
+
+              that.selectRect
+                .attr("y", function(d) { return d.y; })
+                .attr("height", d.h);
+
+              that.dragbarleft
+                .attr("y", d.y + (dragbarw/2))
+                .attr("height", d.h - dragbarw);
+              that.dragbarright
+                .attr("y", d.y + (dragbarw/2))
+                .attr("height", d.h - dragbarw);
+          }
+        }
+
+        let bdragresize = function(event) {
+          let d = that.selectRect.datum();
+           if (isYChecked) {
+             //Max x on the left is x - width
+             //Max x on the right is width of screen + (dragbarw/2)
+             var dragy = Math.max(d.y + (dragbarw/2), d.y + d.h + event.dy);
+
+             //recalculate width
+             d.h = dragy - d.y;
+
+             //move the right drag handle
+             that.dragbarbottom
+                .attr("y", dragy - (dragbarw/2));
+
+             //resize the drag rectangle
+             //as we are only resizing from the right, the x coordinate does not need to change
+             that.selectRect
+                .attr("height", d.h);
+             that.dragbarleft
+                .attr("height", d.h - dragbarw);
+             that.dragbarright
+                .attr("height", d.h - dragbarw);
+          }
+        }
+        let drag = d3.drag()
+            .on("drag", dragmove);
+        let isXChecked = true, isYChecked = true;
+
         that.one_image_boxes.enter()
           .append("rect")
           .attr("class", "info-box")
@@ -271,9 +401,74 @@ export default {
           .attr("y", d => d.y)
           .attr("width", d => d.w)
           .attr("height", d => d.h)
-          .style("fill", "none")
+          .style("fill", "white")
+          .style("fill-opacity", "0")
           .style("stroke", Global.BoxRed)
-          .style("stroke-width", 1);
+          .style("stroke-width", 1)
+          .on("click", function (event, d) {
+            that.selectRect = d3.select(this);
+            console.log(that.selectRect);
+            // add dragbar
+            that.main_group.select("#drag-bar-g").remove();
+            let new_g = that.main_group.append("g").attr("id", "drag-bar-g");
+            let dragright = d3.drag()
+                .on("drag", rdragresize);
+
+            let dragleft = d3.drag()
+                .on("drag", ldragresize);
+
+            let dragtop = d3.drag()
+                .on("drag", tdragresize);
+
+            let dragbottom = d3.drag()
+                .on("drag", bdragresize);
+            that.dragbarleft = new_g.append("rect")
+                  .attr("x", d.x - (dragbarw/2))
+                  .attr("y", d.y + (dragbarw/2))
+                  .attr("height", d.h - dragbarw)
+                  .attr("id", "dragleft")
+                  .attr("width", dragbarw)
+                  .attr("fill", "lightblue")
+                  .attr("fill-opacity", 0)
+                  .attr("cursor", "ew-resize")
+                  .call(dragleft);
+
+            that.dragbarright = new_g.append("rect")
+                  .attr("x", d.x + d.w - (dragbarw/2))
+                  .attr("y", d.y + (dragbarw/2))
+                  .attr("id", "dragright")
+                  .attr("height", d.h - dragbarw)
+                  .attr("width", dragbarw)
+                  .attr("fill", "lightblue")
+                  .attr("fill-opacity", 0)
+                  .attr("cursor", "ew-resize")
+                  .call(dragright);
+
+            that.dragbartop = new_g.append("rect")
+                  .attr("x", d.x + (dragbarw/2))
+                  .attr("y", d.y - (dragbarw/2))
+                  .attr("height", dragbarw)
+                  .attr("id", "dragleft")
+                  .attr("width", d.w - dragbarw)
+                  .attr("fill", "lightgreen")
+                  .attr("fill-opacity", 0)
+                  .attr("cursor", "ns-resize")
+                  .call(dragtop);
+
+            that.dragbarbottom = new_g.append("rect")
+                  .attr("x", d.x + (dragbarw/2))
+                  .attr("y", d.y + d.h - (dragbarw/2))
+                  .attr("id", "dragright")
+                  .attr("height", dragbarw)
+                  .attr("width", d.w - dragbarw)
+                  .attr("fill", "lightgreen")
+                  .attr("fill-opacity", 0)
+                  .attr("cursor", "ns-resize")
+                  .call(dragbottom);
+
+            that.one_image_boxes.on('mousedown.drag', null).attr("cursor", "default");
+            that.selectRect.attr("cursor", "move").call(drag);
+          });
       }
     },
     update(){
