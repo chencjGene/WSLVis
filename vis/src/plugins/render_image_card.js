@@ -35,7 +35,7 @@ const ImageCards = function(parent) {
   let mismatch_color = "#E05246";
 
   //
-  that.boundingbox_width = 3;
+  that.boundingbox_width = 12;
 
   // let labels = Array(); // Label layout
   let img_width = 40;
@@ -339,10 +339,10 @@ const ImageCards = function(parent) {
     grid_groups
       .append("image")
       .attr("class", "display")
-      .attr("x", 1 * that.boundingbox_width)
-      .attr("y", 1 * that.boundingbox_width)
-      .attr("width", (d) => d.width - 2 * that.boundingbox_width)
-      .attr("height", (d) => d.width - 2 * that.boundingbox_width)
+      .attr("x", 0.5 * that.boundingbox_width)
+      .attr("y", 0.5 * that.boundingbox_width)
+      .attr("width", (d) => d.width - that.boundingbox_width)
+      .attr("height", (d) => d.width - that.boundingbox_width)
       .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
         `/image/image?filename=${d.img_id}.jpg`)
       .style("pointer-events", "none");
