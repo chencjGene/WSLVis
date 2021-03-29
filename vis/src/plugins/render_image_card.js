@@ -29,8 +29,10 @@ const ImageCards = function(parent) {
   that.update_ani = that.parent.update_ani;
   that.remove_ani = that.parent.remove_ani;
 
-  let match_color = "#D3D3E5";
-  let mismatch_color = "#ED2939";
+  // let match_color = "#D3D3E5";
+  // let mismatch_color = "#ED2939";
+  let match_color = "#EEEDF3";
+  let mismatch_color = "#E05246";
 
   //
   that.boundingbox_width = 3;
@@ -225,8 +227,8 @@ const ImageCards = function(parent) {
       .append("rect")
       .attr("class", "background")
       .style("fill", "white")
-      .style("stroke", "#e0e0e0")
-      .style("stroke-width", 1)
+      .style("stroke", "#d0d0d0")
+      .style("stroke-width", 1.5)
       .attr("width", (d) => d.width)
       .attr("height", (d) => d.height);
 

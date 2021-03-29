@@ -330,7 +330,7 @@ class WSLModel(object):
                 mat[i, idx] = 1
 
 
-        return mat.T, mismatch_matrix
+        return mat.T, mismatch_matrix + 1
 
     def get_current_hypergraph(self):
         cam_matrix, mismatch = self.get_cluster_association_matrix()

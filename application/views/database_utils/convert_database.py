@@ -67,6 +67,8 @@ def convert(dataname):
     # logits = []
     # labels = []
     # activations = []
+    add_annos = pickle_load_data("test/detection/add_annos_merge.pkl")
+
     results = []
     for idx in tqdm(range(len(data.annos))):
         anno = data.annos[idx]
@@ -74,11 +76,19 @@ def convert(dataname):
         cap = [a+ " " for a in cap]
         cap = "".join(cap)
         bbox = json.dumps(anno["bbox"])
-        logit = json.dumps(anno["extracted_labels"]["logits"])
         label = json.dumps(np.round(anno["extracted_labels"]["label"], 4).tolist())
         activation = json.dumps(anno["extracted_labels"]["activations"])
         string = json.dumps(anno["extracted_labels"]["string"])
         image_output = json.dumps(np.round(anno["extracted_labels"]["output_v"], 4).tolist())
+        logit = anno["extracted_labels"]["logits"]
+        det_cats = [d for d in data.detections[idx]["bbox"] if d[-2] > 0.5]
+        image_long_id = data.ids[idx]
+        if image_long_id in add_annos.keys() and len(add_annos[image_long_id]["image"]) > 0:
+            logit = np.ones(65) * -1
+            for d in det_cats:
+                logit[d[-1]] = 1
+            logit = logit.tolist()
+        logit = json.dumps(logit)
         detection = json.dumps(data.detections[idx]["bbox"])
         results.append((idx, cap, bbox, logit, label, activation, string, image_output, detection))
 

@@ -184,10 +184,10 @@ class CoClusteringTest(unittest.TestCase):
 
     def test_mismatch(self):
         dataname = "COCO17"
-        step = 3
+        step = 4
         mat = pickle_load_data("test/mismatch/network.pkl")
         m = WSLModel(dataname=config.coco17, step=step)
-        m.update_hiera("sub1")
+        m.update_ ("sub1")
         m.run()
 
         cluster_id = 3

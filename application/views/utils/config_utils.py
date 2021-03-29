@@ -9,7 +9,8 @@ class Config(object):
         self.root = SERVER_ROOT
         #raw data root
         # self.raw_data_root = os.path.normpath("/home/changjian/WeaklySupervisedLearning2021/RawData")
-        self.raw_data_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../../RawData"))
+        # self.raw_data_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../../RawData"))
+        self.raw_data_root = os.path.normpath("E:\WSL2021-Raw-data")
 
         # first-level directory
         self.data_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../data/"))

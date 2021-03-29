@@ -49,7 +49,7 @@ const TextImageConnection = function (parent) {
             .style("opacity", 0)
             // .style("stroke", d => d.mismatch_value > that.mismatch_threshold ? 
             //     Global.Red: Global.GrayColor)
-            .style("stroke-width", 0.5)
+            .style("stroke-width", 1)
             // .style("stroke-dasharray", "5, 5")
             .transition()
             .duration(that.create_ani)
