@@ -46,4 +46,6 @@ class Port(object):
         return res
 
     def get_manifest(self):
-        return self.case_util.get_base_config()
+        res = self.case_util.get_base_config()
+        res["class_name"] = self.model.data.class_name
+        return res

@@ -54,7 +54,8 @@ const store = new Vuex.Store({
         },
         word_cloud_recycled: {
 
-        }
+        },
+        classNames:[]
     },
     getters: {
         
@@ -66,6 +67,7 @@ const store = new Vuex.Store({
         set_manifest_data(state, manifest_data){
             console.log("set manifest data");
             state.image_num = manifest_data.image_num;
+            state.classNames = manifest_data.class_name;
         },
         set_selected_flag(state, tree){
             console.log("set tree");
@@ -277,7 +279,7 @@ const store = new Vuex.Store({
                     "Content-Type":"application/json",
                     "Access-Control-Allow-Origin": "*",
                 }});
-            // console.log(resp);
+            console.log("get manifest", resp);
             commit("set_manifest_data", JSON.parse(JSON.stringify(resp.data)));
         },
         async fetch_hypergraph({commit, state}, key){
