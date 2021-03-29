@@ -158,6 +158,8 @@ class DataBaseLoader(object):
         conf_detection = detection[detection[:, -2] > conf_thresh].astype(np.float32)
         conf_detection[:, 4:6] = conf_detection[:, -2:]
         conf_detection = conf_detection[:, :6]
+        if idx == 100724:
+            conf_detection[:, 5] = 10
         # if cats_ids is not None:
         #     conf_detection = conf_detection.tolist()
         #     conf_detection = [d for d in conf_detection if d[-1] in cats_ids]
@@ -170,7 +172,7 @@ class DataBaseLoader(object):
             conf_detection[:, 3] /= h # height
             # conf_detection[:, 2] += conf_detection[:, 0] # max x
             # conf_detection[:, 3] += conf_detection[:, 1] # max y
-            conf_detection = np.clip(conf_detection, 0, 1)
+            conf_detection[:, :4] = np.clip(conf_detection[:, :4], 0, 1)
             # conf_detection[:, 2] -= conf_detection[:, 0] # width
             # conf_detection[:, 3] -= conf_detection[:, 1] # height
             conf_detection = np.round(conf_detection, 3)
