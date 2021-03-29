@@ -231,7 +231,10 @@ export default {
     },
     create() {
       let that = this;
+      that.isEditing = false;
       that.main_group.selectAll("#drag-bar-g").remove();
+      if(that.selectRect!==null) that.selectRect.remove();
+      that.selectRect = null;
       that.selectClass = "";
       if (that.mode === 'grid') {
         that.grid_group_g =  that.grid_group.selectAll(".grid-image")
@@ -634,9 +637,10 @@ export default {
       that.one_image_boxes.attr("cursor", "default");
       that.selectRect.attr("cursor", "move");
       // add context menu
+      let selectNode = window.detection.selected_node.node_ids.length==0?null:window.detection.selected_node.node_ids[0];
       let menuOptions = [
                 {
-                    title: 'Confirm as '+ that.selectClass,
+                    title: selectNode==null?'Confirm':'Confirm as '+ that.$store.state.classNames[selectNode],
                     action: function() {
                       console.log('Confirm!');
                       // TODO: send confirm msg
