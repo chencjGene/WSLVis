@@ -463,12 +463,19 @@ class Data(DataBaseLoader):
         sql = "select (cap) from annos where id = ?"
         word = query["word"]
         cat_ids = np.array(query["cat_id"])
+        rules = query["rules"]
+        print("rules", rules)
+        # TODO
+        keyword = []
+        if len(rules) > 0:
+            keyword = "restaurant"
         idxs = self.current_wordcloud[word]
         idxs = list(set(idxs))
         labels = self.get_category_pred(label_type=idxs, data_type="text-only")
         correctness = self.correctness[np.array(idxs)][:, cat_ids]
         correctness = correctness.sum(axis=1)
         texts = []
+        # import IPython; IPython.embed(); 
         for i, idx in enumerate(idxs):
             # anno = self.annos[idx]
             # caps = anno["caption"]
@@ -476,6 +483,9 @@ class Data(DataBaseLoader):
             result = cursor.fetchall()[0]
             caps = result[0]
             label = labels[i]
+            words = self.current_text_2_word[idx]
+            if len(words) == 1 and words[0] == keyword:
+                label[33] = 0
             # caps = [c + " " for c in caps]
             # caps = "".join(caps)
             text = {
@@ -483,6 +493,7 @@ class Data(DataBaseLoader):
                 "active": True,
                 "id": idx,
                 "c": np.array(self.class_name)[label.astype(bool)].tolist()
+                # "c": self.current_text_2_word[idx]
             }
             texts.append(text)
         return texts
@@ -524,6 +535,14 @@ class Data(DataBaseLoader):
         self.current_text_idxs = self.get_labeled_id_by_type(cats, match_type)
         # print("current_text_idxs", self.current_text_idxs)
         self.current_wordcloud = self.get_important_labels(self.current_text_idxs, cats)
+        self.current_text_2_word = {}
+        for key in self.current_wordcloud:
+            idxs = self.current_wordcloud[key]
+            for idx in idxs:
+                if idx not in self.current_text_2_word:
+                    self.current_text_2_word[idx] = []
+                self.current_text_2_word[idx].append(key)
+        # import IPython; IPython.embed(); exit()
         words = [[k, len(self.current_wordcloud[k])] for k in self.current_wordcloud]
         return words
 

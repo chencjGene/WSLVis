@@ -299,7 +299,8 @@ const store = new Vuex.Store({
             console.log("fetch_text", key);
             let query = {
                 "cat_id": key.cat_id,
-                "word": key.text
+                "word": key.text,
+                "rules": key.rules
             }
             const resp = await axios.post(`${state.server_url}/text/GetTextByWord`, {query}, {headers: {"Access-Control-Allow-Origin": "*"}});
             commit("set_text_list", JSON.parse(JSON.stringify(resp.data)));

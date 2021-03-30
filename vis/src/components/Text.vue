@@ -85,7 +85,8 @@ export default {
       console.log("triger focus word");
       this.$store.dispatch("fetch_text_by_word_and_cat_ids", {
         "text": this.focus_word.text,
-        "cat_id": this.selected_node["node_ids"]
+        "cat_id": this.selected_node["node_ids"],
+        "rules": this.$store.state.word_cloud_recycled
       });
     }
     // text_list() {
@@ -154,7 +155,7 @@ export default {
           that.$store.state.word_cloud_recycled[node] = []
         }
         that.$store.state.word_cloud_recycled[node].push(removed_word);
-        that.set_focus_word(null);
+        that.set_focus_word({text:that.focus_word.text});
         // re render
       that.update_data();
       that.update_view();
