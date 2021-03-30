@@ -802,8 +802,16 @@ export default {
                 .attr("class", "grid-legend")
                 .each(function(d, i) {
                     let group = d3.select(this);
-                    group.append("rect").attr("x", 0).attr("y", 20 * i).attr("width", 15).attr("height", 15).style("fill", i === 0 ? mismatch_color : match_color);
-                    group.append("text").attr("x", 20).attr("y", 20 * i).text(d).style("dominant-baseline", "hanging");
+                    group.append("rect")
+                    .attr("x", 0)
+                    .attr("y", 20 * i)
+                    .attr("width", 15)
+                    .attr("height", 15)
+                    .style("fill", i === 0 ? "#E05246" : "#EEEDF3");
+                    group.append("text")
+                    .attr("x", 20)
+                    .attr("y", 20 * i)
+                    .text(d).style("dominant-baseline", "hanging");
                 });
             d3.select("#grid-control")
                 .style("padding-left", (grid_legend_startx + 200) + "px");

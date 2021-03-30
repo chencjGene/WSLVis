@@ -31,14 +31,14 @@ const ImageCards = function(parent) {
 
   // let match_color = "#D3D3E5";
   // let mismatch_color = "#ED2939";
-  let match_color = "#EEEDF3";
+  let match_color = "#D3D3E5";
   let mismatch_color = "#E05246";
 
   //
   that.boundingbox_width = 12;
 
   // let labels = Array(); // Label layout
-  let img_width = 40;
+  let img_width = 80;
 
   let margin_size = 20;
   // let margin_top_size = 100;
@@ -46,6 +46,8 @@ const ImageCards = function(parent) {
   let plot_height = 800;
   var offset_x = 0; // position of the left grid when the mode is "juxtaposition"
   var offset_y = 100;
+
+  let grid_margin = 0.5;
 
   let mouse_pressed = false;
   let mouse_pos = {
@@ -327,10 +329,10 @@ const ImageCards = function(parent) {
     grid_groups
       .append("rect")
       .attr("class", "boundingbox")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", (d) => d.width)
-      .attr("height", (d) => d.width)
+      .attr("x", 0 + grid_margin)
+      .attr("y", 0 + grid_margin)
+      .attr("width", (d) => d.width - 2 *grid_margin)
+      .attr("height", (d) => d.width - 2 * grid_margin)
       .style("fill", (d) => (d.mismatch > 0 ? mismatch_color : match_color))
       .style("stroke", "black")
       .style("stroke-width", 0)
@@ -339,10 +341,10 @@ const ImageCards = function(parent) {
     grid_groups
       .append("image")
       .attr("class", "display")
-      .attr("x", 0.5 * that.boundingbox_width)
-      .attr("y", 0.5 * that.boundingbox_width)
-      .attr("width", (d) => d.width - that.boundingbox_width)
-      .attr("height", (d) => d.width - that.boundingbox_width)
+      .attr("x", 0.5 * that.boundingbox_width + grid_margin)
+      .attr("y", 0.5 * that.boundingbox_width + grid_margin)
+      .attr("width", (d) => d.width - that.boundingbox_width - 2 * grid_margin)
+      .attr("height", (d) => d.width - that.boundingbox_width - 2 * grid_margin)
       .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
         `/image/image?filename=${d.img_id}.jpg`)
       .style("pointer-events", "none");
@@ -409,32 +411,33 @@ const ImageCards = function(parent) {
           })
         });
     
-    // let box_groups = label_group.selectAll("rect.box").data((d) => {
-    //   let dets = d.d;
-    //   let res = [];
-    //   for (let i = 0; i < dets.length; i++) {
-    //     let x = d.label.x + offset_x + d.label.w * dets[i][0];
-    //     let width = d.grid.w * (dets[i][2] - dets[i][0]);
-    //     let y = d.label.y + offset_y + d.label.h * dets[i][1];
-    //     let height = d.grid.h * (dets[i][3] - dets[i][1]);
-    //     res.push({ x, y, width, height });
-    //   }
-    //   return res;
-    // });
+    let box_groups = label_group.selectAll("rect.box").data((d) => {
+      let dets = d.d;
+      let res = [];
+      for (let i = 0; i < dets.length; i++) {
+        let x = d.label.x + offset_x + d.label.w * dets[i][0];
+        // let width = d.grid.w * (dets[i][2] - dets[i][0]);
+        let width = d.label.w * (dets[i][2] - dets[i][0]);
+        let y = d.label.y + offset_y + d.label.h * dets[i][1];
+        let height = d.label.h * (dets[i][3] - dets[i][1]);
+        res.push({ x, y, width, height });
+      }
+      return res;
+    });
 
-    // box_groups
-    //   .enter()
-    //   .append("rect")
-    //   .attr("class", "box")
-    //   .attr("x", (d) => d.x)
-    //   .attr("y", (d) => d.y)
-    //   .attr("width", (d) => d.width)
-    //   .attr("height", (d) => d.height)
-    //   .style("fill", "none")
-    //   .style("stroke", Global.BoxRed)
-    //   .style("stroke-width", 1)
-    //   .style("opacity", that.get_expand_set_id() > -1 ? 1 : 0)
-    //   .style("pointer-events", that.get_expand_set_id() > -1 ? 1 : "none");
+    box_groups
+      .enter()
+      .append("rect")
+      .attr("class", "box")
+      .attr("x", (d) => d.x)
+      .attr("y", (d) => d.y)
+      .attr("width", (d) => d.width)
+      .attr("height", (d) => d.height)
+      .style("fill", "none")
+      .style("stroke", Global.BoxRed)
+      .style("stroke-width", 1)
+      .style("opacity", that.get_expand_set_id() > -1 ? 1 : 0)
+      .style("pointer-events", that.get_expand_set_id() > -1 ? 1 : "none");
   }
 
   this.nav_create = function(){
