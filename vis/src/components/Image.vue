@@ -8,7 +8,7 @@
             <span
                 class=""
                 v-text="'Confidence ≥ '+confidence/100"
-                style="width: 125px;"
+                style="width: 135px;"
               ></span>
 
             <v-slider
