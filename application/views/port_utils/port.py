@@ -48,4 +48,7 @@ class Port(object):
     def get_manifest(self):
         res = self.case_util.get_base_config()
         res["class_name"] = self.model.data.class_name
+        res["label_consistency"] = res["parameters"][str(self.step)]["label_consistency"]
+        res["symmetrical_consistency"] = res["parameters"][str(self.step)]["symmetrical_consistency"]
+        del res["parameters"]
         return res

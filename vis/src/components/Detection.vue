@@ -22,7 +22,7 @@
                         type="radio"
                         id="one"
                         value="None"
-                        v-model="picked"
+                        v-model="treecut_type"
                     />
                     <label class="treecut-option" for="one">None</label>
                     <input
@@ -30,7 +30,7 @@
                         type="radio"
                         id="two"
                         value="F1Score"
-                        v-model="picked"
+                        v-model="treecut_type"
                     />
                     <label class="treecut-option" for="two">F1 score</label>
                     <input
@@ -38,7 +38,7 @@
                         type="radio"
                         id="three"
                         value="Mismatch"
-                        v-model="picked"
+                        v-model="treecut_type"
                     />
                     <label class="treecut-option" for="three">Mismatch</label>
                 </div>
@@ -46,13 +46,14 @@
                     <span
                         class=""
                         v-text="
-                            'Label consistency weight: ' + label_consistency
+                            'Label consistency weight: ' + label_consistency.toFixed(1)
                         "
-                        style="width: 210px; float: left"
+                        style="width: 220px; float: left"
                     ></span>
                     <v-slider
                         v-model="label_consistency"
                         max="100"
+                        step="1.0"
                         :color="'grey'"
                         :track-color="'grey lighten-2'"
                         :thumb-color="'grey darken-1'"
@@ -71,9 +72,9 @@
                         class=""
                         v-text="
                             'Symmetrical consistency weight: ' +
-                            symmetrical_consistency
+                            symmetrical_consistency.toFixed(1)
                         "
-                        style="width: 260px; float: left"
+                        style="width: 270px; float: left"
                     ></span>
                     <v-slider
                         v-model="symmetrical_consistency"
@@ -214,9 +215,7 @@ export default {
         InfoTooltip: InfoTooltip,
     },
     data: () => ({
-        picked: "Mismatch",
-        label_consistency: 50,
-        symmetrical_consistency: 50,
+        treecut_type: "Mismatch",
         items: ["Foo", "Bar", "Fizz", "Buzz"],
         bbox_width: null,
         bbox_height: null,
@@ -247,6 +246,26 @@ export default {
             "server_url",
             "selected_flag",
         ]),
+        // ...MapGetters({
+        //     LabelConsistency: "label_consistency",
+        //     SymmetricalSconsistency: "symmetrical_consistency"
+        // }),
+        label_consistency:{
+            get(){
+                return this.$store.state.label_consistency;
+            },
+            set(value){
+                this.$store.state.label_consistency = value;
+            }
+        },
+        symmetrical_consistency:{
+            get(){
+                return this.$store.state.symmetrical_consistency;
+            },
+            set(value){
+                this.$store.state.symmetrical_consistency = value;
+            }
+        }
         // selected_flag(){
         //     return this.tree.all_descendants.map(d => !! d.selected_flag);
         // }
@@ -777,12 +796,12 @@ export default {
         mini_remove() {},
     },
     watch: {
-        picked(){
+        treecut_type(){
             // console.log("checkbox", this.picked); 
-            if (this.picked === "None") {
+            if (this.treecut_type === "None") {
                 console.log("click tree cut", this.use_treecut);
                 this.set_use_treecut(false);
-            } else if (this.picked === "F1Score") {
+            } else if (this.treecut_type === "F1Score") {
                 console.log(
                     "click prec-rec-checkbox",
                     this.f1_score_selected
@@ -802,7 +821,7 @@ export default {
                         .select("rect")
                         .attr("fill", "white");
                 }
-            } else if (this.picked === "Mismatch") {
+            } else if (this.treecut_type === "Mismatch") {
                 console.log(
                     "click prec-rec-checkbox",
                     this.f1_score_selected
@@ -818,7 +837,7 @@ export default {
                         .attr("fill", "white");
                 }
             } else {
-                console.log("ERROR: no option named", this.picked);
+                console.log("ERROR: no option named", this.treecut_type);
             }
 
         },

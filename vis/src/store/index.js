@@ -15,6 +15,8 @@ const store = new Vuex.Store({
         // action trail
         history: [],
         image_num: 0,
+        label_consistency: 0,
+        symmetrical_consistency: 0,
         current_id: 0,
         tree: {},
         use_treecut: true,
@@ -68,6 +70,8 @@ const store = new Vuex.Store({
             console.log("set manifest data");
             state.image_num = manifest_data.image_num;
             state.classNames = manifest_data.class_name;
+            state.label_consistency = manifest_data.label_consistency;
+            state.symmetrical_consistency = manifest_data.symmetrical_consistency;
         },
         set_selected_flag(state, tree){
             console.log("set tree");
