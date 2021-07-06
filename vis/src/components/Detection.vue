@@ -298,12 +298,14 @@ export default {
         ]),
         async onUpdateIconCLick(){
             // console.log("click update icon");
+            Global.begin_loading();
             await this.$store.dispatch("fetch_manifest", 
             {"step": this.step, 
             "dataset": "COCO17",
             "label_consistency":this.label_consistency,
             "symmetrical_consistency":this.symmetrical_consistency});
             await this.$store.dispatch("fetch_hypergraph", 1);
+            Global.end_loading();
         },
         treecut() {
             console.log("detection treecut");

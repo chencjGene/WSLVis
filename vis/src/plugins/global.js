@@ -1,3 +1,5 @@
+import $ from "jquery"
+
 const GrayColor = "#7f7f7f";
 const DarkGray = "rgb(211, 211, 229)";
 const LightGray = "#EBEBF3";
@@ -172,6 +174,16 @@ const get_path_of_page_btn = function(x, y, width, height, direction){
     return path;
 }
 
+
+function begin_loading(){
+    $(".loading").show();
+    $(".loading-svg").show();
+  }
+function end_loading(){
+  $(".loading").hide();
+  $(".loading-svg").hide();
+  }
+
 export {
     GrayColor,
     DarkGray,
@@ -192,5 +204,7 @@ export {
     node_icon,
     plus_path_d,
     minus_path_d,
-    half_rounded_rect
+    half_rounded_rect,
+    begin_loading,
+    end_loading
 }

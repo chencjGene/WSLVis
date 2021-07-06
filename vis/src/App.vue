@@ -27,6 +27,8 @@ import {mapActions} from "vuex"
 import CapText from './components/Text.vue'
 import DetImage from './components/Image.vue'
 import Detection from "./components/Detection.vue"
+import * as Global from "./plugins/global";
+import $ from "jquery"
 export default {
   name: 'App', 
   components:{
@@ -48,7 +50,7 @@ export default {
       // this.$store.commit('edit');
       console.log("add data");
       // this.$store.dispatch("fetch_history", 1);
-    }
+    },
   },
   watch:{
     loader () {
@@ -61,17 +63,73 @@ export default {
     },
   },
   async mounted(){
+    window.$ = $;
     this.resize();
+    Global.begin_loading();
     await this.$store.dispatch("fetch_manifest", 
     {"step": "step1", "dataset": "COCO17"});
     await this.$store.dispatch("fetch_hypergraph", 1);
     // await this.$store.dispatch("fetch_grid_", {});
     // this.$store.dispatch("fetch_history", 1);
+    Global.end_loading();
   }
 };
 </script>
 
 <style>
+
+.loading {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: gray;
+    opacity: 0.8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-svg {
+    position: absolute;
+    left: 50%;
+    top: 45%;
+}
+
+.circle-path {
+  transform: translate(15px,15px);
+/*   transform-origin: center; */
+  animation: rotate_arrow 2s infinite;
+}
+
+
+@keyframes rotate_arrow {
+  from {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    99.999% {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg);
+    }
+    to {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+}
+
+.popup-visible {
+    position: absolute;
+    z-index: 10;
+    visibility: visible;
+}
+
+.popup-hidden {
+    position: absolute;
+    z-index: 10;
+    visibility: hidden;
+}
 
 .main-background {
   /* height: 99%; */
@@ -274,4 +332,6 @@ export default {
 }
 /* diable scrollbar on the right */
 /* ::-webkit-scrollbar {display:none;}  */
+
+
 </style>
