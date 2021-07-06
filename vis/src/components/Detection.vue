@@ -777,6 +777,51 @@ export default {
         mini_remove() {},
     },
     watch: {
+        picked(){
+            // console.log("checkbox", this.picked); 
+            if (this.picked === "None") {
+                console.log("click tree cut", this.use_treecut);
+                this.set_use_treecut(false);
+            } else if (this.picked === "F1Score") {
+                console.log(
+                    "click prec-rec-checkbox",
+                    this.f1_score_selected
+                );
+                if (!this.f1_score_selected) {
+                    this.use_treecut = true;
+                    console.log(
+                        "use_treecut, f1 score",
+                        this.use_treecut,
+                        this.f1_score_selected
+                    );
+                    this.set_f1_score_selected(true);
+                    d3.select(this)
+                        .select("rect")
+                        .attr("fill", Global.GrayColor);
+                    d3.selectAll(".mismatch-checkbox")
+                        .select("rect")
+                        .attr("fill", "white");
+                }
+            } else if (this.picked === "Mismatch") {
+                console.log(
+                    "click prec-rec-checkbox",
+                    this.f1_score_selected
+                );
+                if (this.f1_score_selected) {
+                    this.use_treecut = true;
+                    this.set_f1_score_selected(false);
+                    d3.select(this)
+                        .select("rect")
+                        .attr("fill", Global.GrayColor);
+                    d3.selectAll(".prec-rec-checkbox")
+                        .select("rect")
+                        .attr("fill", "white");
+                }
+            } else {
+                console.log("ERROR: no option named", this.picked);
+            }
+
+        },
         f1_score_selected() {
             console.log("f1_score_selected");
             this.tree.all_descendants.forEach((d) => {
