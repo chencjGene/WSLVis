@@ -1200,7 +1200,7 @@ export default {
 }
 
 .treecut-radio{
-    margin-right: 1px;
+    margin-right: 2px;
     margin-bottom: 3px;
 }
 
@@ -1214,6 +1214,28 @@ export default {
     border: 1px solid #c1c1c1;
     border-radius: 5px;
     height: calc(100% - 24px);
+}
+
+input[type="radio"] {
+  /* remove standard background appearance */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* create custom radiobutton appearance */
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  padding: 2.4px;
+  /* background-color only for content */
+  background-clip: content-box;
+  border: 1px solid #494949;
+  /* background-color: #ffffff; */
+  border-radius: 50%;
+}
+
+/* appearance for checked radiobutton */
+input[type="radio"]:checked {
+  background-color: #050505;
 }
 
 .topname {
