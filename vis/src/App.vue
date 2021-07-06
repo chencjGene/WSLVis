@@ -74,7 +74,7 @@ export default {
 <style>
 
 .main-background {
-  height: 100%;
+  /* height: 99%; */
   background-color: #ffffff;
   padding: 0px 0px 0px 0px;
 }

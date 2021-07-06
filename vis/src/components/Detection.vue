@@ -8,22 +8,120 @@
             :content="tooltip.content"
         >
         </info-tooltip>
-        <v-col cols="12" class="topname fill-width"> Sample </v-col>
+        <v-col cols="12" class="topname fill-width">
+            Sample
+            <div class="control-panel">
+                <div class="treecut-control">
+                    <span
+                        class=""
+                        v-text="'Treecut: '"
+                        style="width: 65px; float: left;"
+                    ></span>
+                    <input class="treecut-radio" type="radio" id="one" value="None" v-model="picked">
+                    <label class="treecut-option" for="one">None</label>
+                    <input class="treecut-radio" type="radio" id="two" value="F1Score" v-model="picked">
+                    <label class="treecut-option" for="two">F1 score</label>
+                    <input class="treecut-radio" type="radio" id="three" value="Mismatch" v-model="picked">
+                    <label class="treecut-option" for="three">Mismatch</label>
+                </div>
+                <div class="consistency-slider" id="label-consistency-slider">
+                    <span
+                        class=""
+                        v-text="'Label consistency weight: '+label_consistency"
+                        style="width: 210px; float: left;"
+                    ></span>
+                    <v-slider
+                        v-model="label_consistency"
+                        max="100"
+                        style="margin: 0 20px 0 20px; width: 120px; height: 24px"
+                    ></v-slider>
+                </div>
+                <div class="consistency-slider" id="symmetrical-consistency-slider">
+                    <span
+                        class=""
+                        v-text="'Symmetrical consistency weight: '+symmetrical_consistency"
+                        style="width: 260px; float: left;"
+                    ></span>
+                    <v-slider
+                        v-model="symmetrical_consistency"
+                        max="100"
+                        style="margin: 0 20px 0 20px; width: 120px; height: 24px"
+                    ></v-slider>
+                </div>
+                <div>
+                    <svg t="1625551916203" class="icon" viewBox="0 0 1024 1024" 
+                        version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2406" 
+                        width="20" height="20" >
+                        <path style="fill: rgb(120, 120, 120);" d="M896 432H606.506667l117.12-120.32c-116.48-115.413333-305.066667-119.68-421.546667-4.266667a293.333333 293.333333 0 0 0 0 417.706667c116.48 115.413333 305.066667 115.413333 421.546667 0 58.026667-57.6 87.04-124.373333 86.826666-208.853333H896c0 84.48-37.546667 194.133333-112.64 268.586666-149.76 148.266667-392.96 148.266667-542.72 0s-150.826667-388.693333-1.066667-536.96c149.546667-148.266667 390.186667-148.266667 539.733334 0L896 128v304zM533.333333 341.333333v181.333334l149.333334 88.746666-30.72 51.626667L469.333333 554.666667V341.333333h64z" p-id="2407">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+        </v-col>
         <v-col cols="12" class="main-content pa-0">
-            <div id="grid-control" style="position: absolute; padding-left: 600px; padding-top: 10px; display: none;" >
-                <div id="cropping" class="waves-effect waves-light btn-floating grey" title="Zoom in">
-                    <svg class="icon" width="24px" height="24px" transform="translate(2.6, 2.6)" viewBox="0 0 1024 1024">
-                        <path fill="white" d="M136 384h56c4.4 0 8-3.6 8-8V200h176c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-37.6 0-68 30.4-68 68v180c0 4.4 3.6 8 8 8zM648 200h176v176c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V196c0-37.6-30.4-68-68-68H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM376 824H200V648c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v180c0 37.6 30.4 68 68 68h180c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM888 640h-56c-4.4 0-8 3.6-8 8v176H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h180c37.6 0 68-30.4 68-68V648c0-4.4-3.6-8-8-8zM904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z" />
+            <div
+                id="grid-control"
+                style="
+                    position: absolute;
+                    padding-left: 600px;
+                    padding-top: 10px;
+                    display: none;
+                "
+            >
+                <div
+                    id="cropping"
+                    class="waves-effect waves-light btn-floating grey"
+                    title="Zoom in"
+                >
+                    <svg
+                        class="icon"
+                        width="24px"
+                        height="24px"
+                        transform="translate(2.6, 2.6)"
+                        viewBox="0 0 1024 1024"
+                    >
+                        <path
+                            fill="white"
+                            d="M136 384h56c4.4 0 8-3.6 8-8V200h176c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-37.6 0-68 30.4-68 68v180c0 4.4 3.6 8 8 8zM648 200h176v176c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V196c0-37.6-30.4-68-68-68H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM376 824H200V648c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v180c0 37.6 30.4 68 68 68h180c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM888 640h-56c-4.4 0-8 3.6-8 8v176H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h180c37.6 0 68-30.4 68-68V648c0-4.4-3.6-8-8-8zM904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"
+                        />
                     </svg>
                 </div>
-                <div id="selecting" style="margin-left: 3px" class="waves-effect waves-light btn-floating grey" title="Select">
-                    <svg class="icon" width="24px" height="24px" transform="translate(2.6, 2.6)"  viewBox="0 0 1024 1024">
-                        <path fill="white" d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h360c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H184V184h656v320c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V144c0-17.7-14.3-32-32-32zM653.3 599.4l52.2-52.2c4.7-4.7 1.9-12.8-4.7-13.6l-179.4-21c-5.1-0.6-9.5 3.7-8.9 8.9l21 179.4c0.8 6.6 8.9 9.4 13.6 4.7l52.4-52.4 256.2 256.2c3.1 3.1 8.2 3.1 11.3 0l42.4-42.4c3.1-3.1 3.1-8.2 0-11.3L653.3 599.4z" />
+                <div
+                    id="selecting"
+                    style="margin-left: 3px"
+                    class="waves-effect waves-light btn-floating grey"
+                    title="Select"
+                >
+                    <svg
+                        class="icon"
+                        width="24px"
+                        height="24px"
+                        transform="translate(2.6, 2.6)"
+                        viewBox="0 0 1024 1024"
+                    >
+                        <path
+                            fill="white"
+                            d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h360c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H184V184h656v320c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V144c0-17.7-14.3-32-32-32zM653.3 599.4l52.2-52.2c4.7-4.7 1.9-12.8-4.7-13.6l-179.4-21c-5.1-0.6-9.5 3.7-8.9 8.9l21 179.4c0.8 6.6 8.9 9.4 13.6 4.7l52.4-52.4 256.2 256.2c3.1 3.1 8.2 3.1 11.3 0l42.4-42.4c3.1-3.1 3.1-8.2 0-11.3L653.3 599.4z"
+                        />
                     </svg>
                 </div>
-                <div id="home" style="margin-left: 3px" class="waves-effect waves-light btn-floating grey" title="Home">
-                    <svg class="icon" width="24px" height="24px" transform="translate(2.6, 2.6)"  viewBox="0 0 1024 1024">
-                        <path fill="white" d="M1057.756543 566.281052a44.505707 44.505707 0 0 1-62.953323 0L535.326296 108.094795 150.99726 491.311188h27.927332a89.011415 89.011415 0 0 1 89.011414 89.011415v47.287314l0.244782 268.057876c3.004135 28.817446 13.173689 36.828473 44.950764 39.076011 39.276287-2.892871 43.571088-14.976171 43.971639-64.17723l-0.15577-113.06675a89.011415 89.011415 0 0 1 89.011415-88.165806h44.505707v-1.09039l89.011415-0.133517v1.223907h44.505708a89.011415 89.011415 0 0 1 89.011414 89.011415v47.287314h0.15577v56.010432l0.133517-14.953917c0 69.718191-0.445057 84.560844 44.105156 87.921025 37.451553-2.981882 43.660099-14.442102 44.639225-57.85742l-0.400551 58.346982h0.667585v-73.92398c0 5.629972 0 10.770381-0.178023 15.576998l0.178023-26.102597-0.289287-272.352677a44.505707 44.505707 0 0 1 89.011415 0l0.31154 309.314667h-0.31154V934.988585a89.011415 89.011415 0 0 1-89.011415 89.011415h-89.011415a88.833392 88.833392 0 0 1-88.655369-85.450958L624.159688 823.724317l-0.378298-17.668766c0.15577 2.358802 0.267034 5.029145 0.378298 7.610476L623.981666 756.965756h-24.47814l23.120715 0.15577 1.068137 48.956278c-2.737101-39.165023-13.551988-47.287314-53.896411-48.956278h-73.634693c-37.362541 1.891493-47.376326 10.169554-50.002162 44.928511l0.979125-44.8395h-1.179401v46.441706c0-0.556321 0-1.068137 0.133517-1.602206l-0.133517 5.741236 0.133517 79.798734h-0.133517V934.988585a89.011415 89.011415 0 0 1-89.011415 89.011415h-89.011415a88.833392 88.833392 0 0 1-88.633116-85.183924l-0.378298-359.761886h-18.848168 17.535249l0.400552 59.504131c-1.045884-47.665613-7.855257-57.523627-50.714254-59.548636l-80.288296 0.200275a43.59334 43.59334 0 0 1-11.126427-0.845608l-1.045884-0.200276A40.055137 40.055137 0 0 1 0.901762 544.228474c0-0.289287-0.111264-0.600827-0.15577-0.890114a43.103778 43.103778 0 0 1-0.289287-14.241826 48.956278 48.956278 0 0 1 3.315675-12.305828 44.260926 44.260926 0 0 1 7.944269-11.949783c0.244781-0.244781 0.289287-0.556321 0.534068-0.801103L500.411569 17.258646a47.376326 47.376326 0 0 1 2.781607-4.20579 44.505707 44.505707 0 0 1 62.953323 0l0.645333 0.645333 490.897952 489.562782a44.505707 44.505707 0 0 1 0.066759 63.020081zM713.349126 935.300125h21.140211l-21.140211-0.133517v0.178023z m-445.057074 0h21.117958l-21.117958-0.133517v0.178023zM178.034477 638.714091c0.178023 9.145923 0.200276 19.560258 0.200276 31.710317z" />
+                <div
+                    id="home"
+                    style="margin-left: 3px"
+                    class="waves-effect waves-light btn-floating grey"
+                    title="Home"
+                >
+                    <svg
+                        class="icon"
+                        width="24px"
+                        height="24px"
+                        transform="translate(2.6, 2.6)"
+                        viewBox="0 0 1024 1024"
+                    >
+                        <path
+                            fill="white"
+                            d="M1057.756543 566.281052a44.505707 44.505707 0 0 1-62.953323 0L535.326296 108.094795 150.99726 491.311188h27.927332a89.011415 89.011415 0 0 1 89.011414 89.011415v47.287314l0.244782 268.057876c3.004135 28.817446 13.173689 36.828473 44.950764 39.076011 39.276287-2.892871 43.571088-14.976171 43.971639-64.17723l-0.15577-113.06675a89.011415 89.011415 0 0 1 89.011415-88.165806h44.505707v-1.09039l89.011415-0.133517v1.223907h44.505708a89.011415 89.011415 0 0 1 89.011414 89.011415v47.287314h0.15577v56.010432l0.133517-14.953917c0 69.718191-0.445057 84.560844 44.105156 87.921025 37.451553-2.981882 43.660099-14.442102 44.639225-57.85742l-0.400551 58.346982h0.667585v-73.92398c0 5.629972 0 10.770381-0.178023 15.576998l0.178023-26.102597-0.289287-272.352677a44.505707 44.505707 0 0 1 89.011415 0l0.31154 309.314667h-0.31154V934.988585a89.011415 89.011415 0 0 1-89.011415 89.011415h-89.011415a88.833392 88.833392 0 0 1-88.655369-85.450958L624.159688 823.724317l-0.378298-17.668766c0.15577 2.358802 0.267034 5.029145 0.378298 7.610476L623.981666 756.965756h-24.47814l23.120715 0.15577 1.068137 48.956278c-2.737101-39.165023-13.551988-47.287314-53.896411-48.956278h-73.634693c-37.362541 1.891493-47.376326 10.169554-50.002162 44.928511l0.979125-44.8395h-1.179401v46.441706c0-0.556321 0-1.068137 0.133517-1.602206l-0.133517 5.741236 0.133517 79.798734h-0.133517V934.988585a89.011415 89.011415 0 0 1-89.011415 89.011415h-89.011415a88.833392 88.833392 0 0 1-88.633116-85.183924l-0.378298-359.761886h-18.848168 17.535249l0.400552 59.504131c-1.045884-47.665613-7.855257-57.523627-50.714254-59.548636l-80.288296 0.200275a43.59334 43.59334 0 0 1-11.126427-0.845608l-1.045884-0.200276A40.055137 40.055137 0 0 1 0.901762 544.228474c0-0.289287-0.111264-0.600827-0.15577-0.890114a43.103778 43.103778 0 0 1-0.289287-14.241826 48.956278 48.956278 0 0 1 3.315675-12.305828 44.260926 44.260926 0 0 1 7.944269-11.949783c0.244781-0.244781 0.289287-0.556321 0.534068-0.801103L500.411569 17.258646a47.376326 47.376326 0 0 1 2.781607-4.20579 44.505707 44.505707 0 0 1 62.953323 0l0.645333 0.645333 490.897952 489.562782a44.505707 44.505707 0 0 1 0.066759 63.020081zM713.349126 935.300125h21.140211l-21.140211-0.133517v0.178023z m-445.057074 0h21.117958l-21.117958-0.133517v0.178023zM178.034477 638.714091c0.178023 9.145923 0.200276 19.560258 0.200276 31.710317z"
+                        />
                     </svg>
                 </div>
             </div>
@@ -33,26 +131,22 @@
 
 <script>
 /*
-* this components calls all computation components (treecut, set_managers, etc.)
-* to get elements positions and other attributions,
-* and call all rendering components (text_tree, image_card, etc.)
-* to render all elements.
-*/
+ * this components calls all computation components (treecut, set_managers, etc.)
+ * to get elements positions and other attributions,
+ * and call all rendering components (text_tree, image_card, etc.)
+ * to render all elements.
+ */
 
 // import Vue from "vue"
 import { mapActions, mapState, mapMutations } from "vuex";
-import * as d3 from "d3";  
+import * as d3 from "d3";
 import * as Global from "../plugins/global";
-import "../assets/font.css"
+import "../assets/font.css";
 
 // computation components
-import {
-    mini_tree_layout,
-    TreeCut,
-    tree_layout,
-} from "../plugins/layout_text";
-import {image_cluster_list_layout} from "../plugins/layout_image";
-import {ConnectionLayout} from "../plugins/layout_connection";
+import { mini_tree_layout, TreeCut, tree_layout } from "../plugins/layout_text";
+import { image_cluster_list_layout } from "../plugins/layout_image";
+import { ConnectionLayout } from "../plugins/layout_connection";
 import { svgDropDown } from "../plugins/svg_drop_down.js";
 
 // import { SetManager } from "../plugins/set_manager";
@@ -69,6 +163,10 @@ export default {
         InfoTooltip: InfoTooltip,
     },
     data: () => ({
+        picked: "Mismatch",
+        label_consistency: 50,
+        symmetrical_consistency: 50,
+        items: ['Foo', 'Bar', 'Fizz', 'Buzz'],
         bbox_width: null,
         bbox_height: null,
         layout_width: null,
@@ -96,15 +194,20 @@ export default {
             "nav_id",
             "tooltip",
             "server_url",
-            "selected_flag"
+            "selected_flag",
         ]),
         // selected_flag(){
         //     return this.tree.all_descendants.map(d => !! d.selected_flag);
         // }
     },
     methods: {
-        ...mapActions(["fetch_hypergraph", "fetch_word", "fetch_image", 
-        "fetch_grid_layout", "fetch_single_image_detection_for_focus_text"]),
+        ...mapActions([
+            "fetch_hypergraph",
+            "fetch_word",
+            "fetch_image",
+            "fetch_grid_layout",
+            "fetch_single_image_detection_for_focus_text",
+        ]),
         ...mapMutations([
             "set_selected_flag",
             "set_focus_node",
@@ -117,12 +220,12 @@ export default {
             "set_words",
             "set_grid_layout_data",
             "set_use_treecut",
-            "set_f1_score_selected"
+            "set_f1_score_selected",
         ]),
         treecut() {
             console.log("detection treecut");
             console.log("before treecut", this.tree);
-            if (this.use_treecut){
+            if (this.use_treecut) {
                 // tree position backup
                 this.tree.all_descendants.forEach((d) => {
                     d.prev_x = d.x;
@@ -141,22 +244,20 @@ export default {
                     return a.siblings_id - b.siblings_id;
                 });
                 console.log("after treecut", this.tree);
-            }
-            else{
+            } else {
                 if (!this.focus_node) {
-                    this.tree.all_descendants.forEach(d => d.children = []);
+                    this.tree.all_descendants.forEach((d) => (d.children = []));
                     this.tree.children = this.tree.all_children;
-                }
-                else if(this.focus_node[0].type == 0){
-                    this.focus_node[0].children = this.focus_node[0].all_children;
-                }
-                else if (this.focus_node[0].type == 1){
+                } else if (this.focus_node[0].type == 0) {
+                    this.focus_node[0].children =
+                        this.focus_node[0].all_children;
+                } else if (this.focus_node[0].type == 1) {
                     this.focus_node[0].children = [];
                 }
-                this.tree.descendants().forEach(d => {
+                this.tree.descendants().forEach((d) => {
                     d.beforeList = [];
                     d.afterList = [];
-                })
+                });
             }
         },
         update_data() {
@@ -164,10 +265,11 @@ export default {
             console.log(this.tree, this.image_cluster_list);
 
             // tree layout
-            if (!this.use_treecut){
-                this.tree_layout.update_layout_by_num(this.tree.descendants().length - 1);
-            }
-            else{
+            if (!this.use_treecut) {
+                this.tree_layout.update_layout_by_num(
+                    this.tree.descendants().length - 1
+                );
+            } else {
                 this.tree_layout.reset_layout();
             }
             this.nodes = this.tree_layout.layout_with_rest_node(
@@ -190,23 +292,35 @@ export default {
             let mat = this.mini_tree_layout.layout(this.tree);
             this.mini_nodes = mat.nodes;
             this.mini_links = mat.links;
-            
+
             // update cut cluster association matrix
-            this.connection_layout.update(this.leaf_nodes, this.image_cluster_list);
+            this.connection_layout.update(
+                this.leaf_nodes,
+                this.image_cluster_list
+            );
 
             // set layout
             console.log("selected_nodes", this.selected_nodes);
             // this.sets = this.connection_layout.reorder(this.image_cluster_list);
-            [this.sets, this.grids, this.grid_pos] = this.image_layout.layout(this.image_cluster_list);
+            [this.sets, this.grids, this.grid_pos] = this.image_layout.layout(
+                this.image_cluster_list
+            );
 
             this.set_links = this.connection_layout.get_links(this.sets);
         },
         update_view() {
             console.log("detection update view");
 
-            this.text_tree_view.sub_component_update(this.nodes, this.rest_nodes);
-            this.image_view.sub_component_update(this.sets, 
-                this.vis_image_per_cluster, this.grids, this.grid_pos);
+            this.text_tree_view.sub_component_update(
+                this.nodes,
+                this.rest_nodes
+            );
+            this.image_view.sub_component_update(
+                this.sets,
+                this.vis_image_per_cluster,
+                this.grids,
+                this.grid_pos
+            );
             this.connection_view.sub_component_update(this.set_links);
 
             this.e_mini_nodes = this.mini_tree_node_group
@@ -277,9 +391,8 @@ export default {
                 .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
         },
         legend_create() {
-
             let that = this;
-        
+
             let title1_x = 20;
             let title1_len = 100;
             let title2_x = 350;
@@ -289,17 +402,17 @@ export default {
             let drop_down_width = 90;
             let start_x = title1_x + title1_len + 80;
 
-
             // titles
-            that.svg.append("text")
+            that.svg
+                .append("text")
                 .attr("class", "title-text")
                 .attr("x", title1_x)
                 .attr("y", that.text_height * 0.6 + "px")
                 .attr("font-size", "20px")
                 .text("Label hierarchy");
 
-            
-            that.svg.append("text")
+            that.svg
+                .append("text")
                 .attr("class", "title-text")
                 .attr("x", title2_x)
                 .attr("y", that.text_height * 0.6 + "px")
@@ -307,33 +420,45 @@ export default {
                 .text("Image cluster");
 
             // treecut: dropdown-list
-             let treecut_g = that.svg
+            let treecut_g = that.svg
                 .append("g")
                 .attr("class", "current-label-checkbox")
-                .attr("transform", "translate("+
-                    (start_x)+","+
-                    (top_y)+")" + "scale(" + 1+"," + 1+")");
-             treecut_g.append("text")
+                .attr(
+                    "transform",
+                    "translate(" +
+                        start_x +
+                        "," +
+                        top_y +
+                        ")" +
+                        "scale(" +
+                        1 +
+                        "," +
+                        1 +
+                        ")"
+                );
+            treecut_g
+                .append("text")
                 .attr("text-anchor", "start")
                 .attr("x", 13)
                 .attr("y", 10)
                 .attr("font-size", "16px")
                 .text("Treecut");
-             let members = [{
-                  label: "None",
-                  value: 1
+            let members = [
+                {
+                    label: "None",
+                    value: 1,
                 },
                 {
-                  label: "F1 score",
-                  value: 2
+                    label: "F1 score",
+                    value: 2,
                 },
                 {
-                  label: "Mismatch",
-                  value: 3
-                }
-             ];
+                    label: "Mismatch",
+                    value: 3,
+                },
+            ];
 
-             let config = {
+            let config = {
                 width: drop_down_width,
                 container: treecut_g,
                 members: members,
@@ -342,9 +467,9 @@ export default {
                 fontFamily: "Roboto",
                 x: 0,
                 y: 15,
-                initMember:2,
-                changeHandler: function(option) {
-                    if(option.label==="None") {
+                initMember: 2,
+                changeHandler: function (option) {
+                    if (option.label === "None") {
                         console.log("click tree cut", that.use_treecut);
                         that.set_use_treecut(false);
                         // if (that.use_treecut){
@@ -369,36 +494,47 @@ export default {
                         //     //     .select("rect")
                         //     //     .attr("fill", that.f1_score_selected ? "white" : Global.GrayColor)
                         // }
-                    } else if(option.label==="F1 score") {
-                        console.log("click prec-rec-checkbox", that.f1_score_selected);
-                        if (!that.f1_score_selected){
+                    } else if (option.label === "F1 score") {
+                        console.log(
+                            "click prec-rec-checkbox",
+                            that.f1_score_selected
+                        );
+                        if (!that.f1_score_selected) {
                             that.use_treecut = true;
-                            console.log("use_treecut, f1 score", 
-                                that.use_treecut, that.f1_score_selected);
+                            console.log(
+                                "use_treecut, f1 score",
+                                that.use_treecut,
+                                that.f1_score_selected
+                            );
                             that.set_f1_score_selected(true);
-                            d3.select(this).select("rect")
+                            d3.select(this)
+                                .select("rect")
                                 .attr("fill", Global.GrayColor);
                             d3.selectAll(".mismatch-checkbox")
                                 .select("rect")
                                 .attr("fill", "white");
                         }
-                    } else if(option.label==="Mismatch") {
-                        console.log("click prec-rec-checkbox", that.f1_score_selected);
-                        if (that.f1_score_selected){
+                    } else if (option.label === "Mismatch") {
+                        console.log(
+                            "click prec-rec-checkbox",
+                            that.f1_score_selected
+                        );
+                        if (that.f1_score_selected) {
                             that.use_treecut = true;
                             that.set_f1_score_selected(false);
-                            d3.select(this).select("rect")
+                            d3.select(this)
+                                .select("rect")
                                 .attr("fill", Global.GrayColor);
                             d3.selectAll(".prec-rec-checkbox")
                                 .select("rect")
                                 .attr("fill", "white");
                         }
                     } else {
-                        console.log("ERROR: no option named", option.label)
+                        console.log("ERROR: no option named", option.label);
                     }
-                }
-             };
-             svgDropDown(config);
+                },
+            };
+            svgDropDown(config);
 
             //  // co-occurrence: dropdown-list
             // let cooccurence_x = start_x+drop_down_width+80+30;
@@ -453,10 +589,21 @@ export default {
             let pc_group = that.svg
                 .append("g")
                 .attr("class", "precision-recall-legend")
-                .attr("transform", "translate("+
-                    (precision_recall_legend_startx)+","+
-                    (top_y)+")" + "scale(" + 1+"," + 1+")");
-            pc_group.append("rect")
+                .attr(
+                    "transform",
+                    "translate(" +
+                        precision_recall_legend_startx +
+                        "," +
+                        top_y +
+                        ")" +
+                        "scale(" +
+                        1 +
+                        "," +
+                        1 +
+                        ")"
+                );
+            pc_group
+                .append("rect")
                 .attr("x", 0)
                 .attr("y", rect_size)
                 // .attr("y", rect_size+10)
@@ -467,22 +614,24 @@ export default {
                 .attr("stroke-width", 1)
                 .attr("stroke", precision_color)
                 .attr("fill", precision_color);
-            pc_group.append("rect")
+            pc_group
+                .append("rect")
                 .attr("x", 0)
                 .attr("y", 0)
                 // .attr("y", 10)
                 .attr("rx", 1.5)
                 .attr("ry", 1.5)
                 .attr("width", rect_size)
-                .attr("height", rect_size*2)
+                .attr("height", rect_size * 2)
                 .attr("stroke-width", 1)
                 .attr("stroke", precision_color)
                 .attr("fill", "none");
 
-            pc_group.append("rect")
+            pc_group
+                .append("rect")
                 // .attr("x", rect_size+93)
                 .attr("x", 0)
-                .attr("y", rect_size+20)
+                .attr("y", rect_size + 20)
                 // .attr("y", rect_size+10)
                 .attr("rx", 1.5)
                 .attr("ry", 1.5)
@@ -491,7 +640,8 @@ export default {
                 .attr("stroke-width", 1)
                 .attr("stroke", recall_color)
                 .attr("fill", recall_color);
-            pc_group.append("rect")
+            pc_group
+                .append("rect")
                 // .attr("x", rect_size+93)
                 .attr("x", 0)
                 .attr("y", 20)
@@ -499,23 +649,25 @@ export default {
                 .attr("rx", 1.5)
                 .attr("ry", 1.5)
                 .attr("width", rect_size)
-                .attr("height", rect_size*2)
+                .attr("height", rect_size * 2)
                 .attr("stroke-width", 1)
                 .attr("stroke", recall_color)
                 .attr("fill", "none");
 
-            pc_group.append("text")
+            pc_group
+                .append("text")
                 .attr("text-anchor", "start")
-                .attr("x", rect_size+5)
+                .attr("x", rect_size + 5)
                 .attr("y", 0)
                 // .attr("y", 22)
                 // .attr("font-size", "18px")
                 .style("dominant-baseline", "hanging")
                 .text("Precision");
 
-            pc_group.append("text")
+            pc_group
+                .append("text")
                 .attr("text-anchor", "start")
-                .attr("x", rect_size+5)
+                .attr("x", rect_size + 5)
                 // .attr("x", rect_size*2+98)
                 .attr("y", 20)
                 // .attr("y", 22)
@@ -528,23 +680,50 @@ export default {
             let mismatch_color = "#ED2939";
             let line_stroke = 1;
             let line_length = 30;
-            let match_mismatch_legend_startx = precision_recall_legend_startx+60+50;
+            let match_mismatch_legend_startx =
+                precision_recall_legend_startx + 60 + 50;
             let match_group = that.svg
                 .append("g")
                 .attr("id", "match-mismatch-legend-group")
-                .attr("transform", "translate("+
-                    (match_mismatch_legend_startx)+","+
-                    (top_y)+")" + "scale(" + 1+"," + 1+")");
-            match_group  
+                .attr(
+                    "transform",
+                    "translate(" +
+                        match_mismatch_legend_startx +
+                        "," +
+                        top_y +
+                        ")" +
+                        "scale(" +
+                        1 +
+                        "," +
+                        1 +
+                        ")"
+                );
+            match_group
                 .selectAll(".match-mismatch-legend")
                 .data(["Mismatched cluster pair", "Matched cluster pair"])
                 .enter()
                 .append("g")
                 .attr("class", "match-mismatch-legend")
-                .each(function(d, i) {
+                .each(function (d, i) {
                     let group = d3.select(this);
-                    group.append("line").attr("x1", 0).attr("y1", 20 * i + 7.5).attr("x2", line_length).attr("y2", 20 * i + 7.5).attr("stroke-dasharray", i === 0 ? "5,5" : "5,0").style("stroke-width", line_stroke).style("stroke", i === 0 ? mismatch_color : match_color);
-                    group.append("text").attr("x", 40).attr("y", 20 * i).text(d).style("dominant-baseline", "hanging");
+                    group
+                        .append("line")
+                        .attr("x1", 0)
+                        .attr("y1", 20 * i + 7.5)
+                        .attr("x2", line_length)
+                        .attr("y2", 20 * i + 7.5)
+                        .attr("stroke-dasharray", i === 0 ? "5,5" : "5,0")
+                        .style("stroke-width", line_stroke)
+                        .style(
+                            "stroke",
+                            i === 0 ? mismatch_color : match_color
+                        );
+                    group
+                        .append("text")
+                        .attr("x", 40)
+                        .attr("y", 20 * i)
+                        .text(d)
+                        .style("dominant-baseline", "hanging");
                 });
             // match_group.append("line")
             //     .attr("x1", 0)
@@ -582,31 +761,46 @@ export default {
             let grid_legend_group = this.svg
                 .append("g")
                 .attr("id", "grid-legend-group")
-                .attr("transform", "translate("+
-                    (grid_legend_startx)+","+
-                    (top_y)+")" + "scale(" + 1+"," + 1+")")
+                .attr(
+                    "transform",
+                    "translate(" +
+                        grid_legend_startx +
+                        "," +
+                        top_y +
+                        ")" +
+                        "scale(" +
+                        1 +
+                        "," +
+                        1 +
+                        ")"
+                )
                 .style("visibility", "hidden");
-            grid_legend_group  
+            grid_legend_group
                 .selectAll(".grid-legend")
                 .data(["Mismatched Samples", "Matched Samples"])
                 .enter()
                 .append("g")
                 .attr("class", "grid-legend")
-                .each(function(d, i) {
+                .each(function (d, i) {
                     let group = d3.select(this);
-                    group.append("rect")
-                    .attr("x", 0)
-                    .attr("y", 20 * i)
-                    .attr("width", 15)
-                    .attr("height", 15)
-                    .style("fill", i === 0 ? "#E05246" : "#EEEDF3");
-                    group.append("text")
-                    .attr("x", 20)
-                    .attr("y", 20 * i)
-                    .text(d).style("dominant-baseline", "hanging");
+                    group
+                        .append("rect")
+                        .attr("x", 0)
+                        .attr("y", 20 * i)
+                        .attr("width", 15)
+                        .attr("height", 15)
+                        .style("fill", i === 0 ? "#E05246" : "#EEEDF3");
+                    group
+                        .append("text")
+                        .attr("x", 20)
+                        .attr("y", 20 * i)
+                        .text(d)
+                        .style("dominant-baseline", "hanging");
                 });
-            d3.select("#grid-control")
-                .style("padding-left", (grid_legend_startx + 200) + "px");
+            d3.select("#grid-control").style(
+                "padding-left",
+                grid_legend_startx + 200 + "px"
+            );
         },
         expand_icon_create() {
             // this.expanded_icon_group.on("click", () => {
@@ -657,7 +851,8 @@ export default {
                 .delay(this.remove_ani)
                 .attr(
                     "d",
-                    d3.linkHorizontal()
+                    d3
+                        .linkHorizontal()
                         .x((d) => d.mini_y)
                         .y((d) => d.mini_x)
                 );
@@ -698,11 +893,11 @@ export default {
         mini_remove() {},
     },
     watch: {
-        f1_score_selected(){
+        f1_score_selected() {
             console.log("f1_score_selected");
-            this.tree.all_descendants.forEach(d => {
+            this.tree.all_descendants.forEach((d) => {
                 d.api = this.f1_score_selected ? d.f1_api : d.mm_api;
-            })
+            });
             this.treecut();
             console.log("offset", this.offset);
             this.update_data();
@@ -715,14 +910,14 @@ export default {
             this.update_data();
             this.update_view();
         },
-        use_treecut(){
+        use_treecut() {
             console.log("use_treecut");
             this.treecut();
             console.log("offset", this.offset);
             this.update_data();
             this.update_view();
         },
-        selected_flag(){
+        selected_flag() {
             console.log("selected flag update");
             this.update_data();
             this.update_view();
@@ -740,26 +935,25 @@ export default {
             this.update_data();
             this.update_view();
         },
-        expand_set_id(){
+        expand_set_id() {
             console.log("watch expand set id");
-            if (this.expand_set_id < 0){
+            if (this.expand_set_id < 0) {
                 this.update_data();
                 this.update_view();
-            }
-            else{
+            } else {
                 let selected_ids = this.selected_node.node_ids;
                 let image_cluster_id = this.expand_set_id;
                 this.fetch_grid_layout({
-                    "cat_ids": selected_ids,
-                    "image_cluster_id": image_cluster_id
+                    cat_ids: selected_ids,
+                    image_cluster_id: image_cluster_id,
                 });
             }
         },
-        grid_data(){
+        grid_data() {
             console.log("watch grid_data");
             this.update_data();
             this.update_view();
-        }
+        },
     },
     async mounted() {
         console.log("detection mounted");
@@ -805,7 +999,6 @@ export default {
         this.create_ani = Global.Animation;
         this.update_ani = Global.Animation;
         this.remove_ani = Global.Animation / 2;
-
 
         this.svg = container
             .append("svg")
@@ -880,10 +1073,7 @@ export default {
         this.nav_group = this.svg
             .append("g")
             .attr("id", "nav-group")
-            .attr(
-                "transform",
-                "translate(" + 0 + ", " + 0 + ")"
-            );
+            .attr("transform", "translate(" + 0 + ", " + 0 + ")");
         this.nav_group.style("visibility", "hidden");
         this.set_link_group = this.svg
             .append("g")
@@ -984,6 +1174,33 @@ export default {
     font-weight: 600;
 }
 
+.control-panel{
+    /* justify-content: flex-end; */
+    display: flex;    
+    align-items: center;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+
+.treecut-control{
+    display: flex;    
+    align-items: center;
+    margin-right: 20px;
+}
+
+.treecut-option{
+    margin-right: 10px;
+}
+
+.treecut-radio{
+    margin-bottom: 3px;
+}
+
+.v-slider--horizontal{
+    min-height: 22px;
+}
+
 .main-content {
     /* background: rgb(248, 249, 254); */
     background: rgb(255, 255, 255);
@@ -1011,27 +1228,26 @@ export default {
     justify-content: space-between;
 }
 
-.matched-link{
-    stroke: #D3D3E5;
+.matched-link {
+    stroke: #d3d3e5;
 }
 
-.mismatched-link{
-    stroke: #ED2939;
+.mismatched-link {
+    stroke: #ed2939;
     stroke-dasharray: 5, 5;
-
 }
 
-.current-label-checkbox{
+.current-label-checkbox {
     cursor: pointer;
 }
-.prec-rec-checkbox{
+.prec-rec-checkbox {
     cursor: pointer;
 }
-.mismatch-checkbox{
+.mismatch-checkbox {
     cursor: pointer;
 }
 
-.expand-path{
+.expand-path {
     pointer-events: none;
 }
 
@@ -1047,8 +1263,8 @@ export default {
     -webkit-tap-highlight-color: transparent;
     vertical-align: middle;
     z-index: 1;
-    -webkit-transition: .3s ease-out;
-    transition: .3s ease-out
+    -webkit-transition: 0.3s ease-out;
+    transition: 0.3s ease-out;
 }
 
 .waves-effect .waves-ripple {
@@ -1059,7 +1275,7 @@ export default {
     margin-top: -10px;
     margin-left: -10px;
     opacity: 0;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0, 0, 0, 0.2);
     -webkit-transition: all 0.7s ease-out;
     transition: all 0.7s ease-out;
     -webkit-transition-property: opacity, -webkit-transform;
@@ -1068,71 +1284,73 @@ export default {
     transition-property: transform, opacity, -webkit-transform;
     -webkit-transform: scale(0);
     transform: scale(0);
-    pointer-events: none
+    pointer-events: none;
 }
 
 .waves-effect.waves-light .waves-ripple {
-    background-color: rgba(255,255,255,0.45)
+    background-color: rgba(255, 255, 255, 0.45);
 }
 
 .waves-effect.waves-red .waves-ripple {
-    background-color: rgba(244,67,54,0.7)
+    background-color: rgba(244, 67, 54, 0.7);
 }
 
 .waves-effect.waves-yellow .waves-ripple {
-    background-color: rgba(255,235,59,0.7)
+    background-color: rgba(255, 235, 59, 0.7);
 }
 
 .waves-effect.waves-orange .waves-ripple {
-    background-color: rgba(255,152,0,0.7)
+    background-color: rgba(255, 152, 0, 0.7);
 }
 
 .waves-effect.waves-purple .waves-ripple {
-    background-color: rgba(156,39,176,0.7)
+    background-color: rgba(156, 39, 176, 0.7);
 }
 
 .waves-effect.waves-green .waves-ripple {
-    background-color: rgba(76,175,80,0.7)
+    background-color: rgba(76, 175, 80, 0.7);
 }
 
 .waves-effect.waves-teal .waves-ripple {
-    background-color: rgba(0,150,136,0.7)
+    background-color: rgba(0, 150, 136, 0.7);
 }
 
-.waves-effect input[type="button"],.waves-effect input[type="reset"],.waves-effect input[type="submit"] {
+.waves-effect input[type="button"],
+.waves-effect input[type="reset"],
+.waves-effect input[type="submit"] {
     border: 0;
     font-style: normal;
     font-size: inherit;
     text-transform: inherit;
-    background: none
+    background: none;
 }
 
 .waves-effect img {
     position: relative;
-    z-index: -1
+    z-index: -1;
 }
 
 .waves-notransition {
     -webkit-transition: none !important;
-    transition: none !important
+    transition: none !important;
 }
 
 .waves-circle {
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
-    -webkit-mask-image: -webkit-radial-gradient(circle, white 100%, black 100%)
+    -webkit-mask-image: -webkit-radial-gradient(circle, white 100%, black 100%);
 }
 
 .waves-input-wrapper {
     border-radius: 0.2em;
-    vertical-align: bottom
+    vertical-align: bottom;
 }
 
 .waves-input-wrapper .waves-button-input {
     position: relative;
     top: 0;
     left: 0;
-    z-index: 1
+    z-index: 1;
 }
 
 .waves-circle {
@@ -1141,17 +1359,16 @@ export default {
     height: 2.5em;
     line-height: 2.5em;
     border-radius: 50%;
-    -webkit-mask-image: none
+    -webkit-mask-image: none;
 }
 
 .waves-block {
-    display: block
+    display: block;
 }
 
 .waves-effect .waves-ripple {
-    z-index: -1
+    z-index: -1;
 }
-
 
 .btn-floating {
     display: inline-block;
@@ -1165,39 +1382,38 @@ export default {
     padding: 0;
     background-color: #26a69a;
     border-radius: 50%;
-    -webkit-transition: background-color .3s;
-    transition: background-color .3s;
+    -webkit-transition: background-color 0.3s;
+    transition: background-color 0.3s;
     cursor: pointer;
-    vertical-align: middle
+    vertical-align: middle;
 }
 
-
 .btn-floating:hover {
-    background-color: #26a69a
+    background-color: #26a69a;
 }
 
 .btn-floating:before {
-    border-radius: 0
+    border-radius: 0;
 }
 
 .grey {
-    background-color: #9e9e9e !important
+    background-color: #9e9e9e !important;
 }
 
 .glyphicon {
-  position: relative;
-  top: 1px;
-  display: inline-block;
-  font-family: 'Glyphicons Halflings';
-  font-style: normal;
-  font-weight: normal;
-  line-height: 1;
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    font-family: "Glyphicons Halflings";
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
 
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .glyphicon-zoom-in:before {
-  content: "\e015";
+    content: "\e015";
 }
 </style>
