@@ -491,6 +491,63 @@ export default {
                 .attr("x", title1_x)
                 .attr("y", that.text_height * 0.6 + "px")
                 .text("Label hierarchy");
+            let label_tsne_svg = that.svg
+                .append("svg")
+                .attr("id", "label-tsne")
+                .attr("viewBox", "0 0 1024 1024")
+                .attr("x", title1_x + 130)
+                .attr("y", that.text_height * 0.2 + "px")
+                .attr("width", "20px")
+                .attr("height", "20px");
+            let paths = [
+                "M640 384m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M352 448m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M448 288m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M480 576m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M288 832m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M224 608m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M672 608m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M544 768m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M832 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M800 832m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+                "M192 256m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+            ]
+            label_tsne_svg
+                .append("rect")
+                .attr("width", 1024)
+                .attr("height", 1024)
+                .style("fill", "white");
+            label_tsne_svg
+                .append("circle")
+                .attr("cx", 512)
+                .attr("cy", 512)
+                .attr("r", 450)
+                .style("fill", "none")
+                .style("stroke", "#727272")
+                .style("stroke-width", 95);
+            label_tsne_svg.selectAll("path.tsne-point")
+                .data(paths)
+                .enter()
+                .append("path")
+                .attr("class", "tsne-point")
+                .attr("d", d => d)
+                .style("fill", "#727272");
+            label_tsne_svg
+                .on("mouseover", () => {
+                    d3.select("#label-tsne")
+                        .select("rect")
+                        .style("fill", "#ddd");
+                })
+                .on("mouseout", () => {
+                    d3.select("#label-tsne")
+                        .select("rect")
+                        .style("fill", "white");
+
+                })
+                .on("click", () => {
+                    console.log("label-tsne");
+                })
+                
 
             that.svg
                 .append("text")
