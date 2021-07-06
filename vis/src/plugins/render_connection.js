@@ -65,6 +65,8 @@ const TextImageConnection = function (parent) {
             .transition()
             .duration(that.update_ani)
             .delay(that.remove_ani)
+            .attr("class", d => d.mismatch_value > that.mismatch_threshold ? 
+                "set-link mismatched-link": "set-link matched-link")
             .attr("d", 
             d3.linkHorizontal()
                 .x((d) => d.x)

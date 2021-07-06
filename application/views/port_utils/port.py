@@ -18,18 +18,18 @@ class Port(object):
             return 
         self._init()
     
-    def _init(self):
+    def _init(self, step):
         # self.data = Data(self.dataname)
         # self.model = WSLModel(self.dataname) # init
         self.case_util = get_case_util(self.dataname, self.case_mode)
+        self.case_util.set_step(step)
         # self.case_util.connect_model(self.model) 
         self.model = self.case_util.create_model(WSLModel)
 
 
     def reset(self, dataname, step=None):
         self.dataname = dataname
-        self.step = step
-        self._init()
+        self._init(step)
 
     def run_model(self):
         self.model = self.case_util.run(use_buffer=False)
@@ -47,8 +47,9 @@ class Port(object):
 
     def get_manifest(self):
         res = self.case_util.get_base_config()
+        res["real_step"] = self.model.step
         res["class_name"] = self.model.data.class_name
-        res["label_consistency"] = res["parameters"][str(self.step)]["label_consistency"]
-        res["symmetrical_consistency"] = res["parameters"][str(self.step)]["symmetrical_consistency"]
+        res["label_consistency"] = res["parameters"][str(self.case_util.step)]["label_consistency"]
+        res["symmetrical_consistency"] = res["parameters"][str(self.case_util.step)]["symmetrical_consistency"]
         del res["parameters"]
         return res

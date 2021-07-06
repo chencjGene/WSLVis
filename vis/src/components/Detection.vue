@@ -89,7 +89,10 @@
                         "
                     ></v-slider>
                 </div>
-                <div>
+                <div 
+                    id="update-icon"
+                    @click="onUpdateIconCLick()"
+                >
                     <svg
                         t="1625551916203"
                         class="icon"
@@ -227,6 +230,7 @@ export default {
     }),
     computed: {
         ...mapState([
+            "step",
             "tree",
             "use_treecut",
             "f1_score_selected",
@@ -292,6 +296,15 @@ export default {
             "set_use_treecut",
             "set_f1_score_selected",
         ]),
+        async onUpdateIconCLick(){
+            // console.log("click update icon");
+            await this.$store.dispatch("fetch_manifest", 
+            {"step": this.step, 
+            "dataset": "COCO17",
+            "label_consistency":this.label_consistency,
+            "symmetrical_consistency":this.symmetrical_consistency});
+            await this.$store.dispatch("fetch_hypergraph", 1);
+        },
         treecut() {
             console.log("detection treecut");
             console.log("before treecut", this.tree);
@@ -807,7 +820,8 @@ export default {
                     this.f1_score_selected
                 );
                 if (!this.f1_score_selected) {
-                    this.use_treecut = true;
+                    this.set_use_treecut(true);
+                    // this.use_treecut = true;
                     console.log(
                         "use_treecut, f1 score",
                         this.use_treecut,
@@ -827,7 +841,8 @@ export default {
                     this.f1_score_selected
                 );
                 if (this.f1_score_selected) {
-                    this.use_treecut = true;
+                    this.set_use_treecut(true);
+                    // this.use_treecut = true;
                     this.set_f1_score_selected(false);
                     d3.select(this)
                         .select("rect")
@@ -1168,6 +1183,10 @@ export default {
 
 #grid-legend-group {
     fill: rgb(114, 114, 114);
+}
+
+#update-icon:hover {
+  background: #ddd;
 }
 
 input[type="radio"] {

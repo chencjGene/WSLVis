@@ -23,6 +23,13 @@ def app_get_manifest():
     # extract info from request
     dataname = json.loads(request.data)["dataset"]
     step = json.loads(request.data)["step"]
+    label_consistency = json.loads(request.data).get("label_consistency", None)
+    symmetrical_consistency = json.loads(request.data).get("symmetrical_consistency", None)
+    # next_step = False
+    if label_consistency is not None and symmetrical_consistency is not None:
+        step += 1
+    else:
+        step = None
     init_model(dataname, step)
     return get_manifest()
     

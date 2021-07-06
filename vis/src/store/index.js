@@ -15,6 +15,7 @@ const store = new Vuex.Store({
         // action trail
         history: [],
         image_num: 0,
+        step: 0,
         label_consistency: 0,
         symmetrical_consistency: 0,
         current_id: 0,
@@ -60,7 +61,12 @@ const store = new Vuex.Store({
         classNames:[]
     },
     getters: {
-        
+        label_consistency: (state) => {
+            return state.label_consistency;
+        },
+        symmetrical_consistency: (state) => {
+            return state.symmetrical_consistency;
+        }
     },
     mutations:{
         edit(state){ // for DEBUG
@@ -68,6 +74,7 @@ const store = new Vuex.Store({
         },
         set_manifest_data(state, manifest_data){
             console.log("set manifest data");
+            state.step = manifest_data.real_step;
             state.image_num = manifest_data.image_num;
             state.classNames = manifest_data.class_name;
             state.label_consistency = manifest_data.label_consistency;
