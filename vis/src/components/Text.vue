@@ -356,10 +356,14 @@ export default {
 
 #wordcloud-name{
   /* margin-top: 15px; */
+    font-size: 18px;
+    color: rgb(114, 114, 114);
 }
 
 #caption-name{
   margin-top: 15px;
+    font-size: 18px;
+    color: rgb(114, 114, 114);
 }
 .text-div{
   cursor: pointer;

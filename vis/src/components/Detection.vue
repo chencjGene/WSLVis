@@ -15,20 +15,40 @@
                     <span
                         class=""
                         v-text="'Treecut: '"
-                        style="width: 65px; float: left;"
+                        style="width: 65px; float: left"
                     ></span>
-                    <input class="treecut-radio" type="radio" id="one" value="None" v-model="picked">
+                    <input
+                        class="treecut-radio"
+                        type="radio"
+                        id="one"
+                        value="None"
+                        v-model="picked"
+                    />
                     <label class="treecut-option" for="one">None</label>
-                    <input class="treecut-radio" type="radio" id="two" value="F1Score" v-model="picked">
+                    <input
+                        class="treecut-radio"
+                        type="radio"
+                        id="two"
+                        value="F1Score"
+                        v-model="picked"
+                    />
                     <label class="treecut-option" for="two">F1 score</label>
-                    <input class="treecut-radio" type="radio" id="three" value="Mismatch" v-model="picked">
+                    <input
+                        class="treecut-radio"
+                        type="radio"
+                        id="three"
+                        value="Mismatch"
+                        v-model="picked"
+                    />
                     <label class="treecut-option" for="three">Mismatch</label>
                 </div>
                 <div class="consistency-slider" id="label-consistency-slider">
                     <span
                         class=""
-                        v-text="'Label consistency weight: '+label_consistency"
-                        style="width: 210px; float: left;"
+                        v-text="
+                            'Label consistency weight: ' + label_consistency
+                        "
+                        style="width: 210px; float: left"
                     ></span>
                     <v-slider
                         v-model="label_consistency"
@@ -36,14 +56,24 @@
                         :color="'grey'"
                         :track-color="'grey lighten-2'"
                         :thumb-color="'grey darken-1'"
-                        style="margin: 0 20px 0 20px; width: 120px; height: 24px"
+                        style="
+                            margin: 0 20px 0 20px;
+                            width: 120px;
+                            height: 24px;
+                        "
                     ></v-slider>
                 </div>
-                <div class="consistency-slider" id="symmetrical-consistency-slider">
+                <div
+                    class="consistency-slider"
+                    id="symmetrical-consistency-slider"
+                >
                     <span
                         class=""
-                        v-text="'Symmetrical consistency weight: '+symmetrical_consistency"
-                        style="width: 260px; float: left;"
+                        v-text="
+                            'Symmetrical consistency weight: ' +
+                            symmetrical_consistency
+                        "
+                        style="width: 260px; float: left"
                     ></span>
                     <v-slider
                         v-model="symmetrical_consistency"
@@ -51,15 +81,30 @@
                         :color="'grey'"
                         :track-color="'grey lighten-2'"
                         :thumb-color="'grey darken-1'"
-                        style="margin: 0 20px 0 20px; width: 120px; height: 24px"
+                        style="
+                            margin: 0 20px 0 20px;
+                            width: 120px;
+                            height: 24px;
+                        "
                     ></v-slider>
                 </div>
                 <div>
-                    <svg t="1625551916203" class="icon" viewBox="0 0 1024 1024" 
-                        version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2406" 
-                        width="20" height="20" style="display:block">
-                        <path style="fill: rgb(114, 114, 114);" d="M896 432H606.506667l117.12-120.32c-116.48-115.413333-305.066667-119.68-421.546667-4.266667a293.333333 293.333333 0 0 0 0 417.706667c116.48 115.413333 305.066667 115.413333 421.546667 0 58.026667-57.6 87.04-124.373333 86.826666-208.853333H896c0 84.48-37.546667 194.133333-112.64 268.586666-149.76 148.266667-392.96 148.266667-542.72 0s-150.826667-388.693333-1.066667-536.96c149.546667-148.266667 390.186667-148.266667 539.733334 0L896 128v304zM533.333333 341.333333v181.333334l149.333334 88.746666-30.72 51.626667L469.333333 554.666667V341.333333h64z" p-id="2407">
-                        </path>
+                    <svg
+                        t="1625551916203"
+                        class="icon"
+                        viewBox="0 0 1024 1024"
+                        version="1.1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        p-id="2406"
+                        width="20"
+                        height="20"
+                        style="display: block"
+                    >
+                        <path
+                            style="fill: rgb(114, 114, 114)"
+                            d="M896 432H606.506667l117.12-120.32c-116.48-115.413333-305.066667-119.68-421.546667-4.266667a293.333333 293.333333 0 0 0 0 417.706667c116.48 115.413333 305.066667 115.413333 421.546667 0 58.026667-57.6 87.04-124.373333 86.826666-208.853333H896c0 84.48-37.546667 194.133333-112.64 268.586666-149.76 148.266667-392.96 148.266667-542.72 0s-150.826667-388.693333-1.066667-536.96c149.546667-148.266667 390.186667-148.266667 539.733334 0L896 128v304zM533.333333 341.333333v181.333334l149.333334 88.746666-30.72 51.626667L469.333333 554.666667V341.333333h64z"
+                            p-id="2407"
+                        ></path>
                     </svg>
                 </div>
             </div>
@@ -172,7 +217,7 @@ export default {
         picked: "Mismatch",
         label_consistency: 50,
         symmetrical_consistency: 50,
-        items: ['Foo', 'Bar', 'Fizz', 'Buzz'],
+        items: ["Foo", "Bar", "Fizz", "Buzz"],
         bbox_width: null,
         bbox_height: null,
         layout_width: null,
@@ -411,7 +456,6 @@ export default {
                 .attr("class", "title-text")
                 .attr("x", title1_x)
                 .attr("y", that.text_height * 0.6 + "px")
-                .attr("font-size", "20px")
                 .text("Label hierarchy");
 
             that.svg
@@ -419,9 +463,7 @@ export default {
                 .attr("class", "title-text")
                 .attr("x", title2_x)
                 .attr("y", that.text_height * 0.6 + "px")
-                .attr("font-size", "20px")
                 .text("Image cluster");
-
 
             // precision & recall legend
             let precision_color = "rgb(201, 130, 206)";
@@ -1012,35 +1054,35 @@ export default {
 }
 
 .title-text {
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 18px;
+    stroke: rgb(114, 114, 114);
+    fill: rgb(114, 114, 114);
 }
 
-.control-panel{
+.control-panel {
     /* justify-content: flex-end; */
-    display: flex;    
+    display: flex;
     align-items: center;
     font-size: 16px;
     font-weight: 400;
 }
 
-
-.treecut-control{
-    display: flex;    
+.treecut-control {
+    display: flex;
     align-items: center;
     margin-right: 20px;
 }
 
-.treecut-option{
+.treecut-option {
     margin-right: 10px;
 }
 
-.treecut-radio{
+.treecut-radio {
     margin-right: 2px;
     margin-bottom: 3px;
 }
 
-.v-slider--horizontal{
+.v-slider--horizontal {
     min-height: 22px;
 }
 
@@ -1052,26 +1094,38 @@ export default {
     height: calc(100% - 24px);
 }
 
+.precision-recall-legend {
+    fill: rgb(114, 114, 114);
+}
+
+#match-mismatch-legend-group {
+    fill: rgb(114, 114, 114);
+}
+
+#grid-legend-group {
+    fill: rgb(114, 114, 114);
+}
+
 input[type="radio"] {
-  /* remove standard background appearance */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  /* create custom radiobutton appearance */
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  padding: 2.4px;
-  /* background-color only for content */
-  background-clip: content-box;
-  border: 1px solid #494949;
-  /* background-color: #ffffff; */
-  border-radius: 50%;
+    /* remove standard background appearance */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* create custom radiobutton appearance */
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    padding: 2.4px;
+    /* background-color only for content */
+    background-clip: content-box;
+    border: 1px solid #494949;
+    /* background-color: #ffffff; */
+    border-radius: 50%;
 }
 
 /* appearance for checked radiobutton */
 input[type="radio"]:checked {
-  background-color: #050505;
+    background-color: #050505;
 }
 
 .topname {
