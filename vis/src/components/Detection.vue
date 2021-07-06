@@ -153,7 +153,7 @@ import "../assets/font.css";
 import { mini_tree_layout, TreeCut, tree_layout } from "../plugins/layout_text";
 import { image_cluster_list_layout } from "../plugins/layout_image";
 import { ConnectionLayout } from "../plugins/layout_connection";
-import { svgDropDown } from "../plugins/svg_drop_down.js";
+// import { svgDropDown } from "../plugins/svg_drop_down.js";
 
 // import { SetManager } from "../plugins/set_manager";
 
@@ -400,13 +400,10 @@ export default {
             let that = this;
 
             let title1_x = 20;
-            let title1_len = 100;
             let title2_x = 350;
             let title2_len = 100;
 
-            let top_y = 8;
-            let drop_down_width = 90;
-            let start_x = title1_x + title1_len + 80;
+            let top_y = 2;
 
             // titles
             that.svg
@@ -425,167 +422,6 @@ export default {
                 .attr("font-size", "20px")
                 .text("Image cluster");
 
-            // treecut: dropdown-list
-            let treecut_g = that.svg
-                .append("g")
-                .attr("class", "current-label-checkbox")
-                .attr(
-                    "transform",
-                    "translate(" +
-                        start_x +
-                        "," +
-                        top_y +
-                        ")" +
-                        "scale(" +
-                        1 +
-                        "," +
-                        1 +
-                        ")"
-                );
-            treecut_g
-                .append("text")
-                .attr("text-anchor", "start")
-                .attr("x", 13)
-                .attr("y", 10)
-                .attr("font-size", "16px")
-                .text("Treecut");
-            let members = [
-                {
-                    label: "None",
-                    value: 1,
-                },
-                {
-                    label: "F1 score",
-                    value: 2,
-                },
-                {
-                    label: "Mismatch",
-                    value: 3,
-                },
-            ];
-
-            let config = {
-                width: drop_down_width,
-                container: treecut_g,
-                members: members,
-                fontSize: 14,
-                color: "#333",
-                fontFamily: "Roboto",
-                x: 0,
-                y: 15,
-                initMember: 2,
-                changeHandler: function (option) {
-                    if (option.label === "None") {
-                        console.log("click tree cut", that.use_treecut);
-                        that.set_use_treecut(false);
-                        // if (that.use_treecut){
-                        //     that.set_use_treecut(false);
-                        //     // d3.select(this).select("rect")
-                        //     //     .attr("fill", "white");
-                        //     // d3.selectAll(".prec-rec-checkbox")
-                        //     //     .select("rect")
-                        //     //     .attr("fill", "white");
-                        //     // d3.selectAll(".mismatch-checkbox")
-                        //     //     .select("rect")
-                        //     //     .attr("fill", "white");
-                        // }
-                        // else{
-                        //     that.set_use_treecut(true);
-                        //     // d3.select(this).select("rect")
-                        //     //     .attr("fill", Global.GrayColor);
-                        //     // d3.selectAll(".prec-rec-checkbox")
-                        //     //     .select("rect")
-                        //     //     .attr("fill", that.f1_score_selected ? Global.GrayColor : "white")
-                        //     // d3.selectAll(".mismatch-checkbox")
-                        //     //     .select("rect")
-                        //     //     .attr("fill", that.f1_score_selected ? "white" : Global.GrayColor)
-                        // }
-                    } else if (option.label === "F1 score") {
-                        console.log(
-                            "click prec-rec-checkbox",
-                            that.f1_score_selected
-                        );
-                        if (!that.f1_score_selected) {
-                            that.use_treecut = true;
-                            console.log(
-                                "use_treecut, f1 score",
-                                that.use_treecut,
-                                that.f1_score_selected
-                            );
-                            that.set_f1_score_selected(true);
-                            d3.select(this)
-                                .select("rect")
-                                .attr("fill", Global.GrayColor);
-                            d3.selectAll(".mismatch-checkbox")
-                                .select("rect")
-                                .attr("fill", "white");
-                        }
-                    } else if (option.label === "Mismatch") {
-                        console.log(
-                            "click prec-rec-checkbox",
-                            that.f1_score_selected
-                        );
-                        if (that.f1_score_selected) {
-                            that.use_treecut = true;
-                            that.set_f1_score_selected(false);
-                            d3.select(this)
-                                .select("rect")
-                                .attr("fill", Global.GrayColor);
-                            d3.selectAll(".prec-rec-checkbox")
-                                .select("rect")
-                                .attr("fill", "white");
-                        }
-                    } else {
-                        console.log("ERROR: no option named", option.label);
-                    }
-                },
-            };
-            svgDropDown(config);
-
-            //  // co-occurrence: dropdown-list
-            // let cooccurence_x = start_x+drop_down_width+80+30;
-            // let cooccurrence_dropdown_width = 150;
-            // let cooccurence_g = that.svg
-            //     .append("g")
-            //     .attr("class", "current-label-checkbox")
-            //     .attr("transform", "translate("+
-            //         (cooccurence_x)+","+
-            //         (top_y)+")" + "scale(" + 1+"," + 1+")");
-            //  cooccurence_g.append("text")
-            //     .attr("text-anchor", "start")
-            //     .attr("x", 14 + 2)
-            //     .attr("y", 20)
-            //     .attr("font-size", "18px")
-            //     .text("Co-occurrence");
-            //  let cooccurrenceMembers = [{
-            //       label: "Detected objects",
-            //       value: 5
-            //     },
-            //     {
-            //       label: "Extracted labels",
-            //       value: 6
-            //     }
-            //  ];
-
-            //  let cooccurrenceConfig = {
-            //     width: cooccurrence_dropdown_width,
-            //     container: cooccurence_g,
-            //     members: cooccurrenceMembers,
-            //     fontSize: 18,
-            //     color: "#333",
-            //     fontFamily: "calibri",
-            //     x: 140,
-            //     y: 0,
-            //     initMember:0,
-            //     changeHandler: function(option) {
-            //         if(option.label==="Extracted labels") {
-            //             console.log("select option: Extracted labels")
-            //         } else if(option.label==="Detected objects") {
-            //             console.log("select option: Detected objects")
-            //         }
-            //     }
-            //  };
-            //  svgDropDown(cooccurrenceConfig);
 
             // precision & recall legend
             let precision_color = "rgb(201, 130, 206)";
