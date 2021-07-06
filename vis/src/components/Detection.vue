@@ -828,12 +828,6 @@ export default {
                         this.f1_score_selected
                     );
                     this.set_f1_score_selected(true);
-                    d3.select(this)
-                        .select("rect")
-                        .attr("fill", Global.GrayColor);
-                    d3.selectAll(".mismatch-checkbox")
-                        .select("rect")
-                        .attr("fill", "white");
                 }
             } else if (this.treecut_type === "Mismatch") {
                 console.log(
@@ -844,12 +838,6 @@ export default {
                     this.set_use_treecut(true);
                     // this.use_treecut = true;
                     this.set_f1_score_selected(false);
-                    d3.select(this)
-                        .select("rect")
-                        .attr("fill", Global.GrayColor);
-                    d3.selectAll(".prec-rec-checkbox")
-                        .select("rect")
-                        .attr("fill", "white");
                 }
             } else {
                 console.log("ERROR: no option named", this.treecut_type);
