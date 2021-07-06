@@ -28,7 +28,6 @@ import CapText from './components/Text.vue'
 import DetImage from './components/Image.vue'
 import Detection from "./components/Detection.vue"
 import * as Global from "./plugins/global";
-import $ from "jquery"
 export default {
   name: 'App', 
   components:{
@@ -63,7 +62,6 @@ export default {
     },
   },
   async mounted(){
-    window.$ = $;
     this.resize();
     Global.begin_loading();
     await this.$store.dispatch("fetch_manifest", 
@@ -71,7 +69,7 @@ export default {
     await this.$store.dispatch("fetch_hypergraph", 1);
     // await this.$store.dispatch("fetch_grid_", {});
     // this.$store.dispatch("fetch_history", 1);
-    Global.end_loading();
+    Global.end_loading(1500);
   }
 };
 </script>
