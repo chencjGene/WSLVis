@@ -1,4 +1,4 @@
-import * as d3 from "d3";
+// import * as d3 from "d3";
 import * as Global from "./global";
 import { exit_type } from "./layout_text";
 
@@ -67,6 +67,26 @@ const TextTree = function (parent) {
         that.tree_node_group_y = that.parent.tree_node_group_y;
         that.expand_tree =that.parent.expand_tree;
 
+        that.wrap = function(node){
+            let text = node.full_name
+            let self = that.tree_node_group.append("text")
+                .attr("id", "temp")
+                .attr("class", "node-name")
+                .attr("text-anchor", "start")
+                .attr("font-size", "18px");
+            self.text(text + "...");
+            let textLength = self.node().getComputedTextLength();
+            console.log("wrap text", text);
+            while (textLength > ( (that.max_text_width - 30) - 2 * 5) && text.length > 0) {
+                text = text.slice(0, -1);
+                self.text(text + '...');
+                textLength = self.node().getComputedTextLength();
+            }
+            that.tree_node_group.select("#temp").remove();
+            node.name = text + '...';
+        }
+        nodes.forEach(that.wrap);
+
         // update view
         that.e_nodes = that.tree_node_group
             .selectAll(".tree-node")
@@ -77,20 +97,13 @@ const TextTree = function (parent) {
             .data(rest_nodes, (d) => d.id);
 
         
-        that.wrap = function(){
-            var self = d3.select(this),
-                textLength = self.node().getComputedTextLength(),
-                text = self.text();
-            while (textLength > ( (that.max_text_width - 30) - 2 * 5) && text.length > 0) {
-                text = text.slice(0, -1);
-                self.text(text + '...');
-                textLength = self.node().getComputedTextLength();
-            }
-        }
 
         that.create();
         that.update();
         that.remove();
+
+        // that.tree_node_group
+        //     .selectAll(".tree-node").select("text").each(that.wrap); // dirty manner
 
         that.set_animation_time();
     };
@@ -277,7 +290,6 @@ const TextTree = function (parent) {
             .duration(that.create_ani)
             .delay(that.update_ani + that.remove_ani)
             .style("opacity", 1)
-            .each(that.wrap);
 
         // node link
         node_groups
@@ -431,8 +443,8 @@ const TextTree = function (parent) {
             .duration(that.update_ani)
             .delay(that.remove_ani)
             .text((d) => d.name)
-            .style("opacity", 1)
-            .each(that.wrap);
+            .style("opacity", 1);
+
         that.e_nodes
             .select("path.node-link")
             .transition()
