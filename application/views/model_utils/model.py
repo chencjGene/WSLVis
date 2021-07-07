@@ -76,6 +76,9 @@ class WSLModel(object):
         
     def _init_data(self):
         self.data = Data(self.dataname, self.step)
+        self.word_tsne = np.load(os.path.join(self.data.data_root, "word-tsne.npy"))
+        self.word_tsne = self.word_tsne - self.word_tsne.min(axis=0)
+        self.word_tsne = self.word_tsne / self.word_tsne.max(axis=0)
 
     def reset(self, dataname, step, config):
         self.dataname = dataname
@@ -373,6 +376,7 @@ class WSLModel(object):
 
 
         mat = {
+            "word_tsne": self.word_tsne.tolist(),
             "text_tree": self.text_tree_helper.tree,
             "image_cluster_list": [self.image_cluster_list[i] for i in row_order],
             "mismatch": mismatch.tolist(),

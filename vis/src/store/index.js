@@ -19,6 +19,7 @@ const store = new Vuex.Store({
         label_consistency: 0,
         symmetrical_consistency: 0,
         current_id: 0,
+        word_tsne: [],
         tree: {},
         use_treecut: true,
         image_cluster_list: [],
@@ -89,11 +90,15 @@ const store = new Vuex.Store({
             console.log("set hypergraph data");
             console.log("hypergraph_data", hypergraph_data);
             console.log("state", state);
+            this.commit("set_word_tsne", hypergraph_data.word_tsne);
             this.commit("set_text_tree_data", hypergraph_data.text_tree);
             this.commit("set_image_cluster_list_data", hypergraph_data.image_cluster_list);
             this.commit("set_cluster_association_mat", hypergraph_data.cluster_association_matrix);
             this.commit("set_mismatch", hypergraph_data.mismatch);
             this.commit("set_vis_image_per_cluster", hypergraph_data.vis_image_per_cluster);
+        },
+        set_word_tsne(state, word_tsne){
+            state.word_tsne = word_tsne;
         },
         set_text_tree_data(state, text_tree){
             // process tree 

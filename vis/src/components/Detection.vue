@@ -8,6 +8,12 @@
             :content="tooltip.content"
         >
         </info-tooltip>
+        <v-dialog
+            v-model="dialog"
+            width="500"
+        >
+        teset
+        </v-dialog>
         <v-col cols="12" class="topname fill-width">
             Sample
             <div class="control-panel">
@@ -218,6 +224,7 @@ export default {
         InfoTooltip: InfoTooltip,
     },
     data: () => ({
+        dialog: true,
         treecut_type: "Mismatch",
         items: ["Foo", "Bar", "Fizz", "Buzz"],
         bbox_width: null,
@@ -546,6 +553,7 @@ export default {
                 })
                 .on("click", () => {
                     console.log("label-tsne");
+                    this.dialog = !this.dialog;
                 })
                 
 
