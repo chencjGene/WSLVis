@@ -14,7 +14,11 @@
             height="900"
             :eager=true
         >
-        <div id="popup-word-tsne" style="width:900px; height:900px">
+        <div id="popup-word-tsne" style="width:900px; background-color: white">
+            <v-btn
+                text
+                @click="dialog = false"
+              >Close</v-btn>
         </div>
         </v-dialog>
         <v-col cols="12" class="topname fill-width">
@@ -491,10 +495,15 @@ export default {
                 .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
         },
         word_tsne_create(){
-            this.e_word_tsne = d3.select("#popup-word-tsne")
+            let word_tsne_svg = d3.select("#popup-word-tsne")
                 .append("svg")
                 .style("width", this.popup_width)
-                .style("height", this.popup_width)
+                .style("height", this.popup_width);
+            // word_tsne_svg.append("rect")
+            //     .style("width", this.popup_width)
+            //     .style("height", this.popup_width)
+            //     .style("fill", "white");
+            this.e_word_tsne = word_tsne_svg
                 .selectAll("circle.word-point")
                 .data(() => {
                     let res = [];
@@ -522,11 +531,13 @@ export default {
                 .attr("class", "word-point")
                 .attr("cx", d => d.x)
                 .attr("cy", d => d.y)
-                .attr("r", 5);
+                .attr("r", 5)
+                .style("fill", "#727272");
             this.e_word_tsne.enter()
                 .append("text")
                 .attr("x", d => d.x + 10)
                 .attr("y", d => d.y + 5)
+                .style("color", "#727272")
                 .text(d => d.name);
         },
         legend_create() {
@@ -1289,6 +1300,13 @@ export default {
 
 #update-icon:hover {
   background: #ddd;
+}
+
+#popup-word-tsne{
+    display: flex;
+    flex-direction: column;
+    /* justify-content: flex-end; */
+    align-items: flex-end;
 }
 
 input[type="radio"] {
