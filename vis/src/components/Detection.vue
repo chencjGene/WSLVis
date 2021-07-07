@@ -10,9 +10,11 @@
         </info-tooltip>
         <v-dialog
             v-model="dialog"
-            width="500"
+            width="900"
+            height="900"
         >
-        teset
+        <div id="popup-word-tsne" style="width:900px; height:900px">
+        </div>
         </v-dialog>
         <v-col cols="12" class="topname fill-width">
             Sample
@@ -225,6 +227,7 @@ export default {
     },
     data: () => ({
         dialog: true,
+        popup_width: 900,
         treecut_type: "Mismatch",
         items: ["Foo", "Bar", "Fizz", "Buzz"],
         bbox_width: null,
@@ -237,6 +240,8 @@ export default {
     }),
     computed: {
         ...mapState([
+            "word_tsne",
+            "classNames",
             "step",
             "tree",
             "use_treecut",
@@ -402,6 +407,8 @@ export default {
         },
         update_view() {
             console.log("detection update view");
+            
+            // this.word_tsne_create();
 
             this.text_tree_view.sub_component_update(
                 this.nodes,
@@ -481,6 +488,45 @@ export default {
                 .duration(this.create_ani)
                 .delay(this.remove_ani + this.update_ani)
                 .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
+        },
+        word_tsne_create(){
+            this.e_word_tsne = d3.select("#popup-word-tsne")
+                .append("svg")
+                .style("width", this.popup_width)
+                .style("height", this.popup_width)
+                .selectAll("circle.word-point")
+                .data(() => {
+                    let res = [];
+                    for (let i = 0; i < this.word_tsne.length; i++){
+                        let p = {};
+                        p.name = this.classNames[i];
+                        p.x = this.word_tsne[i][0] * this.popup_width * 0.9 + this.popup_width * 0.05;
+                        p.y = this.word_tsne[i][1] * this.popup_width * 0.9 + this.popup_width * 0.05;
+                        if (i === 9){
+                            p.x = p.x * 1.05;
+                            p.y = p.y * 1.1;
+                        }
+                        if (i === 40){
+                            p.y = p.y * 0.9;
+                        }
+                        if (i === 30){
+                            p.y = p.y * 0.95;
+                        }
+                        res.push(p)
+                    }
+                    return res;
+                });
+            this.e_word_tsne.enter()
+                .append("circle")
+                .attr("class", "word-point")
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
+                .attr("r", 5);
+            this.e_word_tsne.enter()
+                .append("text")
+                .attr("x", d => d.x + 10)
+                .attr("y", d => d.y + 5)
+                .text(d => d.name);
         },
         legend_create() {
             let that = this;
@@ -1101,6 +1147,7 @@ export default {
                 "translate(" + 0 + ", " + this.text_height + ")"
             );
         this.legend_create();
+        this.word_tsne_create();
         this.tree_layout = new tree_layout(
             [this.node_width, this.layer_height],
             this.layout_height
