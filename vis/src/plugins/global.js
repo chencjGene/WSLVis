@@ -198,6 +198,8 @@ function end_loading(delay){
         .style("display", "none");
   }
 
+
+
 export {
     GrayColor,
     DarkGray,
@@ -220,5 +222,5 @@ export {
     minus_path_d,
     half_rounded_rect,
     begin_loading,
-    end_loading
+    end_loading,
 }

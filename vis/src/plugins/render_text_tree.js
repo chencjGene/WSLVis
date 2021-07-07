@@ -1,4 +1,4 @@
-// import * as d3 from "d3";
+import * as d3 from "d3";
 import * as Global from "./global";
 import { exit_type } from "./layout_text";
 
@@ -76,6 +76,18 @@ const TextTree = function (parent) {
             .selectAll(".rest-tree-node")
             .data(rest_nodes, (d) => d.id);
 
+        
+        that.wrap = function(){
+            var self = d3.select(this),
+                textLength = self.node().getComputedTextLength(),
+                text = self.text();
+            while (textLength > ( (that.max_text_width - 30) - 2 * 5) && text.length > 0) {
+                text = text.slice(0, -1);
+                self.text(text + '...');
+                textLength = self.node().getComputedTextLength();
+            }
+        }
+
         that.create();
         that.update();
         that.remove();
@@ -103,7 +115,7 @@ const TextTree = function (parent) {
             .style("opacity", 1);
         node_groups
             .append("title")
-            .style("font-size", "18px")
+            .style("font-size", "16px")
             .text((d) => d.full_name);
         node_groups
             .append("rect")
@@ -258,12 +270,15 @@ const TextTree = function (parent) {
             .attr("text-anchor", "start")
             .attr("x", that.layer_height / 2)
             .attr("font-size", "18px")
+            .style("fill", "rgb(114, 114, 114)")
             .attr("dy", ".3em")
             .style("opacity", 0)
             .transition()
             .duration(that.create_ani)
             .delay(that.update_ani + that.remove_ani)
-            .style("opacity", 1);
+            .style("opacity", 1)
+            .each(that.wrap);
+
         // node link
         node_groups
             .append("path")
@@ -416,7 +431,8 @@ const TextTree = function (parent) {
             .duration(that.update_ani)
             .delay(that.remove_ani)
             .text((d) => d.name)
-            .style("opacity", 1);
+            .style("opacity", 1)
+            .each(that.wrap);
         that.e_nodes
             .select("path.node-link")
             .transition()

@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import * as d3 from "d3"
 
+
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 
 //mount Vuex
@@ -114,9 +115,11 @@ const store = new Vuex.Store({
                 // if (element.children && element.name !== "root"){
                 //     element.name = element.children.map(d=>d.name + " ").join("");
                 // }
-                if (element.name.length > 7){
-                    element.name = element.name.slice(0,7) + ".";
-                }
+
+                // if (element.name.length > 7){
+                //     element.name = element.name.slice(0,7);
+                //     element.name = element.name + "...";
+                // }
                 
 
                 // all_children: all children
