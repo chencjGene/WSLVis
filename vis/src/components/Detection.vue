@@ -12,6 +12,7 @@
             v-model="dialog"
             width="900"
             height="900"
+            :eager=true
         >
         <div id="popup-word-tsne" style="width:900px; height:900px">
         </div>
@@ -226,7 +227,7 @@ export default {
         InfoTooltip: InfoTooltip,
     },
     data: () => ({
-        dialog: true,
+        dialog: false,
         popup_width: 900,
         treecut_type: "Mismatch",
         items: ["Foo", "Bar", "Fizz", "Buzz"],
@@ -408,7 +409,7 @@ export default {
         update_view() {
             console.log("detection update view");
             
-            // this.word_tsne_create();
+            this.word_tsne_create();
 
             this.text_tree_view.sub_component_update(
                 this.nodes,
@@ -1147,7 +1148,6 @@ export default {
                 "translate(" + 0 + ", " + this.text_height + ")"
             );
         this.legend_create();
-        this.word_tsne_create();
         this.tree_layout = new tree_layout(
             [this.node_width, this.layer_height],
             this.layout_height
