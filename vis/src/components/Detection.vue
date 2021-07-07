@@ -15,10 +15,31 @@
             :eager=true
         >
         <div id="popup-word-tsne" style="width:900px; background-color: white">
-            <v-btn
-                text
-                @click="dialog = false"
-              >Close</v-btn>
+            <ul id="tsne-title-row">
+                <!-- <div>
+                    <span
+                    class=""
+                    v-text="'Projection of category labels'"
+                ></span>
+                </div>
+                <div>
+                    <v-btn
+                    text
+                    @click="dialog = false"
+                >Close
+                </v-btn>
+                </div> -->
+                
+                <li id="tsne-title"
+                >Projection of category labels</li>
+                <li>
+                    <v-btn
+                    text
+                    @click="dialog = false"
+                    style="font-size: 30px"
+                >×
+                </v-btn></li>
+            </ul>
         </div>
         </v-dialog>
         <v-col cols="12" class="topname fill-width">
@@ -537,7 +558,7 @@ export default {
                 .append("text")
                 .attr("x", d => d.x + 10)
                 .attr("y", d => d.y + 5)
-                .style("color", "#727272")
+                .style("fill", "#727272")
                 .text(d => d.name);
         },
         legend_create() {
@@ -1306,8 +1327,37 @@ export default {
     display: flex;
     flex-direction: column;
     /* justify-content: flex-end; */
-    align-items: flex-end;
+    /* align-items: center; */
 }
+
+#tsne-title{
+    font-size: 20px;
+    font-weight: 600;
+    color:rgb(114, 114, 114)
+}
+
+ul::before {
+  content:"D";
+  margin: 1px auto 1px 1px;
+  visibility: hidden;
+}
+li:last-child {
+  margin-left: auto;
+}
+ul {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+li {
+  display: flex;
+  margin: 1px;
+}
+p { text-align: center; margin-top: 0; }
+
 
 input[type="radio"] {
     /* remove standard background appearance */
