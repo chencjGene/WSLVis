@@ -27,6 +27,20 @@ const TextTree = function (parent) {
     that.bar_height = that.parent.bar_height;
     that.rounded_r = that.parent.rounded_r;
 
+    that.parent.svg.select("defs").remove();
+    that.parent.svg.append("defs")
+        .append("pattern")
+        .attr("id", "edit-svg-icon")
+        .attr("viewBox", "0 0 20 20")
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .append("svg")
+        .attr("viewBox", "0 0 1024 1024")
+        .attr("width", "20px")
+        .attr("height", "20px")
+        .append("path")
+        .attr("d", "M800 128.992c-24.512 0-48.512 9.504-67.008 28L416 472.992l-7.008 7.008-1.984 10.016-22.016 112-9.984 46.976 47.008-9.984 112-22.016 9.984-1.984 7.008-7.008 316-316.992A94.976 94.976 0 0 0 800 128.96z m0 62.016c7.488 0 14.88 3.84 22.016 10.976 14.24 14.272 14.24 29.76 0 44L512 556.032l-55.008 11.008 11.008-55.008 310.016-310.016c7.104-7.104 14.496-10.976 21.984-10.976zM128 256v640h640V473.984l-64 64V832H192V320h294.016l64-64z")
+
 
     that.textClickHandler = function(evt) {
         window.d3 = d3;
@@ -205,28 +219,26 @@ const TextTree = function (parent) {
             // .style("fill", d => d.selected_flag ? Global.DarkGray : "#EBEBF3")
             .style("fill", "#EBEBF3")
             .style("fill-opacity", 0)
-            .on("mouseover", (ev, d) => {
-                that.highlight(ev, d);
+            .on("mouseover", (ev) => {
+                that.highlight(ev);
             })
-            .on("mouseout", (ev, d) => {
+            .on("mouseout", () => {
                 // that.hideTooltip();
-                that.dehighlight(ev, d);
+                that.dehighlight();
             })
-            .on("click", (ev) => {
+            .on("click", (ev, d) => {
                 console.log("on click tree node");
                 // that.change_selected_flag(d, !d.selected_flag);
-                that.textClickHandler(ev);
-                return;
 
-                // // TODO: double click
-                // let node = {
-                //     full_name: d.full_name, 
-                //     id: d.id
-                // };
-                // that.set_selected_node(node);
+                // TODO: double click
+                let node = {
+                    full_name: d.full_name, 
+                    id: d.id
+                };
+                that.set_selected_node(node);
                 
-                // that.fetch_word();
-                // that.fetch_image();
+                that.fetch_word();
+                that.fetch_image();
             })
             .transition()
             .duration(that.create_ani)
@@ -237,6 +249,7 @@ const TextTree = function (parent) {
         let bars = node_groups
             .append("g")
             .attr("class", "node-bars")
+            .style("pointer-events", "none")
             .attr(
                 "transform",
                 () =>
@@ -297,6 +310,27 @@ const TextTree = function (parent) {
             .duration(that.create_ani)
             .delay(that.remove_ani + that.update_ani)
             .style("opacity", 1);
+
+        // edit icon
+        node_groups
+            .append("rect")
+            .attr("class", "edit-icon")
+            .attr("width", "15px")
+            .attr("height", "15px")
+            .attr("fill", "url(#edit-svg-icon)")
+            .attr("x", that.layer_height / 4 + that.max_text_width - 1)
+            .attr("y", (-that.layer_height * 0.8) / 2 - 2)
+            .style("opacity", 0)
+            .on("click", (ev) => {
+                that.textClickHandler(ev);
+            })
+            .on("mouseover", (ev) => {
+                that.highlight(ev);
+            })
+            .on("mouseout", () => {
+                // that.hideTooltip();
+                that.dehighlight();
+            })
 
         node_groups
             .append("path")
@@ -650,17 +684,24 @@ const TextTree = function (parent) {
     };
 
     // that.highlight = function(ev, d, color) {
-    that.highlight = function() {
+    that.highlight = function(ev) {
         // console.log("highlight in tree");
+        let self = d3.select(ev.target.parentElement);
+        self.selectAll(".edit-icon")
+            .style("opacity", 1);
         // color = color || "#E0E0EC";
         // that.tree_node_group
         //     .select("#id-" + d.id)
         //     .select("rect.background")
         //     .style("fill", color);
+
     };
     
     // that.dehighlight = function(ev, d) {
     that.dehighlight = function() {
+        that.tree_node_group.selectAll(".tree-node")
+            .selectAll(".edit-icon")
+            .style("opacity", 0)
         // that.tree_node_group
         //     .select("#id-" + d.id)
         //     .select("rect.background")
