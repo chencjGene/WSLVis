@@ -44,20 +44,20 @@ const TextTree = function (parent) {
 
     that.textClickHandler = function(evt) {
         window.d3 = d3;
-        if (document.querySelector("#overlay") !== null) return; // kludgy singleton approach
-        const data =  d3.select(evt.target.parentElement).select("text").data()[0];
-        const value = data.full_name;
+        // if (document.querySelector("#overlay") !== null) return; // kludgy singleton approach
+        that.selected_input_data =  d3.select(evt.target.parentElement).select("text").data()[0];
+        const value = that.selected_input_data.full_name;
         let wrapper = d3.select("#wrapper")
             .append("div")
             .attr("id", "overlay")
-            .style("top", evt.clientY + "px")
-            .style("left", evt.clientX + "px")
+            .style("top", (that.parent.tree_node_group_y + that.selected_input_data.y + 6) + "px")
+            .style("left", (that.parent.tree_node_group_x + that.selected_input_data.x + that.layer_height / 2) + "px")
             .append("div")
             .attr("id", "obg");
-        wrapper.append("span")
-            .attr("id", "edit-title")
-            .text("Edit node name");
-        let input = wrapper.append("input")
+        // wrapper.append("span")
+        //     .attr("id", "edit-title")
+        //     .text("Edit node name");
+        that.input = wrapper.append("input")
             .attr("id", "edit-input")
             .attr("type", "text")
             .attr("text-align", "middle")
@@ -66,30 +66,52 @@ const TextTree = function (parent) {
             .style("max-width", "200px") // TODO
             .style("min-width", "100px")
             .attr("value", value);
-        let btn = wrapper.append("button")
-            .html("OK");
-        btn.on("click", () => {
-            data.name = input.node().value;
-            data.full_name = data.name;
-            let text = that.wrap(data.name);
-            if (text.length !== data.name.length){
-                data.name = text + "..."
-            }
-            console.log("edited name", data.full_name, data.id);
-            that.parent.set_name_edit_history({
-                id: data.id, 
-                name: data.full_name
-            });
-            d3.select(".tree-node#id-" + data.id)
-                .select("text")
-                .text(data.name);
-            d3.select(".tree-node#id-" + data.id)
-                .select("title")
-                .text(data.full_name);
-            d3.select("#overlay").remove();
-        })
+        // let btn = wrapper.append("button")
+        //     .html("OK");
+        // btn.on("click", () => {
+        //     data.name = input.node().value;
+        //     data.full_name = data.name;
+        //     let text = that.wrap(data.name);
+        //     if (text.length !== data.name.length){
+        //         data.name = text + "..."
+        //     }
+        //     console.log("edited name", data.full_name, data.id);
+        //     that.parent.set_name_edit_history({
+        //         id: data.id, 
+        //         name: data.full_name
+        //     });
+        //     d3.select(".tree-node#id-" + data.id)
+        //         .select("text")
+        //         .text(data.name);
+        //     d3.select(".tree-node#id-" + data.id)
+        //         .select("title")
+        //         .text(data.full_name);
+        //     d3.select("#overlay").remove();
+        // })
       }
 
+    that.parent.svg.on("click", () => {
+        if (that.input === undefined) return;
+        that.selected_input_data.name = that.input.node().value;
+        that.selected_input_data.full_name = that.selected_input_data.name;
+        let text = that.wrap(that.selected_input_data.name);
+        if (text.length !== that.selected_input_data.name.length){
+            that.selected_input_data.name = text + "..."
+        }
+        console.log("edited name", that.selected_input_data.full_name, that.selected_input_data.id);
+        that.parent.set_name_edit_history({
+            id: that.selected_input_data.id, 
+            name: that.selected_input_data.full_name
+        });
+        d3.select(".tree-node#id-" + that.selected_input_data.id)
+            .select("text")
+            .text(that.selected_input_data.name);
+        d3.select(".tree-node#id-" + that.selected_input_data.id)
+            .select("title")
+            .text(that.selected_input_data.full_name);
+        d3.select("#overlay").remove();
+        that.input = undefined;
+    })
 
     that.change_selected_flag = function(d, flag){
         console.log("change selected flag", d.selected_flag, flag);
@@ -323,6 +345,7 @@ const TextTree = function (parent) {
             .style("opacity", 0)
             .on("click", (ev) => {
                 that.textClickHandler(ev);
+                ev.stopPropagation();
             })
             .on("mouseover", (ev) => {
                 that.highlight(ev);
@@ -386,6 +409,14 @@ const TextTree = function (parent) {
             .duration(that.create_ani)
             .delay(that.update_ani + that.remove_ani)
             .style("opacity", 1)
+        // node_groups.append("foreignObject")
+        //     .attr("x", that.layer_height / 2)
+        //     .attr("y", -10)
+        //     .attr("width", ( (that.max_text_width - 30) - 2 * 5))
+        //     .attr("height", 20)
+        //     .append("div")
+        //     .append("input")
+        //     .attr("value", d => d.name);
 
         // node link
         node_groups
@@ -533,13 +564,14 @@ const TextTree = function (parent) {
         that.e_nodes
             .select("rect.icon-background")
             .attr("class", d => "icon-background icon-bg-" + d.type);
-        that.e_nodes
-            .select("text")
-            .transition()
-            .duration(that.update_ani)
-            .delay(that.remove_ani)
-            .text((d) => d.name)
-            .style("opacity", 1);
+
+        // that.e_nodes
+        //     .select("text")
+        //     .transition()
+        //     .duration(that.update_ani)
+        //     .delay(that.remove_ani)
+        //     .text((d) => d.name)
+        //     .style("opacity", 1);
 
         that.e_nodes
             .select("path.node-link")

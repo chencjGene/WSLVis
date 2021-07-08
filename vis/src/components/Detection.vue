@@ -1278,11 +1278,12 @@ export default {
     padding: 0.7em;
     max-width: 200px;
     min-width: 100px;
-    background: rgb(255, 255, 255);
+    /* background: rgb(255, 255, 255);
     color:rgb(114, 114, 114);
-    border-radius: 3px;
+    border-radius: 3px; */
     text-align: center;
-    box-shadow: 0 4px 8px 0 rgb(0 0 0 / 40%), 0 6px 20px 0 rgb(0 0 0 / 29%);
+    background-color: rgba(255, 255, 255, 0)
+    /* box-shadow: 0 4px 8px 0 rgb(0 0 0 / 40%), 0 6px 20px 0 rgb(0 0 0 / 29%); */
 }
 
 #edit-title{
@@ -1291,10 +1292,13 @@ export default {
 }
 
 #edit-input{
-    text-align: center;
+    /* text-align: center; */
     color:rgb(114, 114, 114);
-    border-bottom-style: solid;
-    border-bottom:1px solid #757575;
+    font-size: 18px;    
+    height: 24px;
+    background: white;
+    border-style: solid;
+    border:1px solid #e0e0e0; 
     margin-top: 0.7em;
     margin-bottom: 0.7em;
 }
