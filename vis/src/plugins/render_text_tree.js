@@ -27,93 +27,54 @@ const TextTree = function (parent) {
     that.bar_height = that.parent.bar_height;
     that.rounded_r = that.parent.rounded_r;
 
-    //   that.measureText = function(textObj) {
-    //     const ctx = DOM.context2d(1, 1),
-    //       dpi = 96, // * window.devicePixelRatio, // TODO Handle HDPI displays
-    //       fontFamily = textObj.fontFamily ? textObj.fontFamily : "Arial, sans-serif",
-    //       fontSize = textObj.fontSize ? `${textObj.fontSize}in` : `0.1in`,
-    //       value = textObj.value ? textObj.value : "ABC",
-    //       fontString = `${fontSize} ${fontFamily}`;
-      
-    //     //console.log(fontString);
-    //     ctx.font = fontString;
-      
-    //     let text = ctx.measureText(value);
-      
-    //     return text.width / dpi;
-    //   }
-    that.adjustTextWidth = function(elem, fontSize, maxWidth) {
-    // native element
-    // fontSize in decimal inches
-    // maxWidth in decimal inches
-    elem.removeAttribute("lengthAdjust");
-    elem.removeAttribute("textLength");
-    if (fontSize && maxWidth){ that.a = 1;}
-    // if (
-    //     that.measureText({
-    //     value: elem.innerHTML,
-    //     fontSize: fontSize
-    //     }) > maxWidth
-    // ) {
-    //     elem.setAttribute("lengthAdjust", "spacingAndGlyphs");
-    //     elem.setAttribute("textLength", maxWidth);
-    // }
-    }
+
     that.textClickHandler = function(evt) {
         window.d3 = d3;
-        // if (document.querySelector("#overlay") !== null) return; // kludgy singleton approach
+        if (document.querySelector("#overlay") !== null) return; // kludgy singleton approach
         const data =  d3.select(evt.target.parentElement).select("text").data()[0];
         const value = data.full_name;
         let wrapper = d3.select("#wrapper")
             .append("div")
             .attr("id", "overlay")
-            .style("position", "absolute")
             .style("top", evt.clientY + "px")
             .style("left", evt.clientX + "px")
-            .style("padding", "1em")
-            .style("max-width", "200px") // TODO
-            .style("min-width", "100px")
-            .style("background", "lightgray")
-            .style("border-radius", "10px")
-            .style("border", "black 1px solid")
-            .style("text-align", "center")
             .append("div")
             .attr("id", "obg");
-        wrapper.append("input")
+        wrapper.append("span")
+            .attr("id", "edit-title")
+            .text("Edit node name");
+        let input = wrapper.append("input")
+            .attr("id", "edit-input")
             .attr("type", "text")
             .attr("text-align", "middle")
-            .attr("data-src", data.id)
-            .attr("data-maxtextwidth", value.length)
+            // .attr("data-src", data.id)
+            // .attr("data-maxtextwidth", value.length)
             .style("max-width", "200px") // TODO
             .style("min-width", "100px")
             .attr("value", value);
         let btn = wrapper.append("button")
             .html("OK");
         btn.on("click", () => {
+            data.name = input.node().value;
+            data.full_name = data.name;
+            let text = that.wrap(data.name);
+            if (text.length !== data.name.length){
+                data.name = text + "..."
+            }
+            console.log("edited name", data.full_name, data.id);
+            that.parent.set_name_edit_history({
+                id: data.id, 
+                name: data.full_name
+            });
+            d3.select(".tree-node#id-" + data.id)
+                .select("text")
+                .text(data.name);
+            d3.select(".tree-node#id-" + data.id)
+                .select("title")
+                .text(data.full_name);
             d3.select("#overlay").remove();
         })
-
-        // //console.log(bbox);
-        // input = input.getElementsByTagName("input")[0];
-        // input.focus();
-        // input.setSelectionRange(0, value.length);
-        // input.addEventListener("input", evt => {
-        //   const updateElem = document.querySelector(`#${evt.target.dataset.src}`),
-        //     maxTextWidth = evt.target.dataset.maxtextwidth
-        //       ? evt.target.dataset.maxtextwidth
-        //       : 0;
-        //   updateElem.textContent = updateElem.dataset.template.replace(
-        //     "{0}",
-        //     evt.target.value
-        //   ); //evt.target.value;
-        //   that.adjustTextWidth(
-        //     updateElem,
-        //     updateElem.getAttribute("font-size"),
-        //     maxTextWidth
-        //   );
-        // });
       }
-    
 
 
     that.change_selected_flag = function(d, flag){
@@ -156,8 +117,7 @@ const TextTree = function (parent) {
         that.tree_node_group_y = that.parent.tree_node_group_y;
         that.expand_tree =that.parent.expand_tree;
 
-        that.wrap = function(node){
-            let text = node.full_name;
+        that.wrap = function(text){
             let self = that.tree_node_group.append("text")
                 .attr("id", "temp")
                 .attr("class", "node-name")
@@ -165,13 +125,19 @@ const TextTree = function (parent) {
                 .attr("font-size", "18px");
             self.text(text + "...");
             let textLength = self.node().getComputedTextLength();
-            console.log("wrap text", text);
+            // console.log("wrap text", text);
             while (textLength > ( (that.max_text_width - 30) - 2 * 5) && text.length > 0) {
                 text = text.slice(0, -1);
                 self.text(text + '...');
                 textLength = self.node().getComputedTextLength();
             }
             that.tree_node_group.select("#temp").remove();
+            return text;
+        },
+
+        that.node_wrap = function(node){
+            let text = node.full_name;
+            text = that.wrap(text);
             if (text.length === node.full_name.length){
                 node.name = text;
             }
@@ -179,7 +145,7 @@ const TextTree = function (parent) {
                 node.name = text + '...';
             }
         }
-        nodes.forEach(that.wrap);
+        nodes.forEach(that.node_wrap);
 
         // update view
         that.e_nodes = that.tree_node_group

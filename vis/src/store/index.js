@@ -17,6 +17,7 @@ const store = new Vuex.Store({
         history: [],
         image_num: 0,
         step: 0,
+        name_edit_history: {},
         label_consistency: 0,
         symmetrical_consistency: 0,
         current_id: 0,
@@ -74,6 +75,9 @@ const store = new Vuex.Store({
         edit(state){ // for DEBUG
             state.name = "hello 2";
         },
+        set_name_edit_history(state, data){
+            state.name_edit_history[data.id] = data.name;
+        },
         set_manifest_data(state, manifest_data){
             console.log("set manifest data");
             state.step = manifest_data.real_step;
@@ -112,15 +116,15 @@ const store = new Vuex.Store({
                 element.id = element.data.id;
                 element.full_name = element.data.name;
                 element.name = element.full_name;
+                // // combining the names of all children as the name of their father
                 // if (element.children && element.name !== "root"){
                 //     element.name = element.children.map(d=>d.name + " ").join("");
                 // }
-
-                // if (element.name.length > 7){
-                //     element.name = element.name.slice(0,7);
-                //     element.name = element.name + "...";
-                // }
                 
+                if (state.name_edit_history[element.id]){
+                    element.full_name = state.name_edit_history[element.id];
+                    element.name = element.full_name;
+                }
 
                 // all_children: all children
                 // children: children that are visible
@@ -162,6 +166,13 @@ const store = new Vuex.Store({
 
             state.tree.all_descendants = state.tree.descendants();
             state.tree.all_descendants.forEach(d => d.children = []);
+
+            // let temp_history = {};
+            // state.tree.all_descendants.filter(d => d.all_children)
+            //     .forEach(d => {
+            //         temp_history[d.id] = d.name;
+            //     })
+            // state.name_edit_history = temp_history;  
             
 
             console.log("state.tree", state.tree)

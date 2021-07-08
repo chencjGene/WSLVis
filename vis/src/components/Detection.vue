@@ -269,6 +269,7 @@ export default {
             "word_tsne",
             "classNames",
             "step",
+            "name_edit_history",
             "tree",
             "use_treecut",
             "f1_score_selected",
@@ -323,6 +324,7 @@ export default {
         ...mapMutations([
             "set_selected_flag",
             "set_focus_node",
+            "set_name_edit_history",
             "set_selected_node",
             "set_focus_image",
             "set_expand_tree",
@@ -1000,6 +1002,17 @@ export default {
             this.update_data();
             this.update_view();
         },
+        // name_edit_history: {
+        //     handler (_, oldValue) {
+        //         if (oldValue === 0) return;
+        //         console.log("name_edit_history update");
+        //         this.treecut();
+        //         console.log("offset", this.offset);
+        //         this.update_data();
+        //         this.update_view();
+        //     },
+        //     deep: true
+        // },
         tree() {
             console.log("tree update");
             this.treecut();
@@ -1055,6 +1068,7 @@ export default {
     async mounted() {
         console.log("detection mounted");
         window.detection = this;
+        window.d3 = d3;
         let container = d3.select(".main-content");
         let bbox = container.node().getBoundingClientRect();
         this.bbox_width = bbox.width;
@@ -1255,6 +1269,40 @@ export default {
 .mini-tree-link {
     stroke: #dfdfdf;
     fill: none;
+}
+
+#overlay{
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    padding: 0.7em;
+    max-width: 200px;
+    min-width: 100px;
+    background: rgb(255, 255, 255);
+    color:rgb(114, 114, 114);
+    border-radius: 3px;
+    text-align: center;
+    box-shadow: 0 4px 8px 0 rgb(0 0 0 / 40%), 0 6px 20px 0 rgb(0 0 0 / 29%);
+}
+
+#edit-title{
+    font-size: 18px;
+    font-weight: 600;
+}
+
+#edit-input{
+    text-align: center;
+    color:rgb(114, 114, 114);
+    border-bottom-style: solid;
+    border-bottom:1px solid #757575;
+    margin-top: 0.7em;
+    margin-bottom: 0.7em;
+}
+
+#edit-input:focus {
+    /* border-bottom:1px solid #4286bd; */
+    outline:none;
+    border-bottom:1px solid #4286bd;
 }
 
 /* .mini-shadow-link{

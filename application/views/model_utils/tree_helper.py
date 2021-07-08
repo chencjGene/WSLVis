@@ -101,11 +101,12 @@ class TextTreeHelper(TreeHelper):
             visit_node = visit_node[:-1]
             if len(node["children"]) == 0:
                 leaf_node.append(node)
-            if node["name"] in self.name_2_id:
-                node["id"] = self.name_2_id[node["name"]]
-            else:
-                node["id"] = id_count
-                id_count = id_count + 1
+            # # TODO: remove after case
+            # if node["name"] in self.name_2_id:
+            #     node["id"] = self.name_2_id[node["name"]]
+            # else:
+            #     node["id"] = id_count
+            #     id_count = id_count + 1
             self.tree_node_id_2_node[node["id"]] = node
             visit_node.extend(node["children"])
         
