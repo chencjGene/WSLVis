@@ -53,7 +53,8 @@ const TextTree = function (parent) {
             .style("top", (that.parent.tree_node_group_y + that.selected_input_data.y + 6) + "px")
             .style("left", (that.parent.tree_node_group_x + that.selected_input_data.x + that.layer_height / 2) + "px")
             .append("div")
-            .attr("id", "obg");
+            .attr("id", "obg")
+            .style("display", "flex");
         // wrapper.append("span")
         //     .attr("id", "edit-title")
         //     .text("Edit node name");
@@ -63,31 +64,8 @@ const TextTree = function (parent) {
             .attr("text-align", "middle")
             // .attr("data-src", data.id)
             // .attr("data-maxtextwidth", value.length)
-            .style("max-width", "200px") // TODO
-            .style("min-width", "100px")
+            .style("max-width", (that.get_text_length(value) + 10) + "px")
             .attr("value", value);
-        // let btn = wrapper.append("button")
-        //     .html("OK");
-        // btn.on("click", () => {
-        //     data.name = input.node().value;
-        //     data.full_name = data.name;
-        //     let text = that.wrap(data.name);
-        //     if (text.length !== data.name.length){
-        //         data.name = text + "..."
-        //     }
-        //     console.log("edited name", data.full_name, data.id);
-        //     that.parent.set_name_edit_history({
-        //         id: data.id, 
-        //         name: data.full_name
-        //     });
-        //     d3.select(".tree-node#id-" + data.id)
-        //         .select("text")
-        //         .text(data.name);
-        //     d3.select(".tree-node#id-" + data.id)
-        //         .select("title")
-        //         .text(data.full_name);
-        //     d3.select("#overlay").remove();
-        // })
       }
 
     that.parent.svg.on("click", () => {
@@ -152,6 +130,18 @@ const TextTree = function (parent) {
         that.tree_node_group_x = that.parent.tree_node_group_x;
         that.tree_node_group_y = that.parent.tree_node_group_y;
         that.expand_tree =that.parent.expand_tree;
+
+        that.get_text_length = function(text){
+            let self = that.tree_node_group.append("text")
+                .attr("id", "temp")
+                .attr("class", "node-name")
+                .attr("text-anchor", "start")
+                .attr("font-size", "18px");
+            self.text(text);
+            let textLength = self.node().getComputedTextLength();
+            that.tree_node_group.select("#temp").remove();
+            return textLength;
+        }
 
         that.wrap = function(text){
             let self = that.tree_node_group.append("text")
