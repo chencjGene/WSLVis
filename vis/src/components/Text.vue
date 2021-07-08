@@ -2,7 +2,7 @@
   <v-row class="text-view fill-width mr-0">
 
     <v-col cols="12" class="text-content pa-0">
-      <!-- <v-col class="label-text pa-0 pl-2"> Selected: 
+      <!-- <v-col id="selected-title" class="label-text pa-0 pl-2"> Selected: 
         <span id="selected-class-name">{{selected_node.curr_full_name}} </span>
         </v-col> -->
         <v-row style="margin-left: 1px">
@@ -355,6 +355,12 @@ export default {
 }
 
 #wordcloud-name{
+  /* margin-top: 15px; */
+    font-size: 18px;
+    color: rgb(114, 114, 114);
+}
+
+#selected-title{
   /* margin-top: 15px; */
     font-size: 18px;
     color: rgb(114, 114, 114);

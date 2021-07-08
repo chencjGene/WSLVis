@@ -10,6 +10,10 @@ data/
 logs/
 images/
 test/
+apicache-py3/
+
+pywikibot.lwp
+throttle.ctrl
 
 #config
 application/views/case_utils/case_config.json

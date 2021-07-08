@@ -147,7 +147,7 @@
                 </div>
             </div>
         </v-col>
-        <v-col cols="12" class="main-content pa-0">
+        <v-col cols="12" class="main-content pa-0" id="wrapper">
             <div
                 id="grid-control"
                 style="

@@ -1,6 +1,7 @@
-// import * as d3 from "d3";
+import * as d3 from "d3";
 import * as Global from "./global";
 import { exit_type } from "./layout_text";
+
 
 const TextTree = function (parent) {
     let that = this;
@@ -25,6 +26,94 @@ const TextTree = function (parent) {
     that.bar_width = that.parent.bar_width;
     that.bar_height = that.parent.bar_height;
     that.rounded_r = that.parent.rounded_r;
+
+    //   that.measureText = function(textObj) {
+    //     const ctx = DOM.context2d(1, 1),
+    //       dpi = 96, // * window.devicePixelRatio, // TODO Handle HDPI displays
+    //       fontFamily = textObj.fontFamily ? textObj.fontFamily : "Arial, sans-serif",
+    //       fontSize = textObj.fontSize ? `${textObj.fontSize}in` : `0.1in`,
+    //       value = textObj.value ? textObj.value : "ABC",
+    //       fontString = `${fontSize} ${fontFamily}`;
+      
+    //     //console.log(fontString);
+    //     ctx.font = fontString;
+      
+    //     let text = ctx.measureText(value);
+      
+    //     return text.width / dpi;
+    //   }
+    that.adjustTextWidth = function(elem, fontSize, maxWidth) {
+    // native element
+    // fontSize in decimal inches
+    // maxWidth in decimal inches
+    elem.removeAttribute("lengthAdjust");
+    elem.removeAttribute("textLength");
+    if (fontSize && maxWidth){ that.a = 1;}
+    // if (
+    //     that.measureText({
+    //     value: elem.innerHTML,
+    //     fontSize: fontSize
+    //     }) > maxWidth
+    // ) {
+    //     elem.setAttribute("lengthAdjust", "spacingAndGlyphs");
+    //     elem.setAttribute("textLength", maxWidth);
+    // }
+    }
+    that.textClickHandler = function(evt) {
+        window.d3 = d3;
+        // if (document.querySelector("#overlay") !== null) return; // kludgy singleton approach
+        const data =  d3.select(evt.target.parentElement).select("text").data()[0];
+        const value = data.full_name;
+        let wrapper = d3.select("#wrapper")
+            .append("div")
+            .attr("id", "overlay")
+            .style("position", "absolute")
+            .style("top", evt.clientY + "px")
+            .style("left", evt.clientX + "px")
+            .style("padding", "1em")
+            .style("max-width", "200px") // TODO
+            .style("min-width", "100px")
+            .style("background", "lightgray")
+            .style("border-radius", "10px")
+            .style("border", "black 1px solid")
+            .style("text-align", "center")
+            .append("div")
+            .attr("id", "obg");
+        wrapper.append("input")
+            .attr("type", "text")
+            .attr("text-align", "middle")
+            .attr("data-src", data.id)
+            .attr("data-maxtextwidth", value.length)
+            .style("max-width", "200px") // TODO
+            .style("min-width", "100px")
+            .attr("value", value);
+        let btn = wrapper.append("button")
+            .html("OK");
+        btn.on("click", () => {
+            d3.select("#overlay").remove();
+        })
+
+        // //console.log(bbox);
+        // input = input.getElementsByTagName("input")[0];
+        // input.focus();
+        // input.setSelectionRange(0, value.length);
+        // input.addEventListener("input", evt => {
+        //   const updateElem = document.querySelector(`#${evt.target.dataset.src}`),
+        //     maxTextWidth = evt.target.dataset.maxtextwidth
+        //       ? evt.target.dataset.maxtextwidth
+        //       : 0;
+        //   updateElem.textContent = updateElem.dataset.template.replace(
+        //     "{0}",
+        //     evt.target.value
+        //   ); //evt.target.value;
+        //   that.adjustTextWidth(
+        //     updateElem,
+        //     updateElem.getAttribute("font-size"),
+        //     maxTextWidth
+        //   );
+        // });
+      }
+    
 
 
     that.change_selected_flag = function(d, flag){
@@ -68,7 +157,7 @@ const TextTree = function (parent) {
         that.expand_tree =that.parent.expand_tree;
 
         that.wrap = function(node){
-            let text = node.full_name
+            let text = node.full_name;
             let self = that.tree_node_group.append("text")
                 .attr("id", "temp")
                 .attr("class", "node-name")
@@ -83,7 +172,12 @@ const TextTree = function (parent) {
                 textLength = self.node().getComputedTextLength();
             }
             that.tree_node_group.select("#temp").remove();
-            node.name = text + '...';
+            if (text.length === node.full_name.length){
+                node.name = text;
+            }
+            else{
+                node.name = text + '...';
+            }
         }
         nodes.forEach(that.wrap);
 
@@ -152,19 +246,21 @@ const TextTree = function (parent) {
                 // that.hideTooltip();
                 that.dehighlight(ev, d);
             })
-            .on("click", (ev, d) => {
+            .on("click", (ev) => {
                 console.log("on click tree node");
                 // that.change_selected_flag(d, !d.selected_flag);
+                that.textClickHandler(ev);
+                return;
 
-                // TODO: double click
-                let node = {
-                    full_name: d.full_name, 
-                    id: d.id
-                };
-                that.set_selected_node(node);
+                // // TODO: double click
+                // let node = {
+                //     full_name: d.full_name, 
+                //     id: d.id
+                // };
+                // that.set_selected_node(node);
                 
-                that.fetch_word();
-                that.fetch_image();
+                // that.fetch_word();
+                // that.fetch_image();
             })
             .transition()
             .duration(that.create_ani)

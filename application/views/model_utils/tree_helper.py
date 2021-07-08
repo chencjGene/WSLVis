@@ -39,6 +39,18 @@ class TreeHelper(object):
             visit_node.extend(node["children"])
         return leaf_node
 
+    def get_all_internal_descendants(self, node):
+        internal_node = []
+        visit_node = [node]
+        while len(visit_node) > 0:
+            node = visit_node[-1]
+            visit_node = visit_node[:-1]
+            if len(node["children"]) != 0:
+                internal_node.append(node)
+            visit_node.extend(node["children"])
+        return internal_node
+
+
     def get_all_leaf_descendants_ids(self, node):
         leaf_node = self.get_all_leaf_descendants(node)
         return [n["id"] for n in leaf_node]
