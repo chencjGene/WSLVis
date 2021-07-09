@@ -1275,7 +1275,7 @@ export default {
     position: absolute;
     display: flex;
     flex-direction: column;
-    padding: 0.7em;
+    /* padding: 0.7em; */
     max-width: 200px;
     min-width: 100px;
     /* background: rgb(255, 255, 255);
@@ -1299,8 +1299,8 @@ export default {
     background: white;
     border-style: solid;
     border:1px solid #e0e0e0; 
-    margin-top: 0.7em;
-    margin-bottom: 0.7em;
+    /* margin-top: 0.7em; */
+    /* margin-bottom: 0.7em; */
 }
 
 #edit-input:focus {

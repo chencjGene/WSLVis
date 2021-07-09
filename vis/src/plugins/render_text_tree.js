@@ -40,18 +40,23 @@ const TextTree = function (parent) {
         .attr("height", "20px")
         .append("path")
         .attr("d", "M800 128.992c-24.512 0-48.512 9.504-67.008 28L416 472.992l-7.008 7.008-1.984 10.016-22.016 112-9.984 46.976 47.008-9.984 112-22.016 9.984-1.984 7.008-7.008 316-316.992A94.976 94.976 0 0 0 800 128.96z m0 62.016c7.488 0 14.88 3.84 22.016 10.976 14.24 14.272 14.24 29.76 0 44L512 556.032l-55.008 11.008 11.008-55.008 310.016-310.016c7.104-7.104 14.496-10.976 21.984-10.976zM128 256v640h640V473.984l-64 64V832H192V320h294.016l64-64z")
+        .style("fill", "rgb(114,114,114)")
 
 
     that.textClickHandler = function(evt) {
         window.d3 = d3;
         // if (document.querySelector("#overlay") !== null) return; // kludgy singleton approach
-        that.selected_input_data =  d3.select(evt.target.parentElement).select("text").data()[0];
+        that.text_element = d3.select(evt.target.parentElement).select("text");
+        that.selected_input_data = that.text_element.data()[0];
+        let bbox = that.text_element.node().getBoundingClientRect()
         const value = that.selected_input_data.full_name;
         let wrapper = d3.select("#wrapper")
             .append("div")
             .attr("id", "overlay")
-            .style("top", (that.parent.tree_node_group_y + that.selected_input_data.y + 6) + "px")
-            .style("left", (that.parent.tree_node_group_x + that.selected_input_data.x + that.layer_height / 2) + "px")
+            // .style("top", (that.parent.tree_node_group_y + that.selected_input_data.y + 6) + "px")
+            // .style("left", (that.parent.tree_node_group_x + that.selected_input_data.x + that.layer_height / 2 + 12) + "px")
+            .style("top", (bbox.top) + "px")
+            .style("left", (bbox.left) + "px")
             .append("div")
             .attr("id", "obg")
             .style("display", "flex");
@@ -64,7 +69,7 @@ const TextTree = function (parent) {
             .attr("text-align", "middle")
             // .attr("data-src", data.id)
             // .attr("data-maxtextwidth", value.length)
-            .style("max-width", (that.get_text_length(value) + 10) + "px")
+            .style("max-width", (that.get_text_length(value) + 20) + "px")
             .attr("value", value);
       }
 
