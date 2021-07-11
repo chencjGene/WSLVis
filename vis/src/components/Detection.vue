@@ -1045,14 +1045,22 @@ export default {
             this.update_data();
             this.update_view();
         },
-        expand_set_id() {
+        async expand_set_id() {
             console.log("watch expand set id");
             if (this.expand_set_id < 0) {
                 this.update_data();
                 this.update_view();
+                
             } else {
                 let selected_ids = this.selected_node.node_ids;
                 let image_cluster_id = this.expand_set_id;
+                this.update_data();
+                this.update_view();
+                d3.select(".loading")
+                    .style("display", "block")
+                    .style("opacity", 0);
+                d3.select(".loading-svg")
+                    .style("display", "block");
                 this.fetch_grid_layout({
                     cat_ids: selected_ids,
                     image_cluster_id: image_cluster_id,
@@ -1063,6 +1071,17 @@ export default {
             console.log("watch grid_data");
             this.update_data();
             this.update_view();
+            d3.select(".loading")
+                .transition()
+                .duration(1)
+                .delay(1)
+                .style("display", "none")
+                .style("opacity", 1);
+            d3.select(".loading-svg")
+                .transition()
+                .duration(1)
+                .delay(1)
+                .style("display", "none");
         },
     },
     async mounted() {
