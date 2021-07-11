@@ -254,6 +254,10 @@ const TextTree = function (parent) {
                 };
                 that.set_selected_node(node);
                 
+                d3.select(".loading-wordcloud-svg")
+                    .transition()
+                    .duration(1)
+                    .style("opacity", 1);
                 that.fetch_word();
                 that.fetch_image();
             })
