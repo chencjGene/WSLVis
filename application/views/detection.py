@@ -44,9 +44,12 @@ def app_get_rank():
 
 @detection.route("/detection/GridLayout", methods=["GET", "POST"])
 def app_get_grid_layout():
+    t = time.time()
     data = json.loads(request.data)
     image_cluster_id = data.get("image_cluster_id", 4)
     cat_ids = data.get("cat_ids", [7])
+    if len(cat_ids) == 0:
+        cat_ids = [7]
     left_x = data.get("left-x", 0)
     top_y = data.get("top-y", 0)
     width = data.get("width", 1)
@@ -55,7 +58,9 @@ def app_get_grid_layout():
     print("image_cluster_id: {}, right_x {}, "
                 "top_y {}, width {}, height {}, node id: {}"
                 .format(image_cluster_id, left_x, top_y, width, height, node_id))
+    print("cat_ids", cat_ids)
     grid_layout = get_grid_layout(image_cluster_id, cat_ids, left_x, top_y, width, height, node_id)
+    
     return grid_layout
 
 

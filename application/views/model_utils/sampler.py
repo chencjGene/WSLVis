@@ -183,7 +183,7 @@ class Sampler(object):
             idxs.extend(current_hiera[id]["c"] + [id])
 
         print("all idx len:", len(idxs))
-        print("selected list", selected_list)
+        # print("selected list", selected_list)
 
 
         # 特殊处理 for the first time
@@ -204,7 +204,9 @@ class Sampler(object):
         else:
             idxs.sort()
             X = self.embed_X[np.array(idxs)]
+            # import IPython; IPython.embed(); exit()
             mismatch = self.mismatch[:, np.array(self.cat_ids)].sum(axis=1)
+            # mismatch = self.mismatch[:, :].sum(axis=1)
             selected_mismatch = mismatch[np.array(idxs)]
             if len(idxs) < self.sampling_num:
                 sampled_idx = np.array(idxs)
@@ -216,7 +218,7 @@ class Sampler(object):
                 selection = np.zeros(len(idxs), dtype=bool)
                 for id in intersection_idx:
                     selection[idxs.index(id)] = True
-                import IPython; IPython.embed(); exit()
+                # import IPython; IPython.embed(); exit()
                 # mat = pickle_load_data("test/sampling/data.pkl")
                 sampler = DensityBasedSampler(n_samples=self.sampling_num)
                 res = sampler.fit_sample(X, mismatch=selected_mismatch.astype(bool), selection=np.array(selection))
@@ -261,7 +263,10 @@ class Sampler(object):
                 })
             if old_node_id == "root":
                 pickle_save_data(buffer_path, [idxs, sampled_idx, self.current_grid_layout, hiera, res])
-
+        # import IPython; IPython.embed(); exit()
+        for k in res:
+            k["mismatch"] = self.mismatch[k["id"]][np.array(self.cat_ids)].sum()
+            k["mismatch"] = int(k["mismatch"])
         return idxs, sampled_idx, grid_x, hiera, res
 
 def Knn(X1, N, D, n_neighbors, forest_size, subdivide_variance_size, leaf_number):

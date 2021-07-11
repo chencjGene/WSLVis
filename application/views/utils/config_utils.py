@@ -42,6 +42,7 @@ class Config(object):
         self.grid_dataname = "grid_data" + self.pkl_ext
         self.concept_graph_filename = "concept_graph.json"
         self.signal_filename = "SIGNAL"
+        self.detection_res_for_vis_filename = "detection_res_for_vis.json"
 
         # buffer
         self.ssl_model_buffer_name = "ssl_model_buffer" + self.pkl_ext

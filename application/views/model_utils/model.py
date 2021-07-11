@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import json
+from time import time
 
 from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.manifold import TSNE
@@ -491,10 +492,14 @@ class WSLModel(object):
 
     def get_grid_layout(self, left_x, top_y, width, height, node_id, cats_ids):
         # node_id for navigation 
+        t = time()
         grid_layout_res = self.current_sampler.get_grid_layout(left_x, top_y, \
             width, height, node_id)
+        print("get_grid_layout cost for grid layout", time() - t)
         image_info = [self.data.get_detection_result_for_vis(cell['img_id'], cats_ids=cats_ids) \
             for cell in grid_layout_res["layout"]]
+        # self.data.save_detection_res_for_vis_buffer() // save buffer
+        print("get_detection_result_for_vis cost for grid layout", time() - t)
         grid_layout_with_image_info = {
             "id": grid_layout_res["id"],
             "layout": grid_layout_res["layout"],

@@ -4,6 +4,7 @@ import cv2
 import sqlite3
 import json
 from tqdm import tqdm
+from time import time
 
 from sklearn.metrics import precision_score, recall_score
 from PIL import Image, ImageDraw, ImageFont
@@ -62,12 +63,25 @@ class DataBaseLoader(object):
         self.text_features = None
         self.detection_features = None
 
+        self.detection_res_for_vis = None
+        try:
+            self.detection_res_for_vis = json_load_data(os.path.join(self.data_root,
+                config.detection_res_for_vis_filename))
+        except:
+            logger.info("{} does not exist".format(config.detection_res_for_vis_filename))
+            self.detection_res_for_vis = {}
+
         database_file = os.path.join(self.data_root, "database.db")
         print(database_file)
         self.conn = sqlite3.connect(database_file, check_same_thread=False)
 
         self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
             "width_height.json"))
+
+    def save_detection_res_for_vis_buffer(self):
+        return json_save_data(os.path.join(self.data_root, config.detection_res_for_vis_filename),
+            self.detection_res_for_vis)
+        
 
     def database_fetch_by_idx(self, idx, keys):
         # id, cap, bbox, logits, labels, activations, string, detection, image_output
@@ -152,6 +166,9 @@ class DataBaseLoader(object):
     def get_detection_result_for_vis(self, idx, conf_thresh=None, cats_ids=None):
         if conf_thresh is None:
             conf_thresh = self.conf_thresh
+        res = self.detection_res_for_vis.get(str(idx), None)
+        if res is not None:
+            return res
         w, h = self.width_height[idx]
         detection = self.get_detection_result(idx)
         detection = np.array(detection)
@@ -179,7 +196,9 @@ class DataBaseLoader(object):
             conf_detection = conf_detection.tolist()
         else:
             conf_detection = []
-        return {"idx": idx, "w": w, "h": h, "d": conf_detection, "gt_d": gt_d}
+        res = {"idx": idx, "w": w, "h": h, "d": conf_detection, "gt_d": gt_d}
+        self.detection_res_for_vis[str(idx)] = res
+        return res
 
 
 class Data(DataBaseLoader):
