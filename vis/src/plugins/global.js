@@ -174,12 +174,29 @@ const get_path_of_page_btn = function(x, y, width, height, direction){
     return path;
 }
 
+function disable_global_interaction(){
+    d3.select(".loading")
+        .style("display", "block")
+        .style("opacity", 0);
+}
+
+function enable_global_interaction(delay){
+    delay = delay || 1;
+    d3.select(".loading")
+        .transition()
+        .duration(1)
+        .delay(delay)
+        .style("display", "none")
+        .style("opacity", 1);
+
+}
+
 
 function begin_loading(){
     // $(".loading").show();
     // $(".loading-svg").show();
     d3.select(".loading")
-        .style("display", "block");
+    .style("display", "block");
     d3.select(".loading-svg")
         .style("display", "block");
   }
@@ -223,4 +240,6 @@ export {
     half_rounded_rect,
     begin_loading,
     end_loading,
+    disable_global_interaction,
+    enable_global_interaction
 }

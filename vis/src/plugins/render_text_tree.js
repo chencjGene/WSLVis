@@ -258,6 +258,7 @@ const TextTree = function (parent) {
                     .transition()
                     .duration(1)
                     .style("opacity", 1);
+                Global.disable_global_interaction();
                 that.fetch_word();
                 that.fetch_image();
             })

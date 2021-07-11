@@ -11,7 +11,7 @@
               Word cloud:
             </span> 
               <svg version="1.1" width="35px" height="35px" 
-            style="enable-background:new 0 0 512 512; opacity: 1;" 
+            style="enable-background:new 0 0 512 512; opacity: 0;" 
             xml:space="preserve"
               class="loading-wordcloud-svg">
               <symbol id="animate-wordcloud-icon" viewBox="0 0 60 60">
@@ -99,6 +99,7 @@ export default {
           .transition()
           .duration(1)
           .style("opacity", 0);
+      Global.enable_global_interaction();
       console.log("triger words", this.focus_node);
       this.update_data();
       this.update_view();
