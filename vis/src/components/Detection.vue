@@ -1055,16 +1055,23 @@ export default {
                 let selected_ids = this.selected_node.node_ids;
                 let image_cluster_id = this.expand_set_id;
                 this.update_data();
+                this.grids = []
+                this.grid_pos = {}
+                this.image_view.create_ani = 0;
                 this.update_view();
+                this.image_view.set_animation_time();
                 d3.select(".loading")
                     .style("display", "block")
                     .style("opacity", 0);
                 d3.select(".loading-svg")
                     .style("display", "block");
-                this.fetch_grid_layout({
-                    cat_ids: selected_ids,
-                    image_cluster_id: image_cluster_id,
-                });
+                setTimeout(()=>{
+                    this.fetch_grid_layout({
+                        cat_ids: selected_ids,
+                        image_cluster_id: image_cluster_id,
+                    })
+                }, 1000);
+                
             }
         },
         grid_data() {

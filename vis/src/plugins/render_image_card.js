@@ -92,6 +92,12 @@ const ImageCards = function(parent) {
         that.parent.set_grid_layout_data(data);
     }
 
+  that.set_animation_time = function(){
+    // animation
+    that.create_ani = that.parent.create_ani;
+    that.update_ani = that.parent.update_ani;
+    that.remove_ani = that.parent.remove_ani;
+  };
   this.get_expand_set_id = function() {
     return that.parent.expand_set_id;
   };
@@ -214,6 +220,10 @@ const ImageCards = function(parent) {
         if (d.id === that.get_expand_set_id()) {
           that.set_expand_set_id(-1);
         } else {
+          if (that.parent.selected_node["node_ids"].length==0){
+            alert("To check the grid layout, you should select one or more labels in the label hierarchy on the left.")
+            return;
+          }
           that.set_expand_set_id(d.id);
         }
       });
@@ -510,6 +520,9 @@ const ImageCards = function(parent) {
 
     that.e_sets
       .select(".expand-path")
+      .transition()
+      .duration(that.update_ani)
+      .delay(that.remove_ani)
       .attr("d", (d) =>
         d.id === that.get_expand_set_id()
           ? Global.minus_path_d(-11, 0, 10, 10, 2)
@@ -523,6 +536,9 @@ const ImageCards = function(parent) {
 
       that.e_sets
         .select(".expand-rect")
+        .transition()
+        .duration(that.update_ani)
+        .delay(that.remove_ani)
         .style("opacity", d =>
           that.get_expand_set_id() === -1 || that.get_expand_set_id() === d.id
             ? 1
