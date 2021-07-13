@@ -36,7 +36,7 @@ def get_origin_image(idx):
     return port.model.data.get_origin_image(idx)
 
 def get_image_detection(img_id, conf=None):
-    res = port.model.data.get_detection_result_for_vis(img_id, conf)
+    res = port.model.data.get_detection_result_for_vis(img_id, conf, use_buffer=False)
     return jsonify(res)
 
 

@@ -163,11 +163,11 @@ class DataBaseLoader(object):
 
 
 
-    def get_detection_result_for_vis(self, idx, conf_thresh=None, cats_ids=None):
+    def get_detection_result_for_vis(self, idx, conf_thresh=None, cats_ids=None, use_buffer=True):
         if conf_thresh is None:
             conf_thresh = self.conf_thresh
         res = self.detection_res_for_vis.get(str(idx), None)
-        if res is not None:
+        if res is not None and use_buffer:
             return res
         w, h = self.width_height[idx]
         detection = self.get_detection_result(idx)
