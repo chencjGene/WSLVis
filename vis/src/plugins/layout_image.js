@@ -13,6 +13,8 @@ const image_cluster_list_layout = function(parent){
         that.set_margin = that.parent.set_margin;
         that.mini_set_height = that.parent.mini_set_height;
         that.large_set_height = that.parent.large_set_height; 
+        that.top_image_margin = that.parent.top_image_margin;
+        that.x_position = that.parent.x_position;
     };
     this.get_set_layout_from_parent();
 
@@ -32,15 +34,33 @@ const image_cluster_list_layout = function(parent){
     this.update_parent_set_layout = function(data){
         console.log("update_parent_set_layout");
         that.parent.set_num = data.length;
-        that.parent.set_height = that.layout_height / that.parent.set_num - 2;
-        that.parent.image_height = that.parent.set_height * 0.92;
-        // that.parent.mini_set_height = 20;
         that.parent.mini_set_height = 0;
         if (that.get_expand_set_id() !== -1) {
             that.parent.set_margin = 0;
         } else {
-            that.parent.set_margin = 3;
+            that.parent.set_margin = 5;
         }
+        that.parent.set_height = (that.layout_height + that.parent.set_margin - 5) // 5 is the top padding of svg 
+            / that.parent.set_num;
+        that.parent.image_height = that.parent.set_height - that.parent.set_margin - 2 * that.parent.image_margin;
+        that.parent.top_image_margin = that.parent.image_margin;
+        let image_num = 10;
+        that.parent.x_position = function(i){
+            let box = that.parent.image_height + 2 * that.parent.image_margin;
+            let offset = (that.parent.set_width - box) / (image_num - 1);
+            return i * offset;
+        }
+        let img_height = that.parent.set_width / image_num - 2 * that.parent.image_margin;
+        if (img_height < that.parent.image_height) {
+            that.parent.image_height = img_height;
+            that.parent.top_image_margin = (that.parent.set_height - img_height) / 2;
+            that.parent.x_position = function(i){
+                let box = that.parent.image_height + 2 * that.parent.image_margin;
+                return i * box;
+            }
+        }
+
+        // that.parent.mini_set_height = 20;
         that.parent.large_set_height = that.layout_height - 10 - 
             (that.parent.set_num - 1) * that.parent.mini_set_height;
     };
@@ -79,10 +99,10 @@ const image_cluster_list_layout = function(parent){
                 that.large_set_height: that.mini_set_height;
             if (that.get_expand_set_id() === -1) w = that.set_height;
             d.y = offset;
-            offset = offset + w + that.set_margin / 2;
-            d.y_center = d.y + (w - that.set_margin) / 2;
+            offset = offset + w;
+            d.y_center = d.y + (w) / 2;
             d.height = w - that.set_margin;
-            d.width = that.set_width - that.set_margin;
+            d.width = that.set_width;
         });
         let grids = [];
         let pos = {};

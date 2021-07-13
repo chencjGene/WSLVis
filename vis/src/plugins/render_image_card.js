@@ -34,6 +34,8 @@ const ImageCards = function(parent) {
   let match_color = "#D3D3E5";
   let mismatch_color = "#E05246";
 
+  that.image_margin_percent = 0.9;
+
   //
   that.boundingbox_width = 12;
 
@@ -78,6 +80,7 @@ const ImageCards = function(parent) {
     that.image_height = that.parent.image_height;
     that.image_margin = that.parent.image_margin;
     that.text_height = that.parent.text_height;
+    that.top_image_margin = that.parent.top_image_margin;
   };
   this.get_set_layout_from_parent();
 
@@ -135,12 +138,13 @@ const ImageCards = function(parent) {
     plot_width = grids_pos.side_length;
     plot_height = grids_pos.side_length;
     Object.values(that.vis_image_per_cluster).forEach((d) => {
-      let x = that.image_margin;
-      d.forEach((n) => {
+      // let x = that.image_margin;
+      d.forEach((n, i) => {
         n.vis_h = that.image_height;
         n.vis_w = that.image_height;
-        n.x = x;
-        x = x + n.vis_w + that.image_margin;
+        n.x = that.parent.x_position(i) + that.image_margin;
+        // n.inner_margin = that.image_height * that.image_margin_percent / 2;
+        // x = x + n.vis_w + that.image_margin;
       });
     });
     that.labels = that.label_layout(Global.deepCopy(that.grids), 
@@ -198,6 +202,12 @@ const ImageCards = function(parent) {
       .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")");
     set_groups
       .style("opacity", 0)
+      .on("mouseover", function(ev){
+        that.box_highlight(ev);
+      })
+      .on("mouseout", function(){
+        that.box_dehighlight();
+      })
       .transition()
       .duration(that.create_ani)
       .delay(that.update_ani + that.remove_ani)
@@ -253,9 +263,19 @@ const ImageCards = function(parent) {
       .attr("class", "detection-result")
       .attr(
         "transform",
-        (d) => "translate(" + d.x + ", " + that.image_margin / 2 + ")"
+        (d) => "translate(" + d.x + ", " + that.top_image_margin + ")"
       );
 
+    g_image_groups
+      .append("rect")
+      .attr("class", "image-shadow")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", d => d.vis_w)
+      .attr("height", d => d.vis_h)
+      .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+      .style("pointer-events", "none")
+      .style("fill", "white");
     g_image_groups
       .append("image")
       .attr("x", 0)
@@ -498,6 +518,15 @@ const ImageCards = function(parent) {
       .duration(that.update_ani)
       .delay(that.remove_ani)
       .attr("height", (d) => d.height);
+    
+    that.e_sets
+    .selectAll("g.detection-result")
+    .selectAll(".image-shadow")
+    .transition()
+    .duration(that.update_ani)
+    .delay(that.remove_ani)
+    // .attr("height", d => that.get_expand_set_id() === -1 ? d.vis_h : 0);
+    .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0);
 
     that.e_sets
       .selectAll("g.detection-result")
@@ -1107,6 +1136,40 @@ const ImageCards = function(parent) {
       }
     }
     return new_labels;
+  };
+
+  that.box_highlight = function(ev){
+    let element = ev.target;
+    while(element.tagName !== "g" || element.className.baseVal !== "set"){
+      element = element.parentElement;
+    }
+    let self = d3.select(element);
+    let d = self.data()[0];
+    let group = that.set_group.select("#set-" + d.id);
+    group.selectAll(".background")
+      .style("stroke", "rgb(128, 128, 128)");
+    group.selectAll(".expand-rect")
+      .style("stroke", "rgb(38, 38, 38)");
+  };
+
+  that.box_dehighlight = function(){
+    let groups = that.set_group.selectAll(".set");
+    groups.selectAll(".background")
+      .style("stroke", "rgb(208, 208, 208)");
+    groups.selectAll(".expand-rect")
+      .style("stroke", "gray");
+  };
+
+  that.image_highlight = function(ev){
+    let element = ev.target;
+    let self = d3.select(element.parentElement).selectAll(".image-shadow");
+    self.style("stroke", "black");
+
+
+  };
+
+  that.image_dehighlight = function(){
+
   };
 };
 
