@@ -1,63 +1,63 @@
 <template>
     <v-row class="image-view fill-width mr-0">
         <v-col cols="12" class="image-content pa-0">
-            <v-row>
                 <div class="image-legend">
-                    <div class="confidence-slider">
-                        <span
-                            class=""
-                            v-text="'Confidence ≥ ' + confidence / 100"
-                            style="width: 135px"
-                        ></span>
+                    <div class="info-control">
+                        <div class="confidence-slider">
+                            <span
+                                class=""
+                                v-text="'Conf. ≥ 0.' + confidence"
+                            ></span>
 
-                        <v-slider
-                            v-model="confidence"
-                            max="100"
-                            :color="'grey'"
-                            :track-color="'grey lighten-2'"
-                            :thumb-color="'grey darken-1'"
-                            style="
-                                margin: 0 20px 0 20px;
-                                width: 120px;
-                                height: 30px;
-                            "
-                        ></v-slider>
-                    </div>
-                    <div class="bounding-label">
-                        <span>Category label</span>
-                        <svg
-                            :width="30 + selectClass.length * 8.1"
-                            height="32"
-                            style="margin: 0 0 0 0"
-                        >
-                            <rect
-                                class="background"
-                                rx="3.3333333333333335"
-                                ry="3.3333333333333335"
-                                x="0"
-                                y="0"
-                                height="32"
-                                :width="30 + selectClass.length * 8.1"
+                            <v-slider
+                                v-model="confidence"
+                                max="100"
+                                :color="'grey'"
+                                :track-color="'grey lighten-2'"
+                                :thumb-color="'grey darken-1'"
                                 style="
-                                    fill: rgb(235, 235, 243);
-                                    fill-opacity: 1;
+                                    width: 100px;
+                                    height: 24px;
                                 "
-                            ></rect>
-                            <text
-                                class="node-name"
-                                text-anchor="start"
-                                x="15"
-                                y="16"
-                                font-size="18px"
-                                dy=".3em"
-                                style="opacity: 1"
+                            ></v-slider>
+                        </div>
+                        <div class="bounding-label">
+                            <span style="margin-left: 15px; margin-right: 5px;"
+                            >Category</span>
+                            <svg
+                                :width="30 + selectClass.length * 8.1"
+                                height="32"
+                                style="margin: 0 0 0 0"
                             >
-                                {{ selectClass }}
-                            </text>
-                        </svg>
+                                <rect
+                                    class="background"
+                                    rx="3.3333333333333335"
+                                    ry="3.3333333333333335"
+                                    x="0"
+                                    y="0"
+                                    height="32"
+                                    :width="30 + selectClass.length * 8.1"
+                                    style="
+                                        fill: rgb(235, 235, 243);
+                                        fill-opacity: 1;
+                                    "
+                                ></rect>
+                                <text
+                                    class="node-name"
+                                    text-anchor="start"
+                                    x="15"
+                                    y="16"
+                                    font-size="18px"
+                                    dy=".3em"
+                                    style="opacity: 1"
+                                >
+                                    {{ selectClass }}
+                                </text>
+                            </svg>
+                        </div>
                     </div>
                     <div class="edit-legend">
-                        <svg
+                        <!-- <svg
                             id="btn-edit"
                             :opacity="mode == 'grid' ? 0 : 1"
                             v-on:click="beginEditBoundingBox()"
@@ -82,23 +82,23 @@
                             <path
                                 d="m496.382812 16.101562c-20.796874-20.800781-54.632812-20.800781-75.414062 0l-29.523438 29.523438 75.414063 75.414062 29.523437-29.527343c10.070313-10.046875 15.617188-23.445313 15.617188-37.695313s-5.546875-27.648437-15.617188-37.714844zm0 0"
                             />
-                        </svg>
+                        </svg> -->
+                        <div id="remove-icon" @click="removeBoundingBox()">
                         <svg
                             id="btn-remove"
                             :opacity="mode == 'grid' ? 0 : 1"
-                            v-on:click="removeBoundingBox()"
                             height="20px"
                             viewBox="0 0 74 74"
                             width="20px"
                         >
-                            <rect
+                            <!-- <rect class="remove-icon"
                                 x="0"
-                                width="80"
+                                width="75"
                                 y="0"
-                                height="80"
+                                height="75"
                                 fill="black"
                                 fill-opacity="0"
-                            ></rect>
+                            ></rect> -->
                             <path
                                 d="m51.512 71.833h-28.723a4.661 4.661 0 0 1 -4.631-4.3l-2.858-39.146a1 1 0 1 1 1.995-.146l2.854 39.142a2.652 2.652 0 0 0 2.636 2.45h28.727a2.651 2.651 0 0 0 2.635-2.45l2.853-39.142a1 1 0 0 1 2 .146l-2.857 39.142a4.661 4.661 0 0 1 -4.631 4.304z"
                             />
@@ -125,15 +125,16 @@
                             />
                         </svg>
                     </div>
-                    <svg
+                    </div>
+                    <!-- <svg
                         id="btn-svg"
                         width="60px"
                         height="24px"
                         viewBox="40 0 60 24"
                         style="margin-right: 20px"
-                    ></svg>
+                    ></svg> -->
                 </div>
-            </v-row>
+
             <svg id="image-svg"></svg>
         </v-col>
     </v-row>
@@ -191,6 +192,7 @@ export default {
             "focus_image",
             "focus_text",
             "one_image_boxes_threshold",
+            "classNames"
         ]),
     },
     methods: {
@@ -523,7 +525,7 @@ export default {
                     .style("stroke", Global.BoxRed)
                     .style("stroke-width", 1)
                     .on("click", function (event, d) {
-                        if (that.isEditing) return;
+                        // if (that.isEditing) return;
                         that.selectRect = d3.select(this);
                         that.one_image_boxes.style("stroke-width", 1);
                         that.selectRect.style("stroke-width", 4);
@@ -564,7 +566,11 @@ export default {
 
                         that.one_image_boxes.on("mousedown.drag", null);
                         that.selectRect.call(drag);
-                    });
+                        that.beginEditBoundingBox();
+                    })
+                    .append("title")
+                    .style("font-size", "16px")
+                    .text(d => this.classNames[d.label])
             }
         },
         update() {
@@ -895,6 +901,20 @@ export default {
                         that.selectRect = null;
                     },
                 },
+                {
+                    title: "delete",
+                    action: function(){
+                        if (that.selectRect == null) return;
+                        that.isEditing = false;
+                        that.main_group.selectAll("#drag-bar-g").remove();
+                        // TODO: add 'deleting bounding box' code here
+                        // let removedBoundBox = that.selectRect.datum();
+
+                        that.selectRect.remove();
+                        that.selectRect = null;
+                        that.selectClass = "";
+                    }
+                }
             ];
             that.selectRect.on("contextmenu", d3ContextMenu(menuOptions));
         },
@@ -1091,7 +1111,7 @@ export default {
 .confidence-slider,
 .bounding-label {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
 }
 
@@ -1107,7 +1127,7 @@ export default {
 .image-content {
     border: 0;
     border-radius: 5px;
-    margin: 10px;
+    margin: 0px 10px 10px 10px;
     /* height: calc(100% - 24px); */
     overflow-y: auto;
     overflow-x: hidden;
@@ -1115,5 +1135,16 @@ export default {
 
 #btn-group{
     stroke: rgb(114, 114, 114);
+}
+.info-control{
+    display: flex;
+}
+
+#remove-icon{
+  display: flex;
+}
+
+#remove-icon:hover{
+  background: #ddd;
 }
 </style>
