@@ -87,6 +87,30 @@ const TextImageConnection = function (parent) {
 
     };
 
+    that.highlight_by_node = function(node){
+        let id = node.id;
+        that.set_link_group
+            .selectAll("path")
+            .each(function(d){
+                let self = d3.select(this);
+                if (d.source.id === id){
+                    self.style("opacity", 1);
+                    self.style("stroke-width", 2);
+                } 
+                else{
+                    self.style("opacity", 0.2);
+                    self.style("stroke-width", 1);
+                }
+            })
+        
+    };
+
+    that.dehighlight = function(){
+        that.set_link_group
+            .selectAll("path")
+            .style("opacity", 1)
+            .style("stroke-width", 1);
+    };
 }
 
 export default TextImageConnection;

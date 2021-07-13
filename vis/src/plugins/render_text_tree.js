@@ -716,28 +716,40 @@ const TextTree = function (parent) {
     };
 
     // that.highlight = function(ev, d, color) {
-    that.highlight = function(ev) {
+    that.highlight = function(ev, color) {
         // console.log("highlight in tree");
         let self = d3.select(ev.target.parentElement);
+        let d = self.data()[0];
         self.selectAll(".edit-icon")
             .style("opacity", 1);
-        // color = color || "#E0E0EC";
-        // that.tree_node_group
-        //     .select("#id-" + d.id)
-        //     .select("rect.background")
-        //     .style("fill", color);
-
+        color = color || "rgb(219, 219, 233)";
+        that.tree_node_group
+            .select("#id-" + d.id)
+            .select("rect.background")
+            .style("fill", color);
+        that.connection_highlight(d);
     };
     
     // that.dehighlight = function(ev, d) {
     that.dehighlight = function() {
+        // let self = d3.select(ev.target.parentElement);
+        // let d = self.data()[0];
         that.tree_node_group.selectAll(".tree-node")
             .selectAll(".edit-icon")
             .style("opacity", 0)
-        // that.tree_node_group
-        //     .select("#id-" + d.id)
-        //     .select("rect.background")
-        //     .style("fill", d => d.selected_flag ? Global.DarkGray : "#EBEBF3");
+        that.tree_node_group
+            .selectAll(".tree-node")
+            .select("rect.background")
+            .style("fill", "#EBEBF3");
+        that.connection_dehilight();
+    };
+
+    that.connection_highlight = function(node){
+        that.parent.connection_view.highlight_by_node(node);
+    };
+
+    that.connection_dehilight = function(){
+        that.parent.connection_view.dehighlight();
     };
 
     that.icon_highlight = function(ev, d) {
