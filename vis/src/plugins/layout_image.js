@@ -41,7 +41,7 @@ const image_cluster_list_layout = function(parent){
         } else {
             that.parent.set_margin = 3;
         }
-        that.parent.large_set_height = that.layout_height - 
+        that.parent.large_set_height = that.layout_height - 10 - 
             (that.parent.set_num - 1) * that.parent.mini_set_height;
     };
     
@@ -102,19 +102,20 @@ const image_cluster_list_layout = function(parent){
     }
 
     this.grid_layout = function(data){
-        let grid_height = that.large_set_height;
+        let grid_height = that.large_set_height * 0.98;
+        let grid_margin = that.large_set_height * 0.01;
         let grid_width = that.set_width;
         let side_length = 0;
         let offset_x = 0;
         let offset_y = 0;
         if (grid_height > grid_width){
-            offset_y = (grid_height - grid_width) / 2;
-            offset_x = that.set_left + 0;
+            offset_y = (grid_height - grid_width) / 2 + grid_margin;
+            offset_x = that.set_left + grid_margin;
             side_length = grid_width;
         }
         else{
-            offset_y = 0;
-            offset_x = that.set_left + (grid_width - grid_height) / 2;
+            offset_y = grid_margin;
+            offset_x = that.set_left + (grid_width - grid_height) / 2 + grid_margin;
             side_length = grid_height;
         }
         // let control_panel_width = (grid_width - grid_height);
