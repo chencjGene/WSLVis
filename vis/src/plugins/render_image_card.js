@@ -35,7 +35,7 @@ const ImageCards = function(parent) {
   let mismatch_color = "#E05246";
 
   that.image_margin_percent = 0.9;
-
+  that.selected_image_idx = null;
   //
   that.boundingbox_width = 12;
 
@@ -269,15 +269,19 @@ const ImageCards = function(parent) {
     g_image_groups
       .append("rect")
       .attr("class", "image-shadow")
+      .attr("id", d => "image-shadow-" + d.idx)
       .attr("x", 0)
       .attr("y", 0)
       .attr("width", d => d.vis_w)
       .attr("height", d => d.vis_h)
       .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
       .style("pointer-events", "none")
-      .style("fill", "white");
+      .style("fill", "white")
+      .style("stroke", "white")
+      .style("stroke-width", 2);
     g_image_groups
       .append("image")
+      .attr("id", d => "set-image-" + d.idx)
       .attr("x", 0)
       .attr("y", 0)
       .attr("width", (d) => d.vis_w)
@@ -288,8 +292,19 @@ const ImageCards = function(parent) {
         "href",
         (d) => that.server_url + `/image/image?filename=${d.idx}.jpg`
       )
-      .on("click", (_, d) => {
+      .on("mouseover", function(ev){
+        that.box_highlight(ev);
+        that.image_highlight(ev);
+      })
+      .on("mouseout", function(){
+        that.box_dehighlight();
+        that.image_dehighlight();
+      })
+      .on("click", (ev, d) => {
         console.log("click image", d);
+        that.selected_image_idx = d.idx;
+        let self = d3.select(ev.target.parentElement).selectAll(".image-shadow");
+        self.style("stroke", "black");
         // that.set_focus_image(d);
         that.parent.fetch_single_image_detection_for_focus_text({
           image_id: d.idx
@@ -1161,6 +1176,7 @@ const ImageCards = function(parent) {
   };
 
   that.image_highlight = function(ev){
+    console.log('image highlight');
     let element = ev.target;
     let self = d3.select(element.parentElement).selectAll(".image-shadow");
     self.style("stroke", "black");
@@ -1169,7 +1185,13 @@ const ImageCards = function(parent) {
   };
 
   that.image_dehighlight = function(){
-
+    that.set_group.selectAll(".set")
+      .selectAll(".image-shadow")
+      .style("stroke", "white");
+    if (that.selected_image_idx !== null){
+      d3.select("#image-shadow-" + that.selected_image_idx)
+        .style("stroke", "black");
+    }
   };
 };
 
