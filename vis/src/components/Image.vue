@@ -122,7 +122,7 @@
             </svg>
           </div>
           <div id="left-page" @click="left_page()"
-            :style="mode == 'grid' ? 'display: flex' : 'display: none'">
+            :style="(mode == 'grid' && mode != 'unselected') ? 'display: flex' : 'display: none'">
             <svg
               t="1626190600743"
               class="icon"
@@ -144,7 +144,7 @@
             </svg>
           </div>
           <div id="right-page" @click="right_page()"
-            :style="mode == 'grid' ? 'display: flex' : 'display: none'">
+            :style="(mode == 'grid' && mode != 'unselected') ? 'display: flex' : 'display: none'">
             <svg
               t="1626190628077"
               class="icon"
@@ -187,7 +187,7 @@ export default {
   data: () => ({
     confidence: 50,
     selectRect: null,
-    mode: "grid",
+    mode: "unselected",
     isEditing: false,
     selectClass: "",
   }),
@@ -1089,6 +1089,7 @@ export default {
   justify-content: space-between;
   width: 100%;
   align-items: center;
+  margin-bottom: 8px;
   color: rgb(114, 114, 114);
 }
 
@@ -1125,7 +1126,6 @@ export default {
 }
 .info-control {
   display: flex;
-  margin-bottom: 8px;
 }
 
 #remove-icon {
