@@ -197,6 +197,8 @@ export default {
         .duration(this.update_ani)
         .style('height', `${bbox.height}px`);
       d3.selectAll('.text-col')
+        .transition()
+        .duration(this.update_ani)
         .style('height', `calc(100% - ${bbox.height + 120}px)`);
       bbox = this.text_container.node().getBoundingClientRect();
       d3.selectAll('.text-col-scroller')
