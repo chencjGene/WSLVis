@@ -111,12 +111,13 @@ export default {
         "cat_id": this.selected_node["node_ids"],
         "rules": this.$store.state.word_cloud_recycled
       });
-    }
-    // text_list() {
-    //   console.log("triger text list", this.text_list);
-    //   this.update_data();
-    //   this.update_view();
-    // },
+    },
+    text_list() {
+      console.log("triger text list", this.text_list);
+      // this.update_data();
+      // this.update_view();
+      this.adapt_wordcloud_height();
+    },
   },
   methods: {
     ...mapActions(["fetch_text_by_word_and_cat_ids", 
@@ -183,6 +184,7 @@ export default {
       that.update_view();
     },
     adapt_wordcloud_height() {
+      console.log("adapt_wordcloud_height");
       let bbox = this.wordcloud_group.node().getBBox();
       this.wordcloud_group
         .transition()
@@ -204,7 +206,7 @@ export default {
       d3.selectAll('.text-col-scroller')
         .transition()
         .duration(this.update_ani)
-        .style('height', `${bbox.height - 10}px`);
+        .style('height', `${bbox.height}px`);
       // setTimeout(() => {
       //   // console.log("top", this.wordcloud_group.node().getBoundingClientRect().top, 
       //   //   this.wordcloud_group.node().getBoundingClientRect().height);

@@ -78,6 +78,12 @@ class DataBaseLoader(object):
         self.width_height = json_load_data(os.path.join(self.data_all_step_root, \
             "width_height.json"))
 
+    def update_database(self, step):
+        self.conn.close()
+        database_file = os.path.join(config.data_root, self.dataname, "step" + str(step), "database.db")
+        self.conn = sqlite3.connect(database_file, check_same_thread=False)
+
+
     def save_detection_res_for_vis_buffer(self):
         return json_save_data(os.path.join(self.data_root, config.detection_res_for_vis_filename),
             self.detection_res_for_vis)
@@ -553,7 +559,10 @@ class Data(DataBaseLoader):
     def get_word(self, cats, match_type):
         self.current_text_idxs = self.get_labeled_id_by_type(cats, match_type)
         # print("current_text_idxs", self.current_text_idxs)
+        if self.step >= 2:
+            self.update_database(1)
         self.current_wordcloud = self.get_important_labels(self.current_text_idxs, cats)
+        self.update_database(self.step)
         self.current_text_2_word = {}
         for key in self.current_wordcloud:
             idxs = self.current_wordcloud[key]
