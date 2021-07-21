@@ -190,6 +190,26 @@
             ></path>
           </svg>
         </div>
+        <div id="add-image" @click="onAddImageClick()">
+          <svg
+            t="1626854048312"
+            class="icon"
+            viewBox="0 0 1024 1024"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            p-id="1466"
+            width="20"
+            height="20"
+            style="display: block"
+          >
+            <path
+              style="fill: rgb(114, 114, 114)"
+              d="M160 128A96 96 0 0 0 64 224v576A96 96 0 0 0 160 896h262.72a374.464 374.464 0 0 1-25.216-64H160a31.872 31.872 0 0 1-32-32v-59.264l227.52-256.512L430.016 562.56c10.752-19.008 23.232-36.992 37.248-53.504L353.92 389.76 128 644.224V224c0-17.728 14.272-32 32-32h704c17.728 0 32 14.272 32 32v198.72c22.72 11.776 44.48 25.536 64 41.792V224A96 96 0 0 0 864 128zM704 256c-35.2 0-64 28.8-64 64s28.8 64 64 64 64-28.8 64-64-28.8-64-64-64z m32 192C577.28 448 448 577.28 448 736S577.28 1024 736 1024s288-129.28 288-288S894.72 448 736 448z m0 64c124.032 0 224 100.032 224 224 0 124.032-100.032 224-224 224A223.616 223.616 0 0 1 512 736C512 611.968 612.032 512 736 512zM704 576v128H576v64h128v128h64v-128h128v-64h-128V576z"
+              fill=""
+              p-id="1467"
+            ></path>
+          </svg>
+        </div>
         <div id="update-icon" @click="onUpdateIconCLick()">
           <svg
             t="1625551916203"
@@ -401,8 +421,8 @@ export default {
       "set_f1_score_selected",
     ]),
     onShowLabelTSNECLick() {
-        console.log("label-tsne");
-        this.dialog = !this.dialog;
+      console.log("label-tsne");
+      this.dialog = !this.dialog;
     },
     async onUpdateIconCLick() {
       // console.log("click update icon");
@@ -646,63 +666,63 @@ export default {
         .attr("x", title1_x)
         .attr("y", that.text_height * 0.6 + "px")
         .text("Label hierarchy");
-    //   let label_tsne_svg = that.svg
-    //     .append("svg")
-    //     .attr("id", "label-tsne")
-    //     .attr("viewBox", "0 0 1024 1024")
-    //     .attr("x", title1_x + 130)
-    //     .attr("y", that.text_height * 0.2 + "px")
-    //     .attr("width", "20px")
-    //     .attr("height", "20px");
-    //   let paths = [
-    //     "M640 384m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M352 448m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M448 288m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M480 576m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M288 832m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M224 608m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M672 608m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M544 768m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M832 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M800 832m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //     "M192 256m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
-    //   ];
-    //   label_tsne_svg
-    //     .append("rect")
-    //     .attr("width", 1024)
-    //     .attr("height", 1024)
-    //     .style("fill", "white");
-    //   label_tsne_svg
-    //     .append("circle")
-    //     .attr("cx", 512)
-    //     .attr("cy", 512)
-    //     .attr("r", 450)
-    //     .style("fill", "none")
-    //     .style("stroke", "#727272")
-    //     .style("stroke-width", 95);
-    //   label_tsne_svg
-    //     .selectAll("path.tsne-point")
-    //     .data(paths)
-    //     .enter()
-    //     .append("path")
-    //     .attr("class", "tsne-point")
-    //     .attr("d", (d) => d)
-    //     .style("fill", "#727272");
-    //   label_tsne_svg
-    //     .on("mouseover", () => {
-    //       d3.select("#label-tsne")
-    //         .select("rect")
-    //         .style("fill", "#ddd");
-    //     })
-    //     .on("mouseout", () => {
-    //       d3.select("#label-tsne")
-    //         .select("rect")
-    //         .style("fill", "white");
-    //     })
-    //     .on("click", () => {
-    //       console.log("label-tsne");
-    //       this.dialog = !this.dialog;
-    //     });
+      //   let label_tsne_svg = that.svg
+      //     .append("svg")
+      //     .attr("id", "label-tsne")
+      //     .attr("viewBox", "0 0 1024 1024")
+      //     .attr("x", title1_x + 130)
+      //     .attr("y", that.text_height * 0.2 + "px")
+      //     .attr("width", "20px")
+      //     .attr("height", "20px");
+      //   let paths = [
+      //     "M640 384m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M352 448m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M448 288m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M480 576m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M288 832m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M224 608m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M672 608m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M544 768m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M832 512m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M800 832m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //     "M192 256m-64 0a64 64 0 1 0 128 0 64 64 0 1 0-128 0Z",
+      //   ];
+      //   label_tsne_svg
+      //     .append("rect")
+      //     .attr("width", 1024)
+      //     .attr("height", 1024)
+      //     .style("fill", "white");
+      //   label_tsne_svg
+      //     .append("circle")
+      //     .attr("cx", 512)
+      //     .attr("cy", 512)
+      //     .attr("r", 450)
+      //     .style("fill", "none")
+      //     .style("stroke", "#727272")
+      //     .style("stroke-width", 95);
+      //   label_tsne_svg
+      //     .selectAll("path.tsne-point")
+      //     .data(paths)
+      //     .enter()
+      //     .append("path")
+      //     .attr("class", "tsne-point")
+      //     .attr("d", (d) => d)
+      //     .style("fill", "#727272");
+      //   label_tsne_svg
+      //     .on("mouseover", () => {
+      //       d3.select("#label-tsne")
+      //         .select("rect")
+      //         .style("fill", "#ddd");
+      //     })
+      //     .on("mouseout", () => {
+      //       d3.select("#label-tsne")
+      //         .select("rect")
+      //         .style("fill", "white");
+      //     })
+      //     .on("click", () => {
+      //       console.log("label-tsne");
+      //       this.dialog = !this.dialog;
+      //     });
 
       that.svg
         .append("text")
@@ -1443,6 +1463,10 @@ export default {
 }
 
 #label-tsne:hover {
+  background: #ddd;
+}
+
+#add-image:hover {
   background: #ddd;
 }
 
