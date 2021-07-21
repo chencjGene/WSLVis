@@ -420,6 +420,9 @@ export default {
       "set_use_treecut",
       "set_f1_score_selected",
     ]),
+    onAddImageClick(){
+        console.log("add image");
+    },
     onShowLabelTSNECLick() {
       console.log("label-tsne");
       this.dialog = !this.dialog;

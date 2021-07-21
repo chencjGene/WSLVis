@@ -22,7 +22,7 @@
             <span style="margin-left: 15px; margin-right: 5px;">Category</span>
             <svg
               :width="30 + selectClass.length * 8.1"
-              height="32"
+              height="26"
               style="margin: 0 0 0 0"
             >
               <rect
@@ -79,50 +79,8 @@
                             d="m496.382812 16.101562c-20.796874-20.800781-54.632812-20.800781-75.414062 0l-29.523438 29.523438 75.414063 75.414062 29.523437-29.527343c10.070313-10.046875 15.617188-23.445313 15.617188-37.695313s-5.546875-27.648437-15.617188-37.714844zm0 0"
                         />
                     </svg> -->
-          <div id="remove-icon" @click="removeBoundingBox()">
-            <svg
-              id="btn-remove"
-            :style="mode == 'grid' ? 'display: none' : 'display: flex'"
-              height="20px"
-              viewBox="0 0 74 74"
-              width="20px"
-            >
-              <!-- <rect class="remove-icon"
-                                x="0"
-                                width="75"
-                                y="0"
-                                height="75"
-                                fill="black"
-                                fill-opacity="0"
-                            ></rect> -->
-              <path
-                d="m51.512 71.833h-28.723a4.661 4.661 0 0 1 -4.631-4.3l-2.858-39.146a1 1 0 1 1 1.995-.146l2.854 39.142a2.652 2.652 0 0 0 2.636 2.45h28.727a2.651 2.651 0 0 0 2.635-2.45l2.853-39.142a1 1 0 0 1 2 .146l-2.857 39.142a4.661 4.661 0 0 1 -4.631 4.304z"
-              />
-              <path
-                d="m58.741 29.314h-43.184a3.072 3.072 0 0 1 -3.069-3.068v-4.468a3.072 3.072 0 0 1 3.069-3.068h43.184a3.071 3.071 0 0 1 3.068 3.068v4.468a3.071 3.071 0 0 1 -3.068 3.068zm-43.184-8.6a1.07 1.07 0 0 0 -1.069 1.068v4.468a1.071 1.071 0 0 0 1.069 1.068h43.184a1.07 1.07 0 0 0 1.068-1.068v-4.472a1.069 1.069 0 0 0 -1.068-1.068z"
-              />
-              <path
-                d="m58 20.71h-41.7a1 1 0 0 1 -.944-1.329l5.035-14.464a4.6 4.6 0 0 1 4.338-3.084h24.839a4.6 4.6 0 0 1 4.339 3.084l5.034 14.464a1 1 0 0 1 -.941 1.329zm-40.289-2h38.879l-4.572-13.136a2.6 2.6 0 0 0 -2.45-1.741h-24.839a2.6 2.6 0 0 0 -2.449 1.741z"
-              />
-              <path
-                d="m51.5 20.71h-28.7a1 1 0 0 1 -.944-1.329l3.314-9.515a2.294 2.294 0 0 1 2.165-1.538h19.627a2.293 2.293 0 0 1 2.165 1.538l3.312 9.515a1 1 0 0 1 -.939 1.329zm-27.285-2h25.873l-2.85-8.187a.292.292 0 0 0 -.276-.2h-19.627a.292.292 0 0 0 -.276.2z"
-              />
-              <path
-                d="m27.345 52.7a1 1 0 0 1 -.977-.79 11.029 11.029 0 0 1 18.814-9.887 1 1 0 1 1 -1.457 1.37 8.943 8.943 0 0 0 -6.576-2.842 9.038 9.038 0 0 0 -9.028 9.028 9.133 9.133 0 0 0 .2 1.911 1 1 0 0 1 -.767 1.187.953.953 0 0 1 -.209.023z"
-              />
-              <path
-                d="m37.149 60.6a11.072 11.072 0 0 1 -8.033-3.473 1 1 0 1 1 1.457-1.37 8.944 8.944 0 0 0 6.576 2.843 9.038 9.038 0 0 0 9.028-9.028 9.157 9.157 0 0 0 -.119-1.47 1 1 0 0 1 1.974-.321 11.19 11.19 0 0 1 .145 1.791 11.042 11.042 0 0 1 -11.028 11.028z"
-              />
-              <path
-                d="m40.083 44.563a1 1 0 0 1 -.192-1.98l3.388-.668-.667-3.388a1 1 0 0 1 1.962-.387l.861 4.369a1 1 0 0 1 -.788 1.175l-4.37.86a.918.918 0 0 1 -.194.019z"
-              />
-              <path
-                d="m30.7 61.814a1 1 0 0 1 -.98-.807l-.861-4.369a1 1 0 0 1 .787-1.175l4.37-.86a1 1 0 1 1 .387 1.961l-3.389.668.668 3.389a1 1 0 0 1 -.782 1.179.989.989 0 0 1 -.2.014z"
-              />
-            </svg>
-          </div>
-          <div id="left-page" @click="left_page()"
-            :style="(mode == 'grid' && mode != 'unselected') ? 'display: flex' : 'display: none'">
+
+          <div id="left-page" @click="left_page()">
             <svg
               t="1626190600743"
               class="icon"
@@ -143,8 +101,7 @@
               ></path>
             </svg>
           </div>
-          <div id="right-page" @click="right_page()"
-            :style="(mode == 'grid' && mode != 'unselected') ? 'display: flex' : 'display: none'">
+          <div id="right-page" @click="right_page()">
             <svg
               t="1626190628077"
               class="icon"
@@ -169,6 +126,67 @@
                     viewBox="40 0 60 24"
                     style="margin-right: 20px"
                 ></svg> -->
+      </div>
+      <div class="image-edit"
+            :style="mode == 'grid' ? 'opacity: 0' : 'opacity: 1'">
+        <span class="image-edit-text" v-text="'Confirm the bounding box as'"
+        style="margin-right: 4px"></span>
+<input id="confirm-input" type="text" text-align="middle" value="truck" style="max-width: 48.626px;">
+        <div id="confirm-icon" @click="confirmClick()"
+        style="margin-right: 20px">
+          <svg
+            t="1626855250123"
+            class="icon"
+            viewBox="0 0 1024 1024"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            p-id="1767"
+              width="20"
+              height="20"
+              style="display: block"
+          >
+            <path
+              d="M725.333333 213.333333v64h21.312H234.666667v469.333334h512V511.978667L810.666667 512v-64.042667V746.666667a64 64 0 0 1-64 64H234.666667a64 64 0 0 1-64-64V277.333333a64 64 0 0 1 64-64h490.666666z m105.152 41.6l45.696 44.8-315.626666 322.090667-156.842667-161.365333 45.909333-44.608 111.125334 114.346666L830.485333 254.933333z m-41.173333-25.301333c0.896 0.789333 1.749333 1.6 2.581333 2.432l-2.56 2.581333v-5.013333z"
+              p-id="1768"
+            ></path>
+          </svg>
+        </div>
+        <div id="remove-icon" @click="removeBoundingBox()">
+          <svg id="btn-remove" height="20px" viewBox="0 0 74 74" width="20px">
+            <!-- <rect class="remove-icon"
+                                x="0"
+                                width="75"
+                                y="0"
+                                height="75"
+                                fill="black"
+                                fill-opacity="0"
+                            ></rect> -->
+            <path
+              d="m51.512 71.833h-28.723a4.661 4.661 0 0 1 -4.631-4.3l-2.858-39.146a1 1 0 1 1 1.995-.146l2.854 39.142a2.652 2.652 0 0 0 2.636 2.45h28.727a2.651 2.651 0 0 0 2.635-2.45l2.853-39.142a1 1 0 0 1 2 .146l-2.857 39.142a4.661 4.661 0 0 1 -4.631 4.304z"
+            />
+            <path
+              d="m58.741 29.314h-43.184a3.072 3.072 0 0 1 -3.069-3.068v-4.468a3.072 3.072 0 0 1 3.069-3.068h43.184a3.071 3.071 0 0 1 3.068 3.068v4.468a3.071 3.071 0 0 1 -3.068 3.068zm-43.184-8.6a1.07 1.07 0 0 0 -1.069 1.068v4.468a1.071 1.071 0 0 0 1.069 1.068h43.184a1.07 1.07 0 0 0 1.068-1.068v-4.472a1.069 1.069 0 0 0 -1.068-1.068z"
+            />
+            <path
+              d="m58 20.71h-41.7a1 1 0 0 1 -.944-1.329l5.035-14.464a4.6 4.6 0 0 1 4.338-3.084h24.839a4.6 4.6 0 0 1 4.339 3.084l5.034 14.464a1 1 0 0 1 -.941 1.329zm-40.289-2h38.879l-4.572-13.136a2.6 2.6 0 0 0 -2.45-1.741h-24.839a2.6 2.6 0 0 0 -2.449 1.741z"
+            />
+            <path
+              d="m51.5 20.71h-28.7a1 1 0 0 1 -.944-1.329l3.314-9.515a2.294 2.294 0 0 1 2.165-1.538h19.627a2.293 2.293 0 0 1 2.165 1.538l3.312 9.515a1 1 0 0 1 -.939 1.329zm-27.285-2h25.873l-2.85-8.187a.292.292 0 0 0 -.276-.2h-19.627a.292.292 0 0 0 -.276.2z"
+            />
+            <path
+              d="m27.345 52.7a1 1 0 0 1 -.977-.79 11.029 11.029 0 0 1 18.814-9.887 1 1 0 1 1 -1.457 1.37 8.943 8.943 0 0 0 -6.576-2.842 9.038 9.038 0 0 0 -9.028 9.028 9.133 9.133 0 0 0 .2 1.911 1 1 0 0 1 -.767 1.187.953.953 0 0 1 -.209.023z"
+            />
+            <path
+              d="m37.149 60.6a11.072 11.072 0 0 1 -8.033-3.473 1 1 0 1 1 1.457-1.37 8.944 8.944 0 0 0 6.576 2.843 9.038 9.038 0 0 0 9.028-9.028 9.157 9.157 0 0 0 -.119-1.47 1 1 0 0 1 1.974-.321 11.19 11.19 0 0 1 .145 1.791 11.042 11.042 0 0 1 -11.028 11.028z"
+            />
+            <path
+              d="m40.083 44.563a1 1 0 0 1 -.192-1.98l3.388-.668-.667-3.388a1 1 0 0 1 1.962-.387l.861 4.369a1 1 0 0 1 -.788 1.175l-4.37.86a.918.918 0 0 1 -.194.019z"
+            />
+            <path
+              d="m30.7 61.814a1 1 0 0 1 -.98-.807l-.861-4.369a1 1 0 0 1 .787-1.175l4.37-.86a1 1 0 1 1 .387 1.961l-3.389.668.668 3.389a1 1 0 0 1 -.782 1.179.989.989 0 0 1 -.2.014z"
+            />
+          </svg>
+        </div>
       </div>
       <div id="image-div" style="overflow: auto;">
         <svg id="image-svg"></svg>
@@ -234,11 +252,11 @@ export default {
   methods: {
     ...mapActions(["fetch_text_by_ids"]),
     ...mapMutations(["set_one_image_boxes_threshold"]),
-    left_page(){
-        this.change_grid_page(-1);
+    left_page() {
+      this.change_grid_page(-1);
     },
-    right_page(){
-        this.change_grid_page(1);
+    right_page() {
+      this.change_grid_page(1);
     },
     update_data() {
       let that = this;
@@ -936,7 +954,7 @@ export default {
     that.width = bbox.width;
     that.height = bbox.height;
     that.layout_width = that.width - 20;
-    that.layout_height = that.height - 40;
+    that.layout_height = that.height - 70;
     that.img_padding = 10;
     that.grid_page = 0;
     that.x_grid_num = 7;
@@ -1089,8 +1107,25 @@ export default {
   justify-content: space-between;
   width: 100%;
   align-items: center;
-  margin-bottom: 8px;
   color: rgb(114, 114, 114);
+  margin-bottom: 8px;
+}
+
+.image-edit {
+  margin-bottom: 2px;
+  justify-content: flex-end;
+  display: flex;
+  align-items: center;
+  color: rgb(114, 114, 114);
+}
+
+#confirm-input{
+  color: rgb(114, 114, 114);
+  font-size: 16px;
+  height: 24px;
+  background: white;
+  border-style: solid;
+  border: 1px solid #e0e0e0;
 }
 
 .confidence-slider,
