@@ -131,7 +131,13 @@
             :style="mode == 'grid' ? 'opacity: 0' : 'opacity: 1'">
         <span class="image-edit-text" v-text="'Confirm the bounding box as'"
         style="margin-right: 4px"></span>
-<input id="confirm-input" type="text" text-align="middle" value="truck" style="max-width: 48.626px;">
+<!-- <input id="confirm-input" type="text" text-align="middle" value="truck" style="max-width: 48.626px;"> -->
+          <v-autocomplete
+            :value="selected_node.node_ids.length > 0 ? classNames[selected_node.node_ids[0]] : ''"
+            :items="classNames"
+            height='20px'
+            style="width: 20px!important; height: 26px!important; padding-top: 0px!important"
+          ></v-autocomplete>
         <div id="confirm-icon" @click="confirmClick()"
         style="margin-right: 20px">
           <svg
@@ -208,6 +214,10 @@ export default {
     mode: "unselected",
     isEditing: false,
     selectClass: "",
+    // for debug
+      items: ['foo', 'bar', 'fizz', 'buzz'],
+      values: ['foo', 'bar'],
+      value: null,
   }),
   watch: {
     selected_images() {
@@ -247,6 +257,7 @@ export default {
       "focus_text",
       "one_image_boxes_threshold",
       "classNames",
+      "selected_node"
     ]),
   },
   methods: {
@@ -931,6 +942,9 @@ export default {
       ];
       that.selectRect.on("contextmenu", d3ContextMenu(menuOptions));
     },
+    confirmClick (){
+        console.log("confirm click");
+    },
     removeBoundingBox() {
       let that = this;
       if (that.selectRect == null) return;
@@ -954,7 +968,7 @@ export default {
     that.width = bbox.width;
     that.height = bbox.height;
     that.layout_width = that.width - 20;
-    that.layout_height = that.height - 70;
+    that.layout_height = that.height - 75;
     that.img_padding = 10;
     that.grid_page = 0;
     that.x_grid_num = 7;
@@ -1171,6 +1185,10 @@ export default {
   background: #ddd;
 }
 
+#confirm-icon:hover {
+  background: #ddd;
+}
+
 #left-page {
   display: flex;
 }
@@ -1185,5 +1203,9 @@ export default {
 
 #right-page:hover {
   background: #ddd;
+}
+
+.v-autocomplete__content .v-list__tile{
+  height: auto;
 }
 </style>
