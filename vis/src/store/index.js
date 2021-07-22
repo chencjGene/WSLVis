@@ -26,6 +26,7 @@ const store = new Vuex.Store({
         tree: {},
         use_treecut: true,
         image_cluster_list: [],
+        fetched_image_result: [],
         mismatch: [],
         vis_image_per_cluster: {},
         expand_tree: true,
@@ -374,9 +375,15 @@ const store = new Vuex.Store({
         },
         async fetch_single_image_detection_for_focus_text({commit, state}, query){
             console.log("fetch_single_image_detection_for_focus_text", query);
-            query.conf = 0.1;
-            const resp = await axios.post(`${state.server_url}/image/SingleImageDetection`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
-            commit("set_focus_text", JSON.parse(JSON.stringify(resp.data)));
+            if (state.fetched_image_result[query.image_id] !== undefined){
+                console.log("use buffer");
+            }
+            else{
+                query.conf = 0.1;
+                const resp = await axios.post(`${state.server_url}/image/SingleImageDetection`, query, {headers: {"Access-Control-Allow-Origin": "*"}});
+                state.fetched_image_result[query.image_id] = JSON.parse(JSON.stringify(resp.data));
+            }
+            commit("set_focus_text", state.fetched_image_result[query.image_id]);
         },
         async fetch_grid_layout({commit, state}, query){
             const resp = await axios.post(`${state.server_url}/detection/GridLayout`, query, {headers: {"Access-Control-Allow-Origin": "*"}});

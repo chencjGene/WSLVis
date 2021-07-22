@@ -127,19 +127,31 @@
                     style="margin-right: 20px"
                 ></svg> -->
       </div>
-      <div class="image-edit"
-            :style="mode == 'grid' ? 'opacity: 0' : 'opacity: 1'">
-        <span class="image-edit-text" v-text="'Confirm the bounding box as'"
-        style="margin-right: 4px"></span>
-<!-- <input id="confirm-input" type="text" text-align="middle" value="truck" style="max-width: 48.626px;"> -->
-          <v-autocomplete
-            :value="selected_node.node_ids.length > 0 ? classNames[selected_node.node_ids[0]] : ''"
-            :items="classNames"
-            height='20px'
-            style="width: 20px!important; height: 26px!important; padding-top: 0px!important"
-          ></v-autocomplete>
-        <div id="confirm-icon" @click="confirmClick()"
-        style="margin-right: 20px">
+      <div
+        class="image-edit"
+        :style="mode == 'grid' ? 'opacity: 0' : 'opacity: 1'"
+      >
+        <span
+          class="image-edit-text"
+          v-text="'Confirm the bounding box as'"
+          style="margin-right: 4px"
+        ></span>
+        <!-- <input id="confirm-input" type="text" text-align="middle" value="truck" style="max-width: 48.626px;"> -->
+        <v-autocomplete
+          :value="
+            selected_node.node_ids.length > 0
+              ? classNames[selected_node.node_ids[0]]
+              : ''
+          "
+          :items="classNames"
+          height="20px"
+          style="width: 20px!important; height: 26px!important; padding-top: 0px!important"
+        ></v-autocomplete>
+        <div
+          id="confirm-icon"
+          @click="confirmClick()"
+          style="margin-right: 20px"
+        >
           <svg
             t="1626855250123"
             class="icon"
@@ -147,15 +159,18 @@
             version="1.1"
             xmlns="http://www.w3.org/2000/svg"
             p-id="1767"
-              width="20"
-              height="20"
-              style="display: block"
+            width="20"
+            height="20"
+            style="display: block"
           >
             <path
               d="M725.333333 213.333333v64h21.312H234.666667v469.333334h512V511.978667L810.666667 512v-64.042667V746.666667a64 64 0 0 1-64 64H234.666667a64 64 0 0 1-64-64V277.333333a64 64 0 0 1 64-64h490.666666z m105.152 41.6l45.696 44.8-315.626666 322.090667-156.842667-161.365333 45.909333-44.608 111.125334 114.346666L830.485333 254.933333z m-41.173333-25.301333c0.896 0.789333 1.749333 1.6 2.581333 2.432l-2.56 2.581333v-5.013333z"
               p-id="1768"
             ></path>
           </svg>
+        </div>
+        <div id="add-icon" @click="addBoxClick()" style="margin-right: 2px">
+          <svg t="1626943899206" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3106" width="20" height="20"><path d="M512 938.667c-235.264 0-426.667-191.424-426.667-426.645 0-235.264 191.403-426.688 426.667-426.688 235.243 0 426.667 191.424 426.667 426.688 0 235.221-191.424 426.645-426.667 426.645zM512 128c-211.733 0-384 172.267-384 384.021 0 211.733 172.267 383.979 384 383.979s384-172.245 384-383.979c0-211.755-172.267-384.021-384-384.021zM490.667 277.333l42.667 0 0 469.333-42.667 0 0-469.333zM277.333 490.667l469.333 0 0 42.667-469.333 0 0-42.667z" p-id="3107"></path></svg>
         </div>
         <div id="remove-icon" @click="removeBoundingBox()">
           <svg id="btn-remove" height="20px" viewBox="0 0 74 74" width="20px">
@@ -215,9 +230,9 @@ export default {
     isEditing: false,
     selectClass: "",
     // for debug
-      items: ['foo', 'bar', 'fizz', 'buzz'],
-      values: ['foo', 'bar'],
-      value: null,
+    items: ["foo", "bar", "fizz", "buzz"],
+    values: ["foo", "bar"],
+    value: null,
   }),
   watch: {
     selected_images() {
@@ -257,7 +272,7 @@ export default {
       "focus_text",
       "one_image_boxes_threshold",
       "classNames",
-      "selected_node"
+      "selected_node",
     ]),
   },
   methods: {
@@ -356,6 +371,10 @@ export default {
           image_x = 0;
           image_y = (that.layout_height - height) / 2;
         }
+        that.image_x = image_x;
+        that.image_y = image_y;
+        that.image_width = width;
+        that.image_height = height;
         for (let i = 0; i < dets.length; i++) {
           let x = width * dets[i][0] + image_x;
           let w = width * (dets[i][2] - dets[i][0]);
@@ -364,7 +383,8 @@ export default {
           let conf = dets[i][4];
           let label = dets[i][5];
           let idx = that.focus_text.idx + "-" + i;
-          boxes.push({ x, y, w, h, conf, idx, label });
+          let box_idx = i;
+          boxes.push({ x, y, w, h, conf, idx, label, box_idx });
         }
         this.one_image_data = {
           width,
@@ -536,6 +556,7 @@ export default {
           that.dragbarbottomright
             .attr("x", d.x + d.w - dragbarw / 2)
             .attr("y", d.y + d.h - dragbarw / 2);
+          that.save_edit_data();
         };
 
         let rdragresize = function(event) {
@@ -553,6 +574,7 @@ export default {
           that.dragbarlefttop
             .attr("x", d.x - dragbarw / 2)
             .attr("y", d.y - dragbarw / 2);
+          that.save_edit_data();
         };
 
         let tdragresize = function(event) {
@@ -564,6 +586,7 @@ export default {
           that.dragbarbottomright
             .attr("x", d.x + d.w - dragbarw / 2)
             .attr("y", d.y + d.h - dragbarw / 2);
+          that.save_edit_data();
         };
 
         let drag = d3.drag().on("drag", dragmove);
@@ -583,6 +606,7 @@ export default {
           .on("click", function(event, d) {
             // if (that.isEditing) return;
             that.selectRect = d3.select(this);
+            that.selectec_rect_idx = d;
             that.one_image_boxes.style("stroke-width", 1);
             that.selectRect.style("stroke-width", 4);
             that.selectClass = that.$store.state.classNames[d.label];
@@ -942,8 +966,25 @@ export default {
       ];
       that.selectRect.on("contextmenu", d3ContextMenu(menuOptions));
     },
-    confirmClick (){
-        console.log("confirm click");
+    confirmClick() {
+      console.log("confirm click");
+    },
+    addBoxClick() {
+      console.log("addBoxClick click");
+      this.focus_text.d.push([0.1, 0.1, 0.3, 0.3, 1, 0]);
+      this.update_data();
+      this.update_view();
+    },
+    save_edit_data(){
+      let d = this.selectRect.datum();
+      let d0 = (d.x - this.image_x) / this.image_width;
+      let d1 = (d.y - this.image_y) / this.image_height;
+      let d2 = d.w / this.image_width + d0;
+      let d3 = d.h / this.image_height + d1;
+      this.focus_text.d[d.box_idx][0] = d0;
+      this.focus_text.d[d.box_idx][1] = d1;
+      this.focus_text.d[d.box_idx][2] = d2;
+      this.focus_text.d[d.box_idx][3] = d3;
     },
     removeBoundingBox() {
       let that = this;
@@ -1133,7 +1174,7 @@ export default {
   color: rgb(114, 114, 114);
 }
 
-#confirm-input{
+#confirm-input {
   color: rgb(114, 114, 114);
   font-size: 16px;
   height: 24px;
@@ -1185,6 +1226,15 @@ export default {
   background: #ddd;
 }
 
+#add-icon {
+  display: flex;
+}
+
+#add-icon:hover {
+  background: #ddd;
+}
+
+
 #confirm-icon:hover {
   background: #ddd;
 }
@@ -1205,7 +1255,7 @@ export default {
   background: #ddd;
 }
 
-.v-autocomplete__content .v-list__tile{
+.v-autocomplete__content .v-list__tile {
   height: auto;
 }
 </style>

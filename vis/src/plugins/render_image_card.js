@@ -278,7 +278,7 @@ const ImageCards = function(parent) {
       .style("pointer-events", "none")
       .style("fill", "white")
       .style("stroke", "white")
-      .style("stroke-width", 2);
+      .style("stroke-width", 5);
     g_image_groups
       .append("image")
       .attr("id", d => "set-image-" + d.idx)
@@ -304,7 +304,7 @@ const ImageCards = function(parent) {
         console.log("click image", d);
         that.selected_image_idx = d.idx;
         let self = d3.select(ev.target.parentElement).selectAll(".image-shadow");
-        self.style("stroke", "black");
+        self.style("stroke", "rgb(237,129,55)");
         // that.set_focus_image(d);
         that.parent.fetch_single_image_detection_for_focus_text({
           image_id: d.idx
@@ -1179,7 +1179,7 @@ const ImageCards = function(parent) {
     console.log('image highlight');
     let element = ev.target;
     let self = d3.select(element.parentElement).selectAll(".image-shadow");
-    self.style("stroke", "black");
+    self.style("stroke", "rgb(237,129,55)");
 
 
   };
@@ -1190,7 +1190,7 @@ const ImageCards = function(parent) {
       .style("stroke", "white");
     if (that.selected_image_idx !== null){
       d3.select("#image-shadow-" + that.selected_image_idx)
-        .style("stroke", "black");
+        .style("stroke", "rgb(237,129,55)");
     }
   };
 };
