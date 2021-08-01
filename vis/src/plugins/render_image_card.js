@@ -1165,6 +1165,8 @@ const ImageCards = function(parent) {
       .style("stroke", "rgb(128, 128, 128)");
     group.selectAll(".expand-rect")
       .style("stroke", "rgb(38, 38, 38)");
+    
+    that.connection_highlight(d);
   };
 
   that.box_dehighlight = function(){
@@ -1173,6 +1175,7 @@ const ImageCards = function(parent) {
       .style("stroke", "rgb(208, 208, 208)");
     groups.selectAll(".expand-rect")
       .style("stroke", "gray");
+    that.connection_dehighlight();
   };
 
   that.image_highlight = function(ev){
@@ -1180,8 +1183,6 @@ const ImageCards = function(parent) {
     let element = ev.target;
     let self = d3.select(element.parentElement).selectAll(".image-shadow");
     self.style("stroke", "rgb(237,129,55)");
-
-
   };
 
   that.image_dehighlight = function(){
@@ -1192,6 +1193,14 @@ const ImageCards = function(parent) {
       d3.select("#image-shadow-" + that.selected_image_idx)
         .style("stroke", "rgb(237,129,55)");
     }
+  };
+
+  that.connection_highlight = function(node){
+    that.parent.connection_view.highlight_by_image_cluster(node);
+  };
+
+  that.connection_dehighlight = function(){
+    that.parent.connection_view.dehighlight();
   };
 };
 
