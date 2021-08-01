@@ -89,6 +89,7 @@ const TextImageConnection = function (parent) {
 
     that.highlight_by_node = function(node){
         let id = node.id;
+        d3.selectAll(".set").style("opacity", 0.2);
         that.set_link_group
             .selectAll("path")
             .each(function(d){
@@ -96,6 +97,9 @@ const TextImageConnection = function (parent) {
                 if (d.source.id === id){
                     self.style("opacity", 1);
                     self.style("stroke-width", 2);
+                    let cluster_id = "#set-" + d.target.id;
+                    d3.select(cluster_id)
+                        .style("opacity", 1);
                 } 
                 else{
                     self.style("opacity", 0.2);
@@ -110,6 +114,7 @@ const TextImageConnection = function (parent) {
             .selectAll("path")
             .style("opacity", 1)
             .style("stroke-width", 1);
+        d3.selectAll(".set").style("opacity", 1);
     };
 }
 
