@@ -4,7 +4,8 @@
       <div class="image-legend">
         <div class="info-control">
           <div class="confidence-slider">
-            <span class="" v-text="'Conf. ≥ 0.' + confidence"></span>
+            <span class="" v-text="'Conf. ≥ 0.' + confidence"
+            style="overflow: hidden; text-overflow: ellipsis;white-space: nowrap;"></span>
 
             <v-slider
               v-model="confidence"

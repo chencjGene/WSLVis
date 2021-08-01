@@ -36,8 +36,8 @@
     </v-dialog>
     <v-col cols="12" class="topname fill-width">
       Sample
-      <div class="control-panel">
-        <div class="treecut-control">
+      <div class="control-panel" style="width: 90%">
+        <div class="treecut-control" style="width: 50%">
           <span
             class=""
             v-text="'Treecut: '"
@@ -68,11 +68,15 @@
           />
           <label class="treecut-option" for="three">Mismatch</label>
         </div>
-        <div class="consistency-slider" id="label-consistency-slider">
+        <div
+          class="consistency-slider"
+          id="label-consistency-slider"
+          style="width: 45%; display: flex; align-items: center;"
+        >
           <span
             class=""
             v-text="'Label consistency weight: ' + label_consistency.toFixed(1)"
-            style="width: 220px; float: left"
+            style="width: 60%; float: left; overflow: hidden; text-overflow: ellipsis;"
           ></span>
           <v-slider
             v-model="label_consistency"
@@ -82,20 +86,22 @@
             :track-color="'grey lighten-2'"
             :thumb-color="'grey darken-1'"
             style="
-                            margin: 0 20px 0 20px;
-                            width: 120px;
                             height: 24px;
                         "
           ></v-slider>
         </div>
-        <div class="consistency-slider" id="symmetrical-consistency-slider">
+        <div
+          class="consistency-slider"
+          id="symmetrical-consistency-slider"
+          style="width: 53%; display: flex; align-items: center;"
+        >
           <span
             class=""
             v-text="
               'Symmetrical consistency weight: ' +
                 symmetrical_consistency.toFixed(1)
             "
-            style="width: 270px; float: left"
+            style="width: 65%; float: left; overflow: hidden; text-overflow: ellipsis;"
           ></span>
           <v-slider
             v-model="symmetrical_consistency"
@@ -104,8 +110,6 @@
             :track-color="'grey lighten-2'"
             :thumb-color="'grey darken-1'"
             style="
-                            margin: 0 20px 0 20px;
-                            width: 120px;
                             height: 24px;
                         "
           ></v-slider>
@@ -228,6 +232,9 @@
               p-id="2407"
             ></path>
           </svg>
+        </div>
+        <div class="help" id="help-icon">
+          <div class="question">?</div>
         </div>
       </div>
     </v-col>
@@ -420,8 +427,8 @@ export default {
       "set_use_treecut",
       "set_f1_score_selected",
     ]),
-    onAddImageClick(){
-        console.log("add image");
+    onAddImageClick() {
+      console.log("add image");
     },
     onShowLabelTSNECLick() {
       console.log("label-tsne");
@@ -521,6 +528,10 @@ export default {
     },
     update_view() {
       console.log("detection update view");
+      let max_height = Math.max(...this.nodes.map(d => d.y)) + this.tree_node_group_y + 20;
+      max_height = Math.max(this.bbox_height, max_height);
+      if (!this.use_treecut) this.svg.attr("height",  max_height);
+      else this.svg.attr("height",  this.bbox_height);
 
       this.word_tsne_create();
 
@@ -660,7 +671,7 @@ export default {
       let title2_x = 350;
       let title2_len = 100;
 
-      let top_y = 2;
+      let top_y = 0;
 
       // titles
       that.svg
@@ -737,7 +748,8 @@ export default {
       // precision & recall legend
       let precision_color = "rgb(201, 130, 206)";
       let recall_color = "rgb(79, 167, 255)";
-      let rect_size = 6;
+      let rect_size = 0.166 * that.text_height;
+      let step = 0.55 * that.text_height;
       let precision_recall_legend_startx = title2_x + title2_len + 100;
       let pc_group = that.svg
         .append("g")
@@ -784,7 +796,7 @@ export default {
         .append("rect")
         // .attr("x", rect_size+93)
         .attr("x", 0)
-        .attr("y", rect_size + 20)
+        .attr("y", rect_size + step)
         // .attr("y", rect_size+10)
         .attr("rx", 1.5)
         .attr("ry", 1.5)
@@ -797,7 +809,7 @@ export default {
         .append("rect")
         // .attr("x", rect_size+93)
         .attr("x", 0)
-        .attr("y", 20)
+        .attr("y", step)
         // .attr("y", 10)
         .attr("rx", 1.5)
         .attr("ry", 1.5)
@@ -812,8 +824,6 @@ export default {
         .attr("text-anchor", "start")
         .attr("x", rect_size + 5)
         .attr("y", 0)
-        // .attr("y", 22)
-        // .attr("font-size", "18px")
         .style("dominant-baseline", "hanging")
         .text("Precision");
 
@@ -821,10 +831,7 @@ export default {
         .append("text")
         .attr("text-anchor", "start")
         .attr("x", rect_size + 5)
-        // .attr("x", rect_size*2+98)
-        .attr("y", 20)
-        // .attr("y", 22)
-        // .attr("font-size", "18px")
+        .attr("y", step)
         .style("dominant-baseline", "hanging")
         .text("Recall");
 
@@ -862,16 +869,16 @@ export default {
           group
             .append("line")
             .attr("x1", 0)
-            .attr("y1", 20 * i + 7.5)
+            .attr("y1", step * i + 7.5)
             .attr("x2", line_length)
-            .attr("y2", 20 * i + 7.5)
+            .attr("y2", step * i + 7.5)
             .attr("stroke-dasharray", i === 0 ? "5,5" : "5,0")
             .style("stroke-width", line_stroke)
             .style("stroke", i === 0 ? mismatch_color : match_color);
           group
             .append("text")
             .attr("x", 40)
-            .attr("y", 20 * i)
+            .attr("y", step * i)
             .text(d)
             .style("dominant-baseline", "hanging");
         });
@@ -1314,6 +1321,13 @@ export default {
 <style>
 /* .tree-node{
 } */
+html {
+  font-size: 0.835vw;  
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
 
 .icon-bg-0 {
   cursor: pointer;
@@ -1418,7 +1432,10 @@ export default {
   /* justify-content: flex-end; */
   display: flex;
   align-items: center;
-  font-size: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  /* font-size: 16px; */
+  font-size: 0.835vw;
   font-weight: 400;
 }
 
@@ -1435,6 +1452,21 @@ export default {
 .treecut-radio {
   margin-right: 2px;
   margin-bottom: 3px;
+}
+
+.help .question {
+  height: 20px;
+  width: 20px;
+  background: #ccc;
+  font-size: 16px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#help-icon:hover {
+  background: #ddd;
 }
 
 .v-slider--horizontal {

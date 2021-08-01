@@ -219,7 +219,7 @@ const TextTree = function (parent) {
             .style("opacity", 1);
         node_groups
             .append("title")
-            .style("font-size", "16px")
+            .style("font-size", "0.835vw")
             .text((d) => d.full_name);
         node_groups
             .append("rect")
