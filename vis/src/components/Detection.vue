@@ -461,6 +461,7 @@ export default {
       this.connection_view.clean();
     },
     async setGuide() {
+        d3.select("html").attr("style", "overflow-y:hidden");
       this.set_selected_node({"full_name": "person", "id": 0});
       this.fetch_word();
       this.fetch_single_image_detection_for_focus_text({
