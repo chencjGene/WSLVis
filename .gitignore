@@ -2,6 +2,9 @@
 .vscode/
 .idea/
 
+reset_server.py
+start.sh
+
 # session
 flask_session/
 
