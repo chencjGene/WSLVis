@@ -124,7 +124,7 @@ export default {
     ...mapActions(["fetch_text_by_word_and_cat_ids", 
       "fetch_single_image_detection_for_focus_text",
       "fetch_text_by_ids"]),
-    ...mapMutations(["set_focus_word", "set_text_list"]),
+    ...mapMutations(["set_focus_word", "set_text_list", "set_words"]),
     onTextItemClick(id) {
       console.log("onTextItemClick", id);
       this.current_selected_id = id;
@@ -135,6 +135,7 @@ export default {
     clean(){
       this.clean_flag = true;
       this.set_text_list([]);
+      this.set_words([]);
       d3.selectAll(".wordcloud-col").attr("style", null);
 
       this.wordcloud_svg

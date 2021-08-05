@@ -233,7 +233,7 @@
             ></path>
           </svg>
         </div>
-        <div class="help" id="help-icon">
+        <div class="help" id="help-icon" @click="onHelpIconCLick()">
           <div class="question">?</div>
         </div>
       </div>
@@ -322,6 +322,8 @@ import { mapActions, mapState, mapMutations } from "vuex";
 import * as d3 from "d3";
 import * as Global from "../plugins/global";
 import "../assets/font.css";
+import introJs from "intro.js";
+import "intro.js/introjs.css";
 
 // computation components
 import { mini_tree_layout, TreeCut, tree_layout } from "../plugins/layout_text";
@@ -435,6 +437,9 @@ export default {
       console.log("label-tsne");
       this.dialog = !this.dialog;
     },
+    onHelpIconCLick(){
+      this.setGuide();
+    },
     async onUpdateIconCLick() {
       // console.log("click update icon");
       this.clean();
@@ -450,10 +455,81 @@ export default {
       await this.$store.dispatch("fetch_hypergraph", 1);
       Global.end_loading();
     },
-    clean(){
+    clean() {
       this.image_view.clean();
       this.text_tree_view.clean();
       this.connection_view.clean();
+    },
+    async setGuide() {
+      this.set_selected_node({"full_name": "person", "id": 0});
+      this.fetch_word();
+      this.fetch_single_image_detection_for_focus_text({
+          image_id: 28188
+        });
+      introJs()
+        .onbeforeexit(function() {
+          d3.select("html").attr("style", null);
+          window.image.clean();
+          window.text.clean();
+        })
+        .setOptions({
+          steps: [
+            {
+              element: document.querySelector("#main-svg"),
+              intro:
+                "This is the set visualization that contains a tree layout, a matrix, and a grid layout.",
+            },
+            {
+              element: document.querySelector("#tree-node-group"),
+              intro:
+                "The tree layout on the left shows category labels extracted from captions, which are clustered as a hierarchy.",
+            },
+            {
+              element: document.querySelector("#id-0"),
+              intro:
+                "Each rectangle represents one node in the hierarchy. The height of the violet and blue bars represent the precision and recall. You can click nodes to show words with high contributions to the selected categories.",
+            },
+            {
+              element: document.querySelector(".wordcloud-col"),
+              intro:
+                "Words with high contributions are displayed as a word cloud. You can click one to show captions containing it below.",
+            },
+            {
+              element: document.querySelector("#set-group"),
+              intro:
+                "The matrix on the right shows objects detected from images.",
+            },
+            {
+              element: document.querySelector("#set-0"),
+              intro:
+                "Each row of the matrix represents an image cluster. Several representative images are placed in each row.  You can click images to inspect and modify the detected objects.",
+            },
+            {
+              element: document.querySelector("#image-svg"),
+              intro:
+                "The green rectangles over the image indicate the positions of detected objects. You can click one rectangle to check its corresponding category label in the grey rectangle above the image. The rectangle can be modified by dragging the corners.",
+            },
+            {
+              element: document.querySelector(".confidence-slider"),
+              intro: "You can change the confidence threshold with the slider.",
+            },
+            {
+              element: document.querySelector(".image-edit"),
+              intro: "You can validate, add or remove detected objects.",
+            },
+            {
+              element: document.querySelector("#set-link-group"),
+              intro:
+                "The links between the tree layout and matrix show the relationships between extracted labels and detected objects. The links are set as dashed red lines if the number of mismatches between an image cluster and the extracted label is larger than a threshold.",
+            },
+            {
+              element: document.querySelector(".expand-rect"),
+              intro:
+                "Each row of the matrix can be expanded as a grid layout for further exploration of images.",
+            },
+          ],
+        })
+        .start();
     },
     treecut() {
       console.log("detection treecut");
@@ -538,10 +614,11 @@ export default {
     },
     update_view() {
       console.log("detection update view");
-      let max_height = Math.max(...this.nodes.map(d => d.y)) + this.tree_node_group_y + 20;
+      let max_height =
+        Math.max(...this.nodes.map((d) => d.y)) + this.tree_node_group_y + 20;
       max_height = Math.max(this.bbox_height, max_height);
-      if (!this.use_treecut) this.svg.attr("height",  max_height);
-      else this.svg.attr("height",  this.bbox_height);
+      if (!this.use_treecut) this.svg.attr("height", max_height);
+      else this.svg.attr("height", this.bbox_height);
 
       this.word_tsne_create();
 
@@ -622,7 +699,9 @@ export default {
         .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
     },
     word_tsne_create() {
-      d3.select("#popup-word-tsne").select("svg").remove();
+      d3.select("#popup-word-tsne")
+        .select("svg")
+        .remove();
       let word_tsne_svg = d3
         .select("#popup-word-tsne")
         .append("svg")
@@ -1334,7 +1413,7 @@ export default {
 /* .tree-node{
 } */
 html {
-  font-size: 0.835vw;  
+  font-size: 0.835vw;
 }
 
 html::-webkit-scrollbar {
