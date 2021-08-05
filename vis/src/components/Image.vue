@@ -1012,6 +1012,7 @@ export default {
       this.confidence = 50;
       this.mode = "grid";
       this.one_image_group.select("image").remove();
+      this.one_image_box_group.selectAll("rect").remove();
     }
   },
   async mounted() {
