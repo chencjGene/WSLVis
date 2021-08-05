@@ -76,7 +76,7 @@
           <span
             class=""
             v-text="'Label consistency weight: ' + label_consistency.toFixed(1)"
-            style="width: 60%; float: left; overflow: hidden; text-overflow: ellipsis;"
+            style="width: 65%; float: left; overflow: hidden; text-overflow: ellipsis;"
           ></span>
           <v-slider
             v-model="label_consistency"
@@ -266,7 +266,7 @@
             />
           </svg>
         </div>
-        <div
+        <!-- <div
           id="selecting"
           style="margin-left: 3px"
           class="waves-effect waves-light btn-floating grey"
@@ -284,7 +284,7 @@
               d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h360c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H184V184h656v320c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V144c0-17.7-14.3-32-32-32zM653.3 599.4l52.2-52.2c4.7-4.7 1.9-12.8-4.7-13.6l-179.4-21c-5.1-0.6-9.5 3.7-8.9 8.9l21 179.4c0.8 6.6 8.9 9.4 13.6 4.7l52.4-52.4 256.2 256.2c3.1 3.1 8.2 3.1 11.3 0l42.4-42.4c3.1-3.1 3.1-8.2 0-11.3L653.3 599.4z"
             />
           </svg>
-        </div>
+        </div> -->
         <div
           id="home"
           style="margin-left: 3px"
@@ -354,6 +354,7 @@ export default {
     top_padding: null,
     nodes: null,
     links: null,
+    treecut_type_none_first_time: null,
   }),
   computed: {
     ...mapState([
@@ -436,6 +437,9 @@ export default {
     },
     async onUpdateIconCLick() {
       // console.log("click update icon");
+      this.clean();
+      window.text.clean();
+      window.image.clean();
       Global.begin_loading();
       await this.$store.dispatch("fetch_manifest", {
         step: this.step,
@@ -445,6 +449,11 @@ export default {
       });
       await this.$store.dispatch("fetch_hypergraph", 1);
       Global.end_loading();
+    },
+    clean(){
+      this.image_view.clean();
+      this.text_tree_view.clean();
+      this.connection_view.clean();
     },
     treecut() {
       console.log("detection treecut");
@@ -469,9 +478,10 @@ export default {
         });
         console.log("after treecut", this.tree);
       } else {
-        if (!this.focus_node) {
+        if (!this.focus_node || this.treecut_type_none_first_time) {
           this.tree.all_descendants.forEach((d) => (d.children = []));
           this.tree.children = this.tree.all_children;
+          this.treecut_type_none_first_time = false;
         } else if (this.focus_node[0].type == 0) {
           this.focus_node[0].children = this.focus_node[0].all_children;
         } else if (this.focus_node[0].type == 1) {
@@ -612,6 +622,7 @@ export default {
         .style("opacity", (d) => (d.target.mini_selected ? 1 : 0));
     },
     word_tsne_create() {
+      d3.select("#popup-word-tsne").select("svg").remove();
       let word_tsne_svg = d3
         .select("#popup-word-tsne")
         .append("svg")
@@ -1054,6 +1065,7 @@ export default {
       // console.log("checkbox", this.picked);
       if (this.treecut_type === "None") {
         console.log("click tree cut", this.use_treecut);
+        this.treecut_type_none_first_time = true;
         this.set_use_treecut(false);
       } else if (this.treecut_type === "F1Score") {
         console.log("click prec-rec-checkbox", this.f1_score_selected);

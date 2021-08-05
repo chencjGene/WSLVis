@@ -83,7 +83,8 @@ import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 export default {
   name: "CapText",
   data: () => ({
-    current_selected_id: null
+    current_selected_id: null,
+    clean_flag: false
   }),
   components: {
     ///"text-item": TextItem,
@@ -91,7 +92,7 @@ export default {
     DynamicScrollerItem: DynamicScrollerItem
   },
   computed: {
-    ...mapState(["selected_node", "words", "focus_word", "text_list"]),
+    ...mapState(["selected_node", "words", "focus_word", "text_list"])
   },
   watch: {
     words() {
@@ -123,13 +124,21 @@ export default {
     ...mapActions(["fetch_text_by_word_and_cat_ids", 
       "fetch_single_image_detection_for_focus_text",
       "fetch_text_by_ids"]),
-    ...mapMutations(["set_focus_word"]),
+    ...mapMutations(["set_focus_word", "set_text_list"]),
     onTextItemClick(id) {
       console.log("onTextItemClick", id);
       this.current_selected_id = id;
       this.fetch_single_image_detection_for_focus_text({
         image_id: id,
       });
+    },
+    clean(){
+      this.clean_flag = true;
+      this.set_text_list([]);
+      d3.selectAll(".wordcloud-col").attr("style", null);
+
+      this.wordcloud_svg
+        .attr("height", this.fix_height);
     },
     update_data() {
       let words = Global.deepCopy(this.words);
@@ -186,6 +195,7 @@ export default {
       that.update_view();
     },
     adapt_wordcloud_height() {
+      if (this.clean_flag) {this.clean_flag=false; return;} 
       console.log("adapt_wordcloud_height");
       let bbox = this.wordcloud_group.node().getBBox();
       this.wordcloud_group
@@ -324,6 +334,8 @@ export default {
     // text
     this.text_height = text_container.node().getBoundingClientRect().height;
     this.text_width = text_container.node().getBoundingClientRect().width;
+
+    this.fix_height = this.wordcloud_height;
 
     // this.svg = container
     //   .append("svg")

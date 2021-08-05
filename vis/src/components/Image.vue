@@ -14,7 +14,7 @@
               :track-color="'grey lighten-2'"
               :thumb-color="'grey darken-1'"
               style="
-                                width: 100px;
+                                width: 110px;
                                 height: 24px;
                             "
             ></v-slider>
@@ -287,7 +287,7 @@ export default {
   },
   methods: {
     ...mapActions(["fetch_text_by_ids"]),
-    ...mapMutations(["set_one_image_boxes_threshold"]),
+    ...mapMutations(["set_one_image_boxes_threshold", "set_focus_text"]),
     left_page() {
       this.change_grid_page(-1);
     },
@@ -1008,6 +1008,11 @@ export default {
       that.selectRect = null;
       that.selectClass = "";
     },
+    clean(){
+      this.confidence = 50;
+      this.mode = "grid";
+      this.one_image_group.select("image").remove();
+    }
   },
   async mounted() {
     window.image = this;

@@ -534,6 +534,8 @@ const ImageCards = function(parent) {
       .delay(that.remove_ani)
       .attr("height", (d) => d.height);
     
+    
+
     that.e_sets
     .selectAll("g.detection-result")
     .selectAll(".image-shadow")
@@ -1179,7 +1181,7 @@ const ImageCards = function(parent) {
   };
 
   that.image_highlight = function(ev){
-    console.log('image highlight');
+    // console.log('image highlight');
     let element = ev.target;
     let self = d3.select(element.parentElement).selectAll(".image-shadow");
     self.style("stroke", "rgb(237,129,55)");
@@ -1201,6 +1203,10 @@ const ImageCards = function(parent) {
 
   that.connection_dehighlight = function(){
     that.parent.connection_view.dehighlight();
+  };
+
+  that.clean = function(){
+    that.set_group.selectAll(".set").remove();
   };
 };
 

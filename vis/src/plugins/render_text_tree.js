@@ -769,6 +769,10 @@ const TextTree = function (parent) {
             );
     };
 
+    that.clean = function(){
+        that.tree_node_group.selectAll(".tree-node").remove();
+        that.rest_node_group.selectAll(".rest-tree-node").remove();
+      };
 }
 
 export default TextTree;

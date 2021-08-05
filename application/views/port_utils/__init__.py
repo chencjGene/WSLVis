@@ -52,7 +52,7 @@ def get_text(query):
     return jsonify(text_result)
 
 def get_text_by_word(query):
-    text_result = port.model.data.get_text_by_word(query)
+    text_result = port.model.get_text_by_word(query)
     return jsonify(text_result)
 
 

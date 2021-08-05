@@ -468,6 +468,19 @@ class WSLModel(object):
         logger.info("finish TSNE")
         return coor
 
+    def get_text_by_word(self, query):
+        ids = np.array(query["cat_id"])
+        cat_ids = []
+        for node_id in ids:
+            node = self.text_tree_helper.get_node_by_tree_node_id(node_id)
+            leaf_node = self.text_tree_helper.get_all_leaf_descendants(node)
+            cats = [n["cat_id"] for n in leaf_node]
+            cat_ids = cat_ids + cats
+        cat_ids = list(set(cat_ids))
+        query["cat_id"] = cat_ids
+        return self.data.get_text_by_word(query)
+
+
     def get_word(self, query):
         tree_node_ids = query["tree_node_ids"]
         match_type = query["match_type"]
