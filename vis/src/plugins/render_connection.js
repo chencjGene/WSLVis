@@ -102,7 +102,8 @@ const TextImageConnection = function (parent) {
                     //     .style("opacity", 1);
                 } 
                 else{
-                    self.style("opacity", 0.2);
+                    let id = that.get_expand_set_id();
+                    self.style("opacity", id === -1 ? 0.2 : 0);
                     self.style("stroke-width", 1);
                 }
             })
@@ -112,7 +113,10 @@ const TextImageConnection = function (parent) {
     that.dehighlight = function(){
         that.set_link_group
             .selectAll("path")
-            .style("opacity", 1)
+            .style("opacity", d => {
+                let id = that.get_expand_set_id();
+                return id === -1 || id === d.target.id ? 1 : 0;
+            })
             .style("stroke-width", 1);
         d3.selectAll(".set").style("opacity", 1);
         d3.selectAll(".tree-node").style("opacity", 1);
@@ -136,7 +140,8 @@ const TextImageConnection = function (parent) {
                         .style("opacity", 1);
                 } 
                 else{
-                    self.style("opacity", 0.2);
+                    let id = that.get_expand_set_id();
+                    self.style("opacity", id === -1 ? 0.2 : 0);
                     self.style("stroke-width", 1);
                 }
             })

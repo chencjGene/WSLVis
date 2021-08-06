@@ -441,7 +441,7 @@ class WSLModel(object):
         return res
 
     def get_tsne_of_image_cluster(self, image_cluster_id):
-        tsne_root = os.path.join(self.data_root, "tsne_of_image_cluster")
+        tsne_root = os.path.join(self.data_all_step_root, "tsne_of_image_cluster")
         check_dir(tsne_root)
         tsne_path = os.path.join(tsne_root, str(image_cluster_id) + ".pkl")
         if os.path.exists(tsne_path):
