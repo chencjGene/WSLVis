@@ -484,6 +484,9 @@ class Data(DataBaseLoader):
             img_path = os.path.join(config.raw_data_root, \
                 "coco17_raw_data", phase, "%012d.jpg" %(image_id))
         # print("iamge_path", img_path)
+        if not os.path.exists(img_path):
+            img_path = os.path.join(config.data_root, \
+                "../..", phase, "%012d.jpg" %(image_id))
         return img_path 
     
     def get_text_by_word(self, query):
