@@ -177,7 +177,7 @@ const get_path_of_page_btn = function(x, y, width, height, direction){
 function disable_global_interaction(){
     d3.select(".loading")
         .style("display", "block")
-        .style("opacity", 0);
+        .style("opacity", 0.5);
 }
 
 function enable_global_interaction(delay){

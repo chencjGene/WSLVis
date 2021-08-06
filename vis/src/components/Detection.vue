@@ -1237,9 +1237,7 @@ export default {
         this.image_view.create_ani = 0;
         this.update_view();
         this.image_view.set_animation_time();
-        d3.select(".loading")
-          .style("display", "block")
-          .style("opacity", 0);
+        Global.disable_global_interaction();
         d3.select(".loading-svg").style("display", "block");
         setTimeout(() => {
           this.fetch_grid_layout({
