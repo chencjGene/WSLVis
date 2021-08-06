@@ -443,7 +443,6 @@ export default {
     async onUpdateIconCLick() {
       // console.log("click update icon");
       this.clean();
-      this.set_selected_node({"full_name": "person", "id": 0});
       window.text.clean();
       window.image.clean();
       Global.begin_loading();

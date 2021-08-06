@@ -772,6 +772,14 @@ const TextTree = function (parent) {
     that.clean = function(){
         that.tree_node_group.selectAll(".tree-node").remove();
         that.rest_node_group.selectAll(".rest-tree-node").remove();
+        // clean selected state
+        for(let i = 0; i < that.parent.selected_node.node_ids.length; i++){
+            let tmp_node = {
+                full_name: that.parent.selected_node.nodes[i].full_name,
+                id: that.parent.selected_node.node_ids[i]
+            }
+            that.set_selected_node(tmp_node);
+        }
       };
 }
 
