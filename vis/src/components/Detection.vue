@@ -443,6 +443,7 @@ export default {
     async onUpdateIconCLick() {
       // console.log("click update icon");
       this.clean();
+      this.set_selected_node({"full_name": "person", "id": 0});
       window.text.clean();
       window.image.clean();
       Global.begin_loading();
@@ -461,7 +462,8 @@ export default {
       this.connection_view.clean();
     },
     async setGuide() {
-        d3.select("html").attr("style", "overflow-y:hidden");
+      let that = this;
+      d3.select("html").attr("style", "overflow-y:hidden");
       this.set_selected_node({"full_name": "person", "id": 0});
       this.fetch_word();
       this.fetch_single_image_detection_for_focus_text({
@@ -470,6 +472,7 @@ export default {
       introJs()
         .onbeforeexit(function() {
           d3.select("html").attr("style", null);
+          that.set_selected_node({"full_name": "person", "id": 0});
           window.image.clean();
           window.text.clean();
         })

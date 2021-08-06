@@ -1013,6 +1013,10 @@ export default {
       this.mode = "grid";
       this.one_image_group.select("image").remove();
       this.one_image_box_group.selectAll("rect").remove();
+      this.grid_box_group.selectAll("rect").remove();
+      this.grid_group.selectAll("g").remove();
+      this.detail_group.selectAll("image").remove();
+      this.detail_group.append("image");
     }
   },
   async mounted() {
