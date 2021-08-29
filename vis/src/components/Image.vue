@@ -20,7 +20,7 @@
             ></v-slider>
           </div>
           <div class="bounding-label">
-            <span style="margin-left: 15px; margin-right: 5px;">Category</span>
+            <span style="margin-left: 15px; margin-right: 5px;">Label</span>
             <svg
               :width="30 + selectClass.length * 8.1"
               height="26"

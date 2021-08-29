@@ -49,7 +49,7 @@ const ImageCards = function(parent) {
   var offset_x = 0; // position of the left grid when the mode is "juxtaposition"
   var offset_y = 100;
 
-  let grid_margin = 0.5;
+  let grid_margin = 0.5 * 2;
 
   let mouse_pressed = false;
   let mouse_pos = {
@@ -432,6 +432,15 @@ const ImageCards = function(parent) {
         .duration(that.create_ani)
         .delay(that.update_ani + that.remove_ani)
         .style("opacity", 1);
+      // label_group
+      //       .append("rect")
+      //       .attr("x", d => d.grid.x + offset_x + 1)
+      //       .attr("y", d => d.grid.y + offset_y + 1)
+      //       .attr("width", d => d.grid.w - 2)
+      //       .attr("height", d => d.grid.h - 2)
+      //       .style("fill", "black")
+      //       .style("stroke", "none")
+      //       .style("opacity", 0.25);
     label_group
         .append("rect")
         .attr("x", d => d.grid.x + offset_x)
@@ -439,8 +448,8 @@ const ImageCards = function(parent) {
         .attr("width", d => d.grid.w)
         .attr("height", d => d.grid.h)
         .style("fill", "none")
-        .style("stroke", "grey")
-        .style("stroke-width", 2);
+        .style("stroke", "#fdfe6c")
+        .style("stroke-width", 4);
     label_group
         .append("image")
         .attr("x", d => d.label.x + offset_x)

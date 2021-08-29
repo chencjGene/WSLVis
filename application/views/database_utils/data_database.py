@@ -419,6 +419,10 @@ class Data(DataBaseLoader):
             for idx in tqdm(idxs):
                 detection = self.database_fetch_by_idx(idx, ["detection"])
                 detection = np.array(json.loads(detection)) #[:,-1].astype(int)
+                if (len(detection) == 0):
+                    pred = np.zeros(len(self.class_name))
+                    preds.append(pred)
+                    continue
                 conf_detection = detection[detection[:, -2] > threshold].astype(np.float32)
                 cats = conf_detection[:, -1].astype(int)
                 cats = np.array(list(set(cats))).astype(int)
