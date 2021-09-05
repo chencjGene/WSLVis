@@ -25,7 +25,7 @@
                 </v-btn>
                 </div> -->
 
-          <li id="tsne-title">Projection of category labels</li>
+          <li id="tsne-title">Projection of labels</li>
           <li>
             <v-btn text @click="dialog = false" style="font-size: 30px"
               >×
@@ -43,14 +43,14 @@
             v-text="'Treecut: '"
             style="width: 65px; float: left"
           ></span>
-          <input
+          <!-- <input
             class="treecut-radio"
             type="radio"
             id="one"
             value="None"
             v-model="treecut_type"
-          />
-          <label class="treecut-option" for="one">None</label>
+          /> -->
+          <!-- <label class="treecut-option" for="one">None</label> -->
           <input
             class="treecut-radio"
             type="radio"
@@ -58,7 +58,7 @@
             value="F1Score"
             v-model="treecut_type"
           />
-          <label class="treecut-option" for="two">F1 score</label>
+          <label class="treecut-option" for="two">Correctness</label>
           <input
             class="treecut-radio"
             type="radio"
@@ -114,7 +114,7 @@
                         "
           ></v-slider>
         </div>
-        <div id="label-tsne" @click="onShowLabelTSNECLick()">
+        <!-- <div id="label-tsne" @click="onShowLabelTSNECLick()">
           <svg
             t="1625582438485"
             class="icon"
@@ -193,7 +193,7 @@
               p-id="2081"
             ></path>
           </svg>
-        </div>
+        </div> -->
         <div id="add-image" @click="onAddImageClick()">
           <svg
             t="1626854048312"
@@ -347,7 +347,7 @@ export default {
   data: () => ({
     dialog: false,
     popup_width: 900,
-    treecut_type: "Mismatch",
+    treecut_type: "F1Score",
     items: ["Foo", "Bar", "Fizz", "Buzz"],
     bbox_width: null,
     bbox_height: null,

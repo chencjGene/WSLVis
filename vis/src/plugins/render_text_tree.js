@@ -154,8 +154,14 @@ const TextTree = function (parent) {
                 .attr("class", "node-name")
                 .attr("text-anchor", "start")
                 .attr("font-size", "18px");
-            self.text(text + "...");
+            self.text(text);
             let textLength = self.node().getComputedTextLength();
+            if (textLength < (that.max_text_width - 30) - 5) {                 
+                that.tree_node_group.select("#temp").remove();
+                return text;
+            }
+            self.text(text + "...");
+            textLength = self.node().getComputedTextLength();
             // console.log("wrap text", text);
             while (textLength > ( (that.max_text_width - 30) - 2 * 5) && text.length > 0) {
                 text = text.slice(0, -1);
@@ -400,7 +406,7 @@ const TextTree = function (parent) {
                 return d.name;
             })
             .attr("text-anchor", "start")
-            .attr("x", that.layer_height / 2)
+            .attr("x", that.layer_height / 2 - 2)
             .attr("font-size", "18px")
             .style("fill", "rgb(114, 114, 114)")
             .attr("dy", ".3em")
