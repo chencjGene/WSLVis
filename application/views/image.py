@@ -38,3 +38,19 @@ def app_get_single_image_detection():
     idx = int(idx)
     res = get_image_detection(idx, conf)
     return res
+
+@image.route("/icon/absorb", methods=["GET"])
+def app_get_absorb():
+    return send_file(os.path.join(config.app_root, "static", "img","absorb.svg"))
+
+@image.route("/icon/cancel", methods=["GET"])
+def app_get_cancel():
+    return send_file(os.path.join(config.app_root, "static", "img","cancel.svg"))
+
+@image.route("/icon/collapse", methods=["GET"])
+def app_get_collapse():
+    return send_file(os.path.join(config.app_root, "static", "img","collapse.svg"))
+
+@image.route("/icon/join", methods=["GET"])
+def app_get_join():
+    return send_file(os.path.join(config.app_root, "static", "img","join.svg"))

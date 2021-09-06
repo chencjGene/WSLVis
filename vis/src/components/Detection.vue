@@ -1319,6 +1319,7 @@ export default {
       .attr("height", this.bbox_height)
       .style("padding-top", "5px");
 
+      
     this.expanded_icon_group = this.svg
       .append("g")
       .attr("id", "expanded-icon-group")
@@ -1326,16 +1327,16 @@ export default {
         "transform",
         "translate(" + 5 + ", " + this.text_height * 0.8 + ")"
       );
-    this.tree_node_group = this.svg
+    this.rest_node_group = this.svg
       .append("g")
-      .attr("id", "tree-node-group")
+      .attr("id", "rest-node-group")
       .attr(
         "transform",
         "translate(" + 2 + ", " + this.layout_height / 2 + ")"
       );
-    this.rest_node_group = this.svg
+    this.tree_node_group = this.svg
       .append("g")
-      .attr("id", "rest-node-group")
+      .attr("id", "tree-node-group")
       .attr(
         "transform",
         "translate(" + 2 + ", " + this.layout_height / 2 + ")"

@@ -16,6 +16,7 @@ class Config(object):
         self.data_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../data/"))
         self.test_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../test/"))
         self.image_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../images/"))
+        self.app_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../application/"))
         self.lib_root = os.path.normpath(os.path.join(SERVER_ROOT, "../../application/views/lib/"))
         self.dll_root = os.path.normpath(os.path.join(SERVER_ROOT, "../../application/views/model_utils/"))
         self.log_root = os.path.normpath(os.path.join(SERVER_ROOT,"../../logs/"))
