@@ -27,6 +27,8 @@ const TextTree = function(parent) {
   that.rounded_r = that.parent.rounded_r;
 
   that.editing_state = false;
+  that.merge_action = null;
+  that.target_node = null;
 
   that.parent.svg.select("defs").remove();
   that.defs = that.parent.svg
@@ -271,14 +273,15 @@ const TextTree = function(parent) {
       //     "translate(" + event.x + ", " + event.y + ")");
       that.tree_node_group
         .select("#dragnode")
-        .attr("x", event.x)
-        .attr("y", event.y);
+        .attr("x", event.x + that.layer_height / 4)
+        .attr("y", event.y - that.layer_height * 0.4);
     };
 
     let dragended = function() {
       console.log("drag end");
       that.editing_state = false;
       that.tree_node_group.select("#dragnode").remove();
+      that.tree_node_group.selectAll("#merge-panel-g").remove();
     };
 
     let drag = d3
@@ -321,16 +324,26 @@ const TextTree = function(parent) {
       .style("fill-opacity", 0)
       .on("mouseover", (ev) => {
         let element = d3.select(ev.toElement).node().parentElement;
-        console.log("element", element);
         // element = d3.select(element);
-        console.log("element", element);
         that.highlight(ev);
         if (that.editing_state) {
           console.log("dragged hover");
+          if (!that.target_node){
+              that.target_node = element;
+          }
+          else{
+            console.log("treggle ", that.target_node.__data__.id, element.__data__.id);
+              if (that.target_node.__data__.id != element.__data__.id){
+                console.log("treggle differnt target node");
+                that.tree_node_group.selectAll("#merge-panel-g").remove();
+                that.target_node = element;
+              }
+          }
           that.PanelWidth = 40;
           that.PanelHeight = 40;
           that.PanelMargin = 0;
           that.PanelOffset = 1;
+          if (that.tree_node_group.selectAll("#merge-panel-g").node()) return;
           let panel = that.tree_node_group
             .append("g")
             .attr("id", "merge-panel-g")
@@ -362,10 +375,13 @@ const TextTree = function(parent) {
             .attr("width", that.PanelWidth - 2 * that.PanelOffset)
             .attr("height", that.PanelHeight - 2 * that.PanelOffset)
             .attr("fill", "url(#button-gradient)")
-            .on("mouseenter", function() {
+            .on("mouseover", function(_, s) {
+                that.merge_action = s.name;
+                console.log("that.merge_action in merge panel", that.merge_action);
               d3.select(this).attr("fill", "yellow");
             })
             .on("mouseout", function() {
+                that.merge_action = null;
               d3.select(this).attr("fill", "url(#button-gradient)");
             });
           panel
@@ -393,14 +409,21 @@ const TextTree = function(parent) {
             .attr(
               "xlink:href",
               (s) => that.parent.server_url + "/icon/" + s.name
-            );
+            )
+            .style("pointer-events", "none");
         }
       })
       .on("mouseout", () => {
         // that.hideTooltip();
         that.dehighlight();
         if (that.editing_state){
-          that.tree_node_group.select("#merge-panel-g").remove();
+          console.log("that.merge_action", that.merge_action);
+          setTimeout(() =>{
+            if (!that.merge_action) {
+                that.tree_node_group.select("#merge-panel-g").remove();
+                that.target_node = null;
+            }
+          }, 2);
         }
       })
       .on("click", (ev, d) => {
