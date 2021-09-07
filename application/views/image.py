@@ -54,3 +54,7 @@ def app_get_collapse():
 @image.route("/icon/join", methods=["GET"])
 def app_get_join():
     return send_file(os.path.join(config.app_root, "static", "img","join.svg"))
+
+@image.route("/icon/forbid", methods=["GET"])
+def app_get_forbid():
+    return send_file(os.path.join(config.app_root, "static", "img","forbited.svg"))

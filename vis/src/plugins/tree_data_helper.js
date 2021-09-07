@@ -33,7 +33,7 @@ const tree_process = function(text_tree) {
         // element.api = element.f1_api;
     });
 
-    text_tree.eachBefore((d, i) => d.order = i);
+    // text_tree.eachBefore((d, i) => d.order = i);
 
     // text_tree.all_descendants = text_tree.descendants();
     text_tree.all_descendants.forEach(d => d.children = []);

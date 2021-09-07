@@ -278,6 +278,10 @@ const TextTree = function(parent) {
         .select("#dragnode")
         .attr("x", event.x + that.layer_height / 4)
         .attr("y", event.y - that.layer_height * 0.4);
+     that.tree_node_group
+        .select("#merge-panel-g")
+        .attr("transform",  "translate(" + (event.x + that.layer_height / 4 + that.max_text_width  + 5) 
+        + ", " + (event.y - that.layer_height * 0.4 + that.layer_height * 0.8) + ")");
     };
 
     let dragended = function() {
@@ -311,6 +315,9 @@ const TextTree = function(parent) {
       that.editing_state = false;
       that.tree_node_group.select("#dragnode").remove();
       that.tree_node_group.selectAll("#merge-panel-g").remove();
+      that.focus_node_for_edit = null;
+      that.target_node = null;
+      that.merge_action = null;
     };
 
     let drag = d3
@@ -374,73 +381,33 @@ const TextTree = function(parent) {
           that.PanelMargin = 0;
           that.PanelOffset = 1;
           if (that.tree_node_group.selectAll("#merge-panel-g").node()) return;
+          let is_leaf = d3.select(ev.toElement).data()[0].all_children.length == 0;
+          console.log("is leaf", is_leaf);
           let panel = that.tree_node_group
             .append("g")
             .attr("id", "merge-panel-g")
-            .attr("transform",  "translate(" + element.__data__.x + ", " + element.__data__.y + ")")
-            .selectAll("rect.merge-panel")
-            .data(that.panel_info)
-            .enter();
-          console.log("panel", panel);
+            .attr("transform",  "translate(" + 0 + ", " + 0 + ")");
           panel
-            .append("rect")
-            .attr("class", "merge-panel")
-            .attr(
-              "x",
-              (s) =>
-                (that.PanelWidth + that.PanelMargin) * s.x +
-                that.max_text_width / 2 +
-                that.PanelOffset +
-                that.PanelMargin / 2
-            )
-            .attr(
-              "y",
-              (s) =>
-                (that.PanelHeight + that.PanelMargin) * s.y +
-                that.PanelOffset +
-                that.PanelMargin / 2
-            )
-            .attr("rx", that.PanelWidth / 2)
-            .attr("ry", that.PanelHeight / 2)
-            .attr("width", that.PanelWidth - 2 * that.PanelOffset)
-            .attr("height", that.PanelHeight - 2 * that.PanelOffset)
-            .attr("fill", "url(#button-gradient)")
-            .on("mouseover", function(_, s) {
-                that.merge_action = s.name;
-                console.log("that.merge_action in merge panel", that.merge_action);
-              d3.select(this).attr("fill", "yellow");
-            })
-            .on("mouseout", function() {
-                that.merge_action = null;
-              d3.select(this).attr("fill", "url(#button-gradient)");
-            });
-          panel
-            .append("image")
-            .attr("class", "merge-panel")
-            .attr(
-              "x",
-              (s) =>
-                (that.PanelWidth + that.PanelMargin) * s.x +
-                that.max_text_width / 2 +
-                that.PanelWidth / 2 -
-                that.PanelHeight / 2 +
-                that.PanelMargin / 2 + that.ImageMargin
-            )
-            .attr(
-              "y",
-              (s) =>
-                (that.PanelHeight + that.PanelMargin) * s.y +
-                that.PanelHeight / 2 -
-                that.PanelHeight / 2 +
-                that.PanelMargin / 2 + that.ImageMargin
-            )
-            .attr("width", that.PanelHeight - that.ImageMargin * 2)
-            .style("stroke", "white")
-            .attr(
-              "xlink:href",
-              (s) => that.parent.server_url + "/icon/" + s.name
-            )
-            .style("pointer-events", "none");
+            .append("text")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("text-anchor", "start")
+            .attr("font-size", "18px")
+            .text("move to")
+            .attr("display",  is_leaf ? "none":"block");
+          panel.append("image")
+            .attr("x", 0)
+            .attr("y", -10)
+            .attr("width", 10)
+            .attr("xlink:href", that.parent.server_url + "/icon/" + "forbid")
+            .attr("display", is_leaf ? "block":"none");
+          if (!is_leaf){
+              that.merge_action = "absorb";
+          }
+          else{
+              that.merge_action = null;
+          }
+        
         }
       })
       .on("mouseout", () => {
