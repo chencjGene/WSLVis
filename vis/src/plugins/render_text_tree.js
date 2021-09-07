@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import * as Global from "./global";
 import { exit_type } from "./layout_text";
+import {tree_process} from "../plugins/tree_data_helper"
 
 const TextTree = function(parent) {
   let that = this;
@@ -29,6 +30,7 @@ const TextTree = function(parent) {
   that.editing_state = false;
   that.merge_action = null;
   that.target_node = null;
+  that.focus_node_for_edit = null;
 
   that.parent.svg.select("defs").remove();
   that.defs = that.parent.svg
@@ -249,6 +251,7 @@ const TextTree = function(parent) {
     let dragstarted = function() {
       let tag = d3.select(this);
       console.log("drag start", tag);
+      that.focus_node_for_edit = d3.select(this).data()[0];
       that.tree_node_group
         .append("rect")
         .attr("id", "dragnode")
@@ -279,6 +282,32 @@ const TextTree = function(parent) {
 
     let dragended = function() {
       console.log("drag end");
+
+      if (that.merge_action){
+        if (that.merge_action === "join"){
+          console.log("join");
+        }
+        else if (that.merge_action === "absorb"){
+          console.log("absorb");
+          let focus_node_parent = that.focus_node_for_edit.parent;
+          that.focus_node_parent = focus_node_parent;
+          let children_ids = focus_node_parent.all_children.map(d => d.id);
+          let idx = children_ids.indexOf(that.focus_node_for_edit.id);
+          focus_node_parent.all_children.splice(idx, 1);
+          that.target_node.all_children.push(that.focus_node_for_edit);
+          that.focus_node_for_edit.parent = that.target_node;
+          that.focus_node_for_edit.depth = that.focus_node_for_edit.parent.depth + 1;
+          console.log(that.focus_node_for_edit.name);
+          console.log(that.target_node.name, that.target_node.all_children.map(d => d.name));
+          console.log(focus_node_parent.name, focus_node_parent.all_children.map(d => d.name));
+          tree_process(that.parent.tree);
+          that.set_focus_node([that.focus_node_for_edit]);
+        }
+        else if (that.merge_action === "collapse"){
+          console.log("collapse");
+        }
+    }
+
       that.editing_state = false;
       that.tree_node_group.select("#dragnode").remove();
       that.tree_node_group.selectAll("#merge-panel-g").remove();
@@ -329,18 +358,19 @@ const TextTree = function(parent) {
         if (that.editing_state) {
           console.log("dragged hover");
           if (!that.target_node){
-              that.target_node = element;
+              that.target_node = d3.select(ev.toElement).data()[0];
           }
           else{
-            console.log("treggle ", that.target_node.__data__.id, element.__data__.id);
-              if (that.target_node.__data__.id != element.__data__.id){
+            console.log("treggle ", that.target_node.id, element.id);
+              if (that.target_node.id != element.id){
                 console.log("treggle differnt target node");
                 that.tree_node_group.selectAll("#merge-panel-g").remove();
-                that.target_node = element;
+                that.target_node = d3.select(ev.toElement).data()[0];
               }
           }
           that.PanelWidth = 40;
           that.PanelHeight = 40;
+          that.ImageMargin = that.PanelWidth * 0.12;
           that.PanelMargin = 0;
           that.PanelOffset = 1;
           if (that.tree_node_group.selectAll("#merge-panel-g").node()) return;
@@ -394,7 +424,7 @@ const TextTree = function(parent) {
                 that.max_text_width / 2 +
                 that.PanelWidth / 2 -
                 that.PanelHeight / 2 +
-                that.PanelMargin / 2
+                that.PanelMargin / 2 + that.ImageMargin
             )
             .attr(
               "y",
@@ -402,9 +432,9 @@ const TextTree = function(parent) {
                 (that.PanelHeight + that.PanelMargin) * s.y +
                 that.PanelHeight / 2 -
                 that.PanelHeight / 2 +
-                that.PanelMargin / 2
+                that.PanelMargin / 2 + that.ImageMargin
             )
-            .attr("width", that.PanelHeight)
+            .attr("width", that.PanelHeight - that.ImageMargin * 2)
             .style("stroke", "white")
             .attr(
               "xlink:href",
