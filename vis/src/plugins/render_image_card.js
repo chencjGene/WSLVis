@@ -1173,7 +1173,8 @@ const ImageCards = function(parent) {
     let d = self.data()[0];
     let group = that.set_group.select("#set-" + d.id);
     group.selectAll(".background")
-      .style("stroke", "rgb(128, 128, 128)");
+      // .style("stroke", "rgb(128, 128, 128)");
+      .style("stroke", "rgb(237,129,55)");
     group.selectAll(".expand-rect")
       .style("stroke", "rgb(38, 38, 38)");
     

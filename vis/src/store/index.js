@@ -161,14 +161,16 @@ const store = new Vuex.Store({
                 }
                 element.f1_api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
                 element.mm_api = element.data.mismatch / 20000;
-                element.api = state.f1_score_selected ? element.mm_api : element.f1_api;
-                // element.api = element.f1_api;
+                // element.api = state.f1_score_selected ? element.f1_api : element.mm_api;
+                element.api = element.mm_api;
             });
 
             state.tree.eachBefore((d, i) => d.order = i);
 
             state.tree.all_descendants = state.tree.descendants();
             state.tree.all_descendants.forEach(d => d.children = []);
+            console.log("api", state.tree.all_descendants.map(d => d.api));
+            console.log("api", state.tree.all_descendants.map(d => d.mm_api));
 
             // let temp_history = {};
             // state.tree.all_descendants.filter(d => d.all_children)
@@ -212,7 +214,9 @@ const store = new Vuex.Store({
             if (index === -1) {
                 state.selected_node.node_ids.push(node.id);
                 state.selected_node.nodes.push(node);
-                d3.selectAll(`#id-${node.id}`).style('stroke', 'black');
+                d3.selectAll(`#id-${node.id}`)
+                    .selectAll(".background").style('stroke', "#ffa953")
+                    .style("stroke-width", 2);
             }
             else {
                 d3.selectAll(`#id-${node.id}`).style('stroke', '');

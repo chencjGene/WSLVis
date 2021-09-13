@@ -249,9 +249,10 @@ const TextTree = function(parent) {
 
   that.node_create = function() {
     let dragstarted = function() {
-      let tag = d3.select(this);
+      let tag = d3.select(this).node().parentElement;
+      tag = d3.select(tag);
       console.log("drag start", tag);
-      that.focus_node_for_edit = d3.select(this).data()[0];
+      that.focus_node_for_edit = tag.data()[0];
       that.tree_node_group
         .append("rect")
         .attr("id", "dragnode")
@@ -332,8 +333,7 @@ const TextTree = function(parent) {
       .append("g")
       .attr("class", "tree-node")
       .attr("id", (d) => "id-" + d.id)
-      .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
-      .call(drag);
+      .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")");
     node_groups
       .transition()
       .duration(that.create_ani)
@@ -358,6 +358,7 @@ const TextTree = function(parent) {
       // .style("fill", d => d.selected_flag ? Global.DarkGray : "#EBEBF3")
       .style("fill", "#EBEBF3")
       .style("fill-opacity", 0)
+      .call(drag)
       .on("mouseover", (ev) => {
         let element = d3.select(ev.toElement).node().parentElement;
         // element = d3.select(element);
@@ -582,7 +583,7 @@ const TextTree = function(parent) {
       .attr("text-anchor", "start")
       .attr("x", that.layer_height / 2 - 2)
       .attr("font-size", "18px")
-      .style("fill", "rgb(114, 114, 114)")
+      .style("fill", Global.DeepGray)
       .attr("dy", ".3em")
       .style("opacity", 0)
       .transition()
@@ -897,11 +898,14 @@ const TextTree = function(parent) {
     let self = d3.select(ev.target.parentElement);
     let d = self.data()[0];
     self.selectAll(".edit-icon").style("opacity", 1);
-    color = color || "rgb(219, 219, 233)";
+    // color = color || "rgb(219, 219, 233)";
+    color = color || "#ffa953";
     that.tree_node_group
       .select("#id-" + d.id)
       .select("rect.background")
-      .style("fill", color);
+      // .style("fill", color);
+      .style('stroke', color)
+      .style("stroke-width", 2);
     that.connection_highlight(d);
   };
 
@@ -916,7 +920,14 @@ const TextTree = function(parent) {
     that.tree_node_group
       .selectAll(".tree-node")
       .select("rect.background")
-      .style("fill", "#EBEBF3");
+      // .style("fill", "#EBEBF3");
+      .style("stroke", "");
+    for (let i = 0; i < that.parent.selected_node.node_ids.length; i++){
+      let id = that.parent.selected_node.node_ids[i];
+      d3.selectAll(`#id-${id}`)
+          .selectAll(".background").style('stroke', "#ffa953")
+          .style("stroke-width", 2);
+    }
     that.connection_dehilight();
   };
 

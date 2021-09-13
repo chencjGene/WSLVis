@@ -2,6 +2,7 @@ import * as d3 from "d3";
 
 const GrayColor = "#7f7f7f";
 const DarkGray = "rgb(211, 211, 229)";
+const DeepGray = "rgb(50, 50, 50)";
 const LightGray = "#EBEBF3";
 const Orange = "#ffa953";
 const Red = "rgb(237, 41, 57)";
@@ -220,6 +221,7 @@ function end_loading(delay){
 export {
     GrayColor,
     DarkGray,
+    DeepGray,
     LightGray,
     Orange,
     BoxRed,

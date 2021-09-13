@@ -356,7 +356,6 @@ export default {
     top_padding: null,
     nodes: null,
     links: null,
-    treecut_type_none_first_time: null,
   }),
   computed: {
     ...mapState([
@@ -557,10 +556,9 @@ export default {
         });
         console.log("after treecut", this.tree);
       } else {
-        if (!this.focus_node || this.treecut_type_none_first_time) {
+        if (!this.focus_node) {
           this.tree.all_descendants.forEach((d) => (d.children = []));
           this.tree.children = this.tree.all_children;
-          this.treecut_type_none_first_time = false;
         } else if (this.focus_node[0].type == 0) {
           this.focus_node[0].children = this.focus_node[0].all_children;
         } else if (this.focus_node[0].type == 1) {
@@ -1147,7 +1145,6 @@ export default {
       // console.log("checkbox", this.picked);
       if (this.treecut_type === "None") {
         console.log("click tree cut", this.use_treecut);
-        this.treecut_type_none_first_time = true;
         this.set_use_treecut(false);
       } else if (this.treecut_type === "F1Score") {
         console.log("click prec-rec-checkbox", this.f1_score_selected);
@@ -1173,10 +1170,11 @@ export default {
       }
     },
     f1_score_selected() {
-      console.log("f1_score_selected");
+      console.log("f1_score_selected", this.f1_score_selected);
       this.tree.all_descendants.forEach((d) => {
         d.api = this.f1_score_selected ? d.f1_api : d.mm_api;
       });
+      console.log("api", this.tree.all_descendants.map(d => d.api));
       this.treecut();
       console.log("offset", this.offset);
       this.update_data();
