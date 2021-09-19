@@ -52,7 +52,7 @@ const store = new Vuex.Store({
         focus_text: null,
         image_list: [],
         selected_flag: [],
-        f1_score_selected: false,
+        f1_score_selected: true,
         tooltip: {
           top: 0,
           left: 0,
@@ -161,7 +161,7 @@ const store = new Vuex.Store({
                 }
                 element.f1_api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
                 element.mm_api = element.data.mismatch / 20000;
-                // element.api = state.f1_score_selected ? element.f1_api : element.mm_api;
+                element.api = state.f1_score_selected ? element.f1_api : element.mm_api;
                 element.api = element.mm_api;
             });
 

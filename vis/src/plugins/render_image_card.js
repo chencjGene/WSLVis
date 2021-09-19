@@ -183,6 +183,7 @@ const ImageCards = function(parent) {
     that.remove();
     that.update();
     that.create();
+    that.set_animation_time();
   };
 
   this.create = function() {
@@ -613,8 +614,10 @@ const ImageCards = function(parent) {
       .transition()
       .duration(that.update_ani)
       .delay(that.remove_ani)
-      .attr("width", (d) => d.width)
-      .attr("height", (d) => d.width)
+      .attr("x", 0 + grid_margin)
+      .attr("y", 0 + grid_margin)
+      .attr("width", (d) => d.width - 2 *grid_margin)
+      .attr("height", (d) => d.width - 2 * grid_margin)
       .style("fill", (d) =>
         d.mismatch > 0 ? mismatch_color : match_color 
       );
@@ -624,8 +627,10 @@ const ImageCards = function(parent) {
       .transition()
       .duration(that.update_ani)
       .delay(that.remove_ani)
-      .attr("width", (d) => d.width - that.boundingbox_width)
-      .attr("height", (d) => d.width - that.boundingbox_width)
+      .attr("x", 0.5 * that.boundingbox_width + grid_margin)
+      .attr("y", 0.5 * that.boundingbox_width + grid_margin)
+      .attr("width", (d) => d.width - that.boundingbox_width - 2 * grid_margin)
+      .attr("height", (d) => d.width - that.boundingbox_width - 2 * grid_margin)
       .attr("xlink:href", d => that.use_label_layout ? null : that.server_url + 
         `/image/image?filename=${d.img_id}.jpg`);
 
@@ -856,9 +861,12 @@ const ImageCards = function(parent) {
 
     d3.select("#home").on("click", () => {
       console.log("home buttom click");
-      let i = 0;
-      let d = that.click_ids[0];
-      that.click_ids = that.click_ids.slice(0, i);
+      // let d = that.click_ids[0];
+      // that.click_ids = that.click_ids.slice(0, i);
+      that.update_ani = 2000;
+      that.create_ani = 2000;
+      let d = that.click_ids[1];
+      that.click_ids = that.click_ids.slice(0, 1);
       that.set_grid_layout_data(d);
     });
 
@@ -1174,7 +1182,8 @@ const ImageCards = function(parent) {
     let group = that.set_group.select("#set-" + d.id);
     group.selectAll(".background")
       // .style("stroke", "rgb(128, 128, 128)");
-      .style("stroke", "rgb(237,129,55)");
+      .style("stroke", "rgb(237,129,55)")
+      .style("stroke-width", 2);
     group.selectAll(".expand-rect")
       .style("stroke", "rgb(38, 38, 38)");
     
@@ -1184,7 +1193,8 @@ const ImageCards = function(parent) {
   that.box_dehighlight = function(){
     let groups = that.set_group.selectAll(".set");
     groups.selectAll(".background")
-      .style("stroke", "rgb(208, 208, 208)");
+      .style("stroke", "rgb(208, 208, 208)")
+      .style("stroke-width", 1);
     groups.selectAll(".expand-rect")
       .style("stroke", "gray");
     that.connection_dehighlight();
