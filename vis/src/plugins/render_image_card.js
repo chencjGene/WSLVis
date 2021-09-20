@@ -362,9 +362,14 @@ const ImageCards = function(parent) {
     let set_id = that.get_expand_set_id();
     let selected_set = that.parent.sets[set_id];
     let images = that.vis_image_per_cluster[set_id];
-    let dragstarted = function() {
+    let dragstarted = function(){
       let tag = d3.select(this);
       console.log("drag start", tag);
+      that.timer = setTimeout(function(){
+        _dragstarted(tag);
+      }, 200);
+    };
+    let _dragstarted = function(tag) {
       that.focus_grid_for_edit = tag.data()[0];
       that.drag_grid_group
         .append("rect")
@@ -440,6 +445,7 @@ const ImageCards = function(parent) {
     }
 
     let dragended = function(){
+      clearTimeout(that.timer);
       console.log("drag end");
       that.drag_grid_group
         .select("#drag-grid").remove();
@@ -462,7 +468,11 @@ const ImageCards = function(parent) {
       }
       that.drag_grid_group.select("#drag-background")
         .remove();
-      // that.drag_grid_group.selectAll(".drag-image").remove();
+      setTimeout(function(){
+        that.drag_grid_group.selectAll(".drag-image").remove();
+        that.grid_group.style("opacity", 1);
+        that.label_group.style("opacity", 1);
+      }, 200);
     }
     let drag = d3
     .drag()
