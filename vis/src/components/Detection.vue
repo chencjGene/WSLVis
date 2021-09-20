@@ -477,24 +477,21 @@ export default {
         .setOptions({
           steps: [
             {
+              element: document.querySelector("#not-to-select"),
+              intro:
+                "Welcome to MutualDetector. Best experience with a resolution of 1920x1080!",
+            },
+            {
               element: document.querySelector("#main-svg"),
               intro:
-                "This is the set visualization that contains a tree layout, a matrix, and a grid layout.",
+                "This is the set visualization that consists of a tree of labels,  \
+                links, and a matrix.",
             },
             {
               element: document.querySelector("#tree-node-group"),
               intro:
-                "The tree layout on the left shows category labels extracted from captions, which are clustered as a hierarchy.",
-            },
-            {
-              element: document.querySelector("#id-0"),
-              intro:
-                "Each rectangle represents one node in the hierarchy. The height of the violet and blue bars represent the precision and recall. You can click nodes to show words with high contributions to the selected categories.",
-            },
-            {
-              element: document.querySelector(".wordcloud-col"),
-              intro:
-                "Words with high contributions are displayed as a word cloud. You can click one to show captions containing it below.",
+                "The tree layout on the left shows category labels extracted from captions. \
+                The tree can be modified by dragging and dropping if it is not satisfactory.",
             },
             {
               element: document.querySelector("#set-group"),
@@ -502,14 +499,47 @@ export default {
                 "The matrix on the right shows objects detected from images.",
             },
             {
+              element: document.querySelector("#set-link-group"),
+              intro:
+                "The links between the tree layout and matrix show the relationships \
+                between the labels and image clusters. A link of red dashed line indicates \
+                the number of mismatches between an image cluster and a label cluster",
+            },
+            {
+              element: document.querySelector("#id-0"),
+              intro:
+                "Each rectangle in the tree layout represents one node in the hierarchy. \
+                You can click one node to show words with high contributions in the information panel.",
+            },
+            {
               element: document.querySelector("#set-0"),
               intro:
-                "Each row of the matrix represents an image cluster. Several representative images are placed in each row.  You can click images to inspect and modify the detected objects.",
+                "Each row of the matrix represents an image cluster. \
+                Several representative images are placed in each row.",
+            },
+            {
+              element: document.querySelector(".expand-rect"),
+              intro:
+                "Each row of the matrix can be expanded as a grid layout for further exploration of images.\
+                You can select images in the grid layout to replace the representative images by the dragging and dropping.",
+            },
+            {
+              element: document.querySelector(".other-view"),
+              intro:
+                "This is the information panel to show important words, captions, and selected images.",
+            },
+            {
+              element: document.querySelector(".wordcloud-col"),
+              intro:
+                "Words with high contributions are displayed as a word cloud. \
+                You can click one to show captions containing it below.",
             },
             {
               element: document.querySelector("#image-svg"),
               intro:
-                "The green rectangles over the image indicate the positions of detected objects. You can click one rectangle to check its corresponding category label in the grey rectangle above the image. The rectangle can be modified by dragging the corners.",
+                "The selected image is displayed here. \
+                The green rectangles over the image indicate the positions of detected objects. \
+                The rectangle can be modified by dragging the corners.",
             },
             {
               element: document.querySelector(".confidence-slider"),
@@ -518,16 +548,6 @@ export default {
             {
               element: document.querySelector(".image-edit"),
               intro: "You can validate, add or remove detected objects.",
-            },
-            {
-              element: document.querySelector("#set-link-group"),
-              intro:
-                "The links between the tree layout and matrix show the relationships between extracted labels and detected objects. The links are set as dashed red lines if the number of mismatches between an image cluster and the extracted label is larger than a threshold.",
-            },
-            {
-              element: document.querySelector(".expand-rect"),
-              intro:
-                "Each row of the matrix can be expanded as a grid layout for further exploration of images.",
             },
           ],
         })
