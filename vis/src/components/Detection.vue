@@ -544,6 +544,44 @@ export default {
         })
         .start();
     },
+    async setGridGuide(){
+      let that = this;
+      
+      introJs()
+        .onbeforeexit(function() {
+          d3.select("html").attr("style", null);
+          that.set_selected_node({"full_name": "person", "id": 0});
+          window.image.clean();
+          window.text.clean(); 
+        })
+        .setOptions({
+          disableInteraction: true,
+          steps: [
+            {
+              element: document.querySelector("#grid-group"),
+              intro:
+                "This is the grid layout",
+            },
+            {
+              element: document.querySelector("#cropping"),
+              intro:
+                "Click this icon and select one region in the grid layout to zoom in",
+            },
+            {
+              element: document.querySelector("#home"),
+              intro:
+                "Click this icon to to back top level.",
+            },
+            {
+              element: document.querySelector("#no-to-select"),
+              intro:
+                "Drag one grid to the top to replace the representative images",
+            },
+          ],
+        })
+        .start();
+
+    },
     treecut() {
       console.log("detection treecut");
       console.log("before treecut", this.tree);

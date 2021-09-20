@@ -185,6 +185,8 @@ const store = new Vuex.Store({
         },
         set_image_cluster_list_data(state, image_cluster_list){
             state.image_cluster_list = image_cluster_list;
+            state.image_cluster_list.forEach(d => d.collapse = 0);
+            // state.image_cluster_list[1].collapse = 1;
             console.log("state.image_cluser_list", state.image_cluster_list);
         },
         set_cluster_association_mat(state, cluster_association_mat){
