@@ -274,7 +274,10 @@ const ImageCards = function(parent) {
     //   .style("fill", "white")
     //   .style("stroke", "gray")
     //   .on("click", (_, d) => {
-         
+    //     console.log("collapse click");
+    //     d.collapse = d.collapse === 1 ? 0 : 1;
+    //     that.parent.update_data();
+    //     that.parent.update_view(); // TODO: watch-function way
     //   })
 
 
@@ -738,7 +741,17 @@ const ImageCards = function(parent) {
     .duration(that.update_ani)
     .delay(that.remove_ani)
     // .attr("height", d => that.get_expand_set_id() === -1 ? d.vis_h : 0);
-    .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0);
+    .attr("width", d => d.vis_w)
+    .attr("height", d => d.vis_h)
+    .style("opacity", d => that.visible(d) ? 1 : 0)
+    .style("pointer-events", "none");
+
+    that.set_group.selectAll(".set")
+      .selectAll("g.detection-result")
+      .attr(
+        "transform",
+        (d) => "translate(" + d.x + ", " + that.top_image_margin + ")"
+      );
 
     that.set_group.selectAll(".set")
       .selectAll("g.detection-result")
@@ -750,19 +763,21 @@ const ImageCards = function(parent) {
       .transition()
       .duration(that.update_ani)
       .delay(that.remove_ani)
+      .attr("width", (d) => d.vis_w)
+      .attr("height", (d) => d.vis_h)
       // .attr("height", d => that.get_expand_set_id() === -1 ? d.vis_h : 0);
-      .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
-      .style("pointer-events", that.get_expand_set_id() === -1 ? "auto" : "none");
+      .style("opacity", d => that.visible(d) ? 1 : 0)
+      .style("pointer-events", d => that.visible(d) ? "auto" : "none");
       // .style("pointer-events", "auto");
 
-    // that.e_sets
-    //   .selectAll("g.detection-result")
-    //   .selectAll("rect.box")
-    //   .transition()
-    //   .duration(that.update_ani)
-    //   .delay(that.remove_ani)
-    //   .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
-    //   .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
+    that.e_sets
+      .selectAll("g.detection-result")
+      .selectAll("rect.box")
+      .transition()
+      .duration(that.update_ani)
+      .delay(that.remove_ani)
+      .style("opacity", d => that.visible(d) ? 1 : 0)
+      .style("pointer-events", d => that.visible(d) ? 1 : "none");
 
     that.e_sets
       .select(".expand-path")
