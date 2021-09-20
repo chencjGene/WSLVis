@@ -356,6 +356,7 @@ export default {
     top_padding: null,
     nodes: null,
     links: null,
+    first_grid: true,
   }),
   computed: {
     ...mapState([
@@ -1297,6 +1298,7 @@ export default {
       }
     },
     grid_data() {
+      let that = this;
       console.log("watch grid_data");
       this.update_data();
       this.update_view();
@@ -1311,6 +1313,12 @@ export default {
         .duration(1)
         .delay(1)
         .style("display", "none");
+      if(that.first_grid){
+      setTimeout(function(){
+        that.setGridGuide();
+        that.first_grid =false;
+      }, that.create_ani + that.update_ani + that.remove_ani - 500);
+      }
     },
   },
   async mounted() {
