@@ -252,22 +252,24 @@ const TextTree = function(parent) {
       let tag = d3.select(this).node().parentElement;
       tag = d3.select(tag);
       console.log("drag start", tag);
-      that.focus_node_for_edit = tag.data()[0];
-      that.tree_node_group
-        .append("rect")
-        .attr("id", "dragnode")
-        .attr("rx", that.layer_height / 12)
-        .attr("ry", that.layer_height / 12)
-        .attr("x", tag.data()[0].x + that.layer_height / 4)
-        .attr("y", tag.data()[0].y + (-that.layer_height * 0.8) / 2)
-        .attr("height", that.layer_height * 0.8)
-        .attr("width", () => {
-          return that.max_text_width;
-        })
-        .style("pointer-events", "none")
-        .style("stroke", "black")
-        .style("fill", "white")
-        .style("opacity", 0.5);
+      that.timer = setTimeout(function(){
+        that.focus_node_for_edit = tag.data()[0];
+        that.tree_node_group
+          .append("rect")
+          .attr("id", "dragnode")
+          .attr("rx", that.layer_height / 12)
+          .attr("ry", that.layer_height / 12)
+          .attr("x", tag.data()[0].x + that.layer_height / 4)
+          .attr("y", tag.data()[0].y + (-that.layer_height * 0.8) / 2)
+          .attr("height", that.layer_height * 0.8)
+          .attr("width", () => {
+            return that.max_text_width;
+          })
+          .style("pointer-events", "none")
+          .style("stroke", "black")
+          .style("fill", "white")
+          .style("opacity", 0.5);
+      }, 1)
     };
 
     let dragged = function(event) {
