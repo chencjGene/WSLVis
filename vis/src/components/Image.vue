@@ -483,7 +483,7 @@ export default {
               that.img_padding +
               Math.floor(i / that.x_grid_num) *
                 (that.grid_size + that.grid_offset) -
-              30
+              2
           )
           .attr("width", that.grid_size)
           .attr("height", that.grid_size);
