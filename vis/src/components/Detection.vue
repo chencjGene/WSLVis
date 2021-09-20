@@ -441,18 +441,8 @@ export default {
     },
     async onUpdateIconCLick() {
       // console.log("click update icon");
-      this.clean();
-      window.text.clean();
-      window.image.clean();
-      Global.begin_loading();
-      await this.$store.dispatch("fetch_manifest", {
-        step: this.step,
-        dataset: "COCO17",
-        label_consistency: this.label_consistency,
-        symmetrical_consistency: this.symmetrical_consistency,
-      });
-      await this.$store.dispatch("fetch_hypergraph", 1);
-      Global.end_loading();
+      alert("This function is disabled in this demo because it takes hours to update models");
+      return;
     },
     clean() {
       this.image_view.clean();
