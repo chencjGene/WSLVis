@@ -475,6 +475,7 @@ export default {
           window.text.clean();
         })
         .setOptions({
+          disableInteraction: true,
           steps: [
             {
               element: document.querySelector("#not-to-select"),
