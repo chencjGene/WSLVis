@@ -70,6 +70,9 @@ export default {
     // await this.$store.dispatch("fetch_grid_", {});
     // this.$store.dispatch("fetch_history", 1);
     Global.end_loading(1500);
+    setTimeout(() => {
+      window.detection.setGuide();
+    }, 1500);
   }
 };
 </script>
