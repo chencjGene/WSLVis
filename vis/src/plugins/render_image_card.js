@@ -8,6 +8,7 @@ const ImageCards = function(parent) {
 
   that.set_group = that.parent.set_group;
   that.grid_group = that.parent.grid_group;
+  that.drag_grid_group = that.parent.drag_grid_group;
   that.label_group = that.parent.label_group;
   that.nav_group = that.parent.nav_group;
 
@@ -50,6 +51,9 @@ const ImageCards = function(parent) {
   var offset_y = 100;
 
   let grid_margin = 0.5 * 2;
+
+  this.focus_grid_for_edit = null;
+  this.target_grid_image = null;
 
   let mouse_pressed = false;
   let mouse_pos = {
@@ -232,7 +236,7 @@ const ImageCards = function(parent) {
           that.set_expand_set_id(-1);
         } else {
           if (that.parent.selected_node["node_ids"].length==0){
-            alert("To check the grid layout, you should select one or more labels in the label hierarchy on the left.")
+            alert("To check the grid layout, you should select one label in the label hierarchy.")
             return;
           }
           that.set_expand_set_id(d.id);
@@ -312,7 +316,8 @@ const ImageCards = function(parent) {
         })
       });
 
-    that.box_groups = g_image_groups.selectAll("rect.box").data((d) => {
+    that.box_groups = that.set_group.selectAll(".set").selectAll(".detection-result").selectAll("rect.box").data((d) => {
+    // that.box_groups = g_image_groups.selectAll("rect.box").data((d) => {
       let dets = d.d;
       let res = [];
       for (let i = 0; i < dets.length; i++) {
@@ -324,6 +329,12 @@ const ImageCards = function(parent) {
       }
       return res;
     });
+    that.box_groups
+      .exit()
+      .transition()
+      .duration(that.remove_ani)
+      .style("opacity", 0)
+      .remove();
     that.box_groups
       .enter()
       .append("rect")
@@ -337,16 +348,134 @@ const ImageCards = function(parent) {
       .style("stroke-width", 1)
       .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
       .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
+    that.box_groups
+      .attr("x", (d) => d.x)
+      .attr("y", (d) => d.y)
+      .attr("width", (d) => d.width)
+      .attr("height", (d) => d.height)
+      .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+      .style("pointer-events", that.get_expand_set_id() === -1 ? "auto" : "none");
+
   };
 
   this.grid_create = function() {
+    let set_id = that.get_expand_set_id();
+    let selected_set = that.parent.sets[set_id];
+    let images = that.vis_image_per_cluster[set_id];
+    let dragstarted = function() {
+      let tag = d3.select(this);
+      console.log("drag start", tag);
+      that.focus_grid_for_edit = tag.data()[0];
+      that.drag_grid_group
+        .append("rect")
+        .attr("id", "drag-background")
+        .attr("x", that.parent.set_left)
+        .attr("y", 0)
+        .attr("width", that.parent.set_width)
+        .attr("height", that.parent.layout_height)
+        .style("fill", "gray")
+        .style("opacity", 0.1);
+      let drag_grid_group = that.drag_grid_group.selectAll("g")
+        .data(images)
+        .enter()
+        .append("g")
+        .attr("class", "drag-image")
+        .attr(
+          "transform",
+          (d) => "translate(" + (selected_set.x + d.x) + ", " + that.top_image_margin + ")"
+        );
+        drag_grid_group.append("rect")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("width", d => d.vis_w)
+          .attr("height", d => d.vis_h)
+          .style("pointer-events", "none")
+          .style("fill", "white")
+          .style("stroke", "white")
+          .style("stroke-width", 5);
+        drag_grid_group.append("image")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", (d) => d.vis_w)
+        .attr("height", (d) => d.vis_h)
+        .attr(
+          "href",
+          (d) => that.server_url + `/image/image?filename=${d.idx}.jpg`
+        )
+        .on("mouseover", function(ev, d){
+          console.log("drag image mouseover");
+          that.target_grid_image = d;
+          let element = ev.target;
+          let self = d3.select(element.parentElement).selectAll(".rect");
+          self.style("stroke", "rgb(237,129,55)");
+        })
+        .on("mouseout", function(){
+          console.log("drag image mouseout");
+          that.target_grid_image = null;
+          that.drag_grid_group.selectAll(".drag-image")
+            .selectAll("rect")
+            .style("stroke", "white");
+        })
+        that.drag_grid_group
+          .append("rect")
+          .attr("id", "drag-grid")
+          .attr("x", tag.data()[0].x)
+          .attr("y", tag.data()[0].y)
+          .attr("width", tag.data()[0].width - 2 * grid_margin)
+          .attr("height", tag.data()[0].width - 2 * grid_margin)
+          .style("pointer-events", "none")
+          .style("stroke", "black")
+          .style("fill", "green")
+          .style("opacity", 0.5);
 
+      that.grid_group.style("opacity", 0.1);
+      that.label_group.style("opacity", 0.1);
+    };
+
+    let dragged = function(event){
+      that.drag_grid_group
+        .select("#drag-grid")
+        .attr("x", event.x)
+        .attr("y", event.y);
+    }
+
+    let dragended = function(){
+      console.log("drag end");
+      that.drag_grid_group
+        .select("#drag-grid").remove();
+      if (that.target_grid_image !== null){
+        let set_id = that.get_expand_set_id();
+        let images = that.vis_image_per_cluster[set_id];
+        let images_ids = images.map(d => d.idx);
+        let idx = images_ids.indexOf(that.target_grid_image.idx);
+        let removed_image = that.vis_image_per_cluster[set_id][idx];
+        removed_image.d = that.focus_grid_for_edit.d;
+        removed_image.idx = that.focus_grid_for_edit.img_id;
+        console.log("image", images);
+        that.drag_grid_group.selectAll("g")
+        .data(images)
+        .selectAll("image")
+        .attr(
+          "href",
+          (d) => that.server_url + `/image/image?filename=${d.idx}.jpg`
+        );
+      }
+      that.drag_grid_group.select("#drag-background")
+        .remove();
+      // that.drag_grid_group.selectAll(".drag-image").remove();
+    }
+    let drag = d3
+    .drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended);
     let grid_groups = that.e_grids
       .enter()
       .append("g")
       .attr("class", "grid")
       .attr("id", (d) => "grid-id-" + d.img_id + "-" + d.id)
       .attr("transform", (d) => "translate(" + d.x + ", " + d.y + ")")
+      .call(drag)
       .on("mouseover", function() {
         d3.select(this)
           .select("rect")
@@ -555,24 +684,29 @@ const ImageCards = function(parent) {
     // .attr("height", d => that.get_expand_set_id() === -1 ? d.vis_h : 0);
     .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0);
 
-    that.e_sets
+    that.set_group.selectAll(".set")
       .selectAll("g.detection-result")
-      .select("image")
+      .selectAll("image")
+      .attr(
+        "href",
+        (d) => that.server_url + `/image/image?filename=${d.idx}.jpg`
+      )
       .transition()
       .duration(that.update_ani)
       .delay(that.remove_ani)
       // .attr("height", d => that.get_expand_set_id() === -1 ? d.vis_h : 0);
       .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
-      .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
+      .style("pointer-events", that.get_expand_set_id() === -1 ? "auto" : "none");
+      // .style("pointer-events", "auto");
 
-    that.e_sets
-      .selectAll("g.detection-result")
-      .selectAll("rect.box")
-      .transition()
-      .duration(that.update_ani)
-      .delay(that.remove_ani)
-      .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
-      .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
+    // that.e_sets
+    //   .selectAll("g.detection-result")
+    //   .selectAll("rect.box")
+    //   .transition()
+    //   .duration(that.update_ani)
+    //   .delay(that.remove_ani)
+    //   .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+    //   .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
 
     that.e_sets
       .select(".expand-path")

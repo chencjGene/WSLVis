@@ -480,7 +480,7 @@ export default {
             {
               element: document.querySelector("#not-to-select"),
               intro:
-                "Welcome to MutualDetector. Best experience with a resolution of 1920x1080!",
+                "Welcome to MutualDetector. The best experience with a resolution of 1920x1080!",
             },
             {
               element: document.querySelector("#main-svg"),
@@ -491,7 +491,7 @@ export default {
             {
               element: document.querySelector("#tree-node-group"),
               intro:
-                "The tree layout on the left shows category labels extracted from captions. \
+                "The tree layout on the left shows labels extracted from captions. \
                 The tree can be modified by dragging and dropping if it is not satisfactory.",
             },
             {
@@ -1403,6 +1403,10 @@ export default {
       .attr("id", "set-link-group")
       .attr("transform", "translate(" + 0 + ", " + this.text_height + ")");
     this.legend_create();
+    this.drag_grid_group = this.svg
+      .append("g")
+      .attr("id", "drag-grid-group")
+      .attr("transform", "translate(" + 0 + ", " + this.text_height + ")");
     this.tree_layout = new tree_layout(
       [this.node_width, this.layer_height],
       this.layout_height
