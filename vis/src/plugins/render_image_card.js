@@ -469,9 +469,19 @@ const ImageCards = function(parent) {
       that.drag_grid_group.select("#drag-background")
         .remove();
       setTimeout(function(){
-        that.drag_grid_group.selectAll(".drag-image").remove();
-        that.grid_group.style("opacity", 1);
-        that.label_group.style("opacity", 1);
+        that.drag_grid_group.selectAll(".drag-image")
+        .transition()
+        .duration(that.remove_ani)
+        .style("opacity", 0)
+        .remove();
+        that.grid_group
+        .transition()
+        .duration(that.remove_ani)
+        .style("opacity", 0).style("opacity", 1);
+        that.label_group
+        .transition()
+        .duration(that.remove_ani)
+        .style("opacity", 0).style("opacity", 1);
       }, 200);
     }
     let drag = d3
