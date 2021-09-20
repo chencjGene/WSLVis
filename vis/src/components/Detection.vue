@@ -472,7 +472,7 @@ export default {
           d3.select("html").attr("style", null);
           that.set_selected_node({"full_name": "person", "id": 0});
           window.image.clean();
-          window.text.clean();
+          window.text.clean(); 
         })
         .setOptions({
           disableInteraction: true,
