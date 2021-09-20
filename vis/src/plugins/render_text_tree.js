@@ -427,7 +427,10 @@ const TextTree = function(parent) {
       .on("click", (ev, d) => {
         console.log("on click tree node");
         // that.change_selected_flag(d, !d.selected_flag);
-
+        if (d.all_children.length && d.all_children.length > 0){
+          that.set_focus_node([d]);
+          return;
+        }
         // TODO: double click
         let node = {
           full_name: d.full_name,
