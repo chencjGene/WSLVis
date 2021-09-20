@@ -15,6 +15,7 @@ const image_cluster_list_layout = function(parent){
         that.large_set_height = that.parent.large_set_height; 
         that.top_image_margin = that.parent.top_image_margin;
         that.x_position = that.parent.x_position;
+        that.collapse_height = 30;
     };
     this.get_set_layout_from_parent();
 
@@ -35,13 +36,21 @@ const image_cluster_list_layout = function(parent){
         console.log("update_parent_set_layout");
         that.parent.set_num = data.length;
         that.parent.mini_set_height = 0;
+        let collapsed_num = eval(data.map(d => d.collapse).join("+"));
         if (that.get_expand_set_id() !== -1) {
             that.parent.set_margin = 0;
-        } else {
+        } else if (collapsed_num === 0){
             that.parent.set_margin = 5;
-        }
-        that.parent.set_height = (that.layout_height + that.parent.set_margin - 5) // 5 is the top padding of svg 
+            that.parent.set_height = (that.layout_height + that.parent.set_margin - 5) // 5 is the top padding of svg 
             / that.parent.set_num;
+        }
+        else{
+            that.parent.set_margin = 5;
+            let rest_num = that.parent.set_num - collapsed_num;
+            let collapse_total_height = collapsed_num * (that.collapse_height + 2 * that.parent.set_margin);
+            that.parent.set_height = (that.layout_height + that.parent.set_margin - collapse_total_height) /
+                rest_num;
+        }
         that.parent.image_height = that.parent.set_height - that.parent.set_margin - 2 * that.parent.image_margin;
         that.parent.top_image_margin = that.parent.image_margin;
         let image_num = 10;
@@ -97,7 +106,10 @@ const image_cluster_list_layout = function(parent){
             // d.y_center = d.y + (that.set_height - that.set_margin) / 2;
             let w = d.id === that.get_expand_set_id() ? 
                 that.large_set_height: that.mini_set_height;
-            if (that.get_expand_set_id() === -1) w = that.set_height;
+            if (that.get_expand_set_id() === -1){
+                if (d.collapse > 0) w = that.collapse_height;
+                else w = that.set_height;
+            } 
             d.y = offset;
             offset = offset + w;
             d.y_center = d.y + (w) / 2;

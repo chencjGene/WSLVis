@@ -121,6 +121,20 @@ const ImageCards = function(parent) {
       return that.parent.nav_id;
   }
 
+  this.visible = function(d){
+    if (that.get_expand_set_id() === -1){
+      if (d.collapse === 1){
+        return 0;
+      }
+      else{
+        return 1;
+      }
+    }
+    else{
+      return 0;
+    }
+  }
+
   this.fetch_grid_layout = function(query) {
     return that.parent.fetch_grid_layout(query);
   };
@@ -136,6 +150,11 @@ const ImageCards = function(parent) {
 
     // update state
     that.vis_image_per_cluster = vis_image_per_cluster;
+    sets.forEach((d) => {
+        that.vis_image_per_cluster[d.id].forEach(n => {
+          n.collapse = d.collapse;
+        })
+    });
     that.grids = grids;
     offset_x = grids_pos.offset_x;
     offset_y = grids_pos.offset_y;
@@ -242,6 +261,22 @@ const ImageCards = function(parent) {
           that.set_expand_set_id(d.id);
         }
       });
+    
+    // set_groups
+    //   .append("rect")
+    //   .attr("class", "collapse-rect")
+    //   .attr("x", -11)
+    //   .attr("y", 20)
+    //   .attr("width", 10)
+    //   .attr("height", 10)
+    //   .style("rx", 3)
+    //   .style("ry", 3)
+    //   .style("fill", "white")
+    //   .style("stroke", "gray")
+    //   .on("click", (_, d) => {
+         
+    //   })
+
 
     set_groups
       .append("path")
@@ -279,7 +314,7 @@ const ImageCards = function(parent) {
       .attr("y", 0)
       .attr("width", d => d.vis_w)
       .attr("height", d => d.vis_h)
-      .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
+      .style("opacity", d => that.visible(d) ? 1 : 0)
       .style("pointer-events", "none")
       .style("fill", "white")
       .style("stroke", "white")
@@ -291,8 +326,8 @@ const ImageCards = function(parent) {
       .attr("y", 0)
       .attr("width", (d) => d.vis_w)
       .attr("height", (d) => d.vis_h)
-      .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
-      .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none")
+      .style("opacity", d => that.visible(d) ? 1 : 0)
+      .style("pointer-events", d => that.visible(d) ? 1 : "none")
       .attr(
         "href",
         (d) => that.server_url + `/image/image?filename=${d.idx}.jpg`
@@ -325,7 +360,8 @@ const ImageCards = function(parent) {
         let width = d.vis_w * (dets[i][2] - dets[i][0]);
         let y = d.vis_h * dets[i][1];
         let height = d.vis_h * (dets[i][3] - dets[i][1]);
-        res.push({ x, y, width, height });
+        let collapse = d.collapse;
+        res.push({ x, y, width, height, collapse });
       }
       return res;
     });
@@ -346,15 +382,15 @@ const ImageCards = function(parent) {
       .style("fill", "none")
       .style("stroke", Global.BoxRed)
       .style("stroke-width", 1)
-      .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
-      .style("pointer-events", that.get_expand_set_id() === -1 ? 1 : "none");
+      .style("opacity", d => that.visible(d) ? 1 : 0)
+      .style("pointer-events", d => that.visible(d) ? 1 : "none");
     that.box_groups
       .attr("x", (d) => d.x)
       .attr("y", (d) => d.y)
       .attr("width", (d) => d.width)
       .attr("height", (d) => d.height)
-      .style("opacity", that.get_expand_set_id() === -1 ? 1 : 0)
-      .style("pointer-events", that.get_expand_set_id() === -1 ? "auto" : "none");
+      .style("opacity", d => that.visible(d) -1 ? 1 : 0)
+      .style("pointer-events", d => that.visible(d) -1 ? "auto" : "none");
 
   };
 
