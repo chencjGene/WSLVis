@@ -236,7 +236,7 @@ const ImageCards = function(parent) {
     set_groups
       .style("opacity", 0)
       .on("mouseover", function(ev) {
-        that.box_highlight(ev);
+        if (that.get_expand_set_id() === -1) that.box_highlight(ev);
       })
       .on("mouseout", function() {
         that.box_dehighlight();
@@ -368,7 +368,7 @@ const ImageCards = function(parent) {
         (d) => that.server_url + `/image/image?filename=${d.idx}.jpg`
       )
       .on("mouseover", function(ev) {
-        that.box_highlight(ev);
+        if (that.get_expand_set_id() === -1) that.box_highlight(ev);
         that.image_highlight(ev);
       })
       .on("mouseout", function() {
