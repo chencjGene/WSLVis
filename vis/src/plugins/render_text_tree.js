@@ -911,7 +911,7 @@ const TextTree = function(parent) {
       // .style("fill", color);
       .style('stroke', color)
       .style("stroke-width", 2);
-    that.connection_highlight(d);
+    if (Global.linked_highlight) that.connection_highlight(d);
   };
 
   // that.dehighlight = function(ev, d) {
@@ -933,7 +933,7 @@ const TextTree = function(parent) {
           .selectAll(".background").style('stroke', "#ffa953")
           .style("stroke-width", 2);
     }
-    that.connection_dehilight();
+    if (Global.linked_highlight) that.connection_dehilight();
   };
 
   that.connection_highlight = function(node) {

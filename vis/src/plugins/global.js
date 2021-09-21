@@ -9,6 +9,7 @@ const Red = "rgb(237, 41, 57)";
 const BoxRed = "#93ff2f";
 const Animation = 1000; 
 const WindowHeight = window.innerHeight - 10;
+const linked_highlight = true;
 
 const d_rollback="M793 242H366v-74c0-6.7-7.7-10.4-12.9-6.3l-142 112c-4.1 3.2-4.1 9.4 0 12.6l142 112c5.2 4.1 12.9 0.4 12.9-6.3v-74h415v470H175c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h618c35.3 0 64-28.7 64-64V306c0-35.3-28.7-64-64-64z";
 const d_scan="M136 384h56c4.4 0 8-3.6 8-8V200h176c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-37.6 0-68 30.4-68 68v180c0 4.4 3.6 8 8 8zM648 200h176v176c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V196c0-37.6-30.4-68-68-68H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM376 824H200V648c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v180c0 37.6 30.4 68 68 68h180c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM888 640h-56c-4.4 0-8 3.6-8 8v176H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h180c37.6 0 68-30.4 68-68V648c0-4.4-3.6-8-8-8zM904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z";
@@ -58,6 +59,27 @@ const getTextWidth = function(text, font) {
     context.font = font;
     return context.measureText(text).width;
   }
+
+const collapse_icon = function(x, y, type, basic_ratio){
+    basic_ratio = basic_ratio || 4;
+    if (type === 0) { // collapsed
+        let ratio = basic_ratio * 1;
+        let p1 = {x: x + ratio, y: y};
+        let p2 = {x: x - 0.5 * ratio, y: y - 1.866 * ratio};
+        let p3 = {x: x - 0.5 * ratio, y: y + 1.866 * ratio};
+        return "M" + pos2str(p2) + "L" + pos2str(p1) + "L" + pos2str(p3);
+    }
+    else if (type === 1){
+        let ratio = basic_ratio * 1;
+        let p1 = {x: x, y: y + ratio};
+        let p2 = {x: x + 1.866 * ratio, y: y - 0.5 * ratio};
+        let p3 = {x: x - 1.866 * ratio, y: y - 0.5 * ratio};
+        return "M" + pos2str(p2) + "L" + pos2str(p1) + "L" + pos2str(p3);
+    }
+    else{
+        return 1;
+    }
+}
 
 const node_icon = function(x, y, type, basic_ratio){
     basic_ratio = basic_ratio || 4;
@@ -231,11 +253,13 @@ export {
     d_rollback,
     d_scan,
     d_select,
+    linked_highlight,
     get_path_of_page_btn,
     deepCopy,
     tree_line,
     getTextWidth,
     set_line,
+    collapse_icon,
     node_icon,
     plus_path_d,
     minus_path_d,
