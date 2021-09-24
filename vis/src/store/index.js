@@ -162,7 +162,7 @@ const store = new Vuex.Store({
                 element.f1_api = 2 - (element.data.precision * 2 + element.data.recall) / 2;
                 element.mm_api = element.data.mismatch / 20000;
                 element.api = state.f1_score_selected ? element.f1_api : element.mm_api;
-                element.api = element.mm_api;
+                // element.api = element.mm_api;
             });
 
             state.tree.eachBefore((d, i) => d.order = i);

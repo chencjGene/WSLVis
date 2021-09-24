@@ -377,6 +377,7 @@ const ImageCards = function(parent) {
       })
       .on("click", (ev, d) => {
         console.log("click image", d);
+        ev.stopPropagation();
         that.selected_image_idx = d.idx;
         let self = d3
           .select(ev.target.parentElement)

@@ -31,6 +31,7 @@ const TextTree = function(parent) {
   that.merge_action = null;
   that.target_node = null;
   that.focus_node_for_edit = null;
+  that.highlight_fixed = false;
 
   that.parent.svg.select("defs").remove();
   that.defs = that.parent.svg
@@ -77,6 +78,7 @@ const TextTree = function(parent) {
   ];
 
   that.textClickHandler = function(evt) {
+    that.highlight_fixed = true;
     window.d3 = d3;
     // if (document.querySelector("#overlay") !== null) return; // kludgy singleton approach
     that.text_element = d3.select(evt.target.parentElement).select("text");
@@ -109,6 +111,8 @@ const TextTree = function(parent) {
   };
 
   that.parent.svg.on("click", () => {
+    that.highlight_fixed = false;
+    that.dehighlight();
     if (that.input === undefined) return;
     that.selected_input_data.name = that.input.node().value;
     that.selected_input_data.full_name = that.selected_input_data.name;
@@ -249,6 +253,7 @@ const TextTree = function(parent) {
 
   that.node_create = function() {
     let dragstarted = function() {
+      that.highlight_fixed = true;
       let tag = d3.select(this).node().parentElement;
       tag = d3.select(tag);
       console.log("drag start", tag);
@@ -289,6 +294,8 @@ const TextTree = function(parent) {
 
     let dragended = function() {
       console.log("drag end");
+      that.highlight_fixed = false;
+      that.dehighlight();
 
       if (that.merge_action){
         if (that.merge_action === "join"){
@@ -782,6 +789,7 @@ const TextTree = function(parent) {
       .transition()
       .duration(that.update_ani)
       .delay(that.remove_ani)
+      .style("pointer-event", "none")
       .attr(
         "transform",
         () =>
@@ -900,6 +908,7 @@ const TextTree = function(parent) {
   // that.highlight = function(ev, d, color) {
   that.highlight = function(ev, color) {
     // console.log("highlight in tree");
+    if (that.highlight_fixed) return;
     let self = d3.select(ev.target.parentElement);
     let d = self.data()[0];
     self.selectAll(".edit-icon").style("opacity", 1);
@@ -916,6 +925,7 @@ const TextTree = function(parent) {
 
   // that.dehighlight = function(ev, d) {
   that.dehighlight = function() {
+    if (that.highlight_fixed) return;
     // let self = d3.select(ev.target.parentElement);
     // let d = self.data()[0];
     that.tree_node_group

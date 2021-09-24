@@ -180,8 +180,8 @@ class Sampler(object):
         idxs = []
         print("selected idx len", len(selected_list))
         for id in selected_list:
-            idxs.extend(current_hiera[id]["c"] + [id])
-
+            idxs.extend(current_hiera[id]["c"])
+        idxs = selected_list + idxs
         print("all idx len:", len(idxs))
         # print("selected list", selected_list)
 
@@ -200,8 +200,15 @@ class Sampler(object):
             idxs, sampled_idx, self.current_grid_layout, hiera, res = pickle_load_data(buffer_path)
             self.current_sampled_idx = sampled_idx
             grid_x = self.current_grid_layout[0]
-
         else:
+            sqrt_num = int(np.ceil(np.sqrt(len(idxs)))**2)
+            if sqrt_num > len(idxs):
+                candidate_list = []
+                for i in range(self.embed_X.shape[0]):
+                    if i not in current_hiera:
+                        candidate_list.append(i)
+                more_idxs = np.random.choice(candidate_list, sqrt_num - len(idxs), replace=False)
+                idxs = idxs + more_idxs.tolist()
             idxs.sort()
             X = self.embed_X[np.array(idxs)]
             # import IPython; IPython.embed(); exit()
