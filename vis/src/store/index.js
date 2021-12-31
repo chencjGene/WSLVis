@@ -13,7 +13,7 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
     state:{
         // server_url: 'http://localhost:20211',
-        server_url: 'http://166.111.81.68:20211',
+        server_url: 'http://166.111.81.70:20211',
         // action trail
         history: [],
         image_num: 0,
@@ -52,7 +52,7 @@ const store = new Vuex.Store({
         focus_text: null,
         image_list: [],
         selected_flag: [],
-        f1_score_selected: true,
+        f1_score_selected: false,
         tooltip: {
           top: 0,
           left: 0,
@@ -297,7 +297,7 @@ const store = new Vuex.Store({
         },
         set_one_image_boxes_threshold(state, data){
             console.log("set one_image_boxes_threshold", data);
-            state.one_image_boxes_threshold = data;
+            state.one_image_boxes_threshold = data - 0.2;
         },
         showTooltip(state, { top, left, width, content }) {
             state.tooltip.top = top 
